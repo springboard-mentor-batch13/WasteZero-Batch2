@@ -18,7 +18,19 @@ MongoDB Atlas
 ```
 
 
-## Collection: Users
+## Users Collection
+
+Fields:
+
+- username
+- fullName
+- email
+- password
+- role
+- location
+- skills
+- createdAt
+- updatedAt
 
 
 ### Purpose
