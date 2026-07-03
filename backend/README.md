@@ -13,6 +13,6 @@ The main endpoints are:
 
 - POST /api/auth/register
 - POST /api/auth/login
-- GET /api/auth/protected
+
 
 Swagger UI is available at /api-docs.
