@@ -31,14 +31,7 @@ const userSchema = new mongoose.Schema(
       enum: ['Volunteer', 'NGO', 'Admin'],
       default: 'Volunteer',
     },
-    location: {
-      type: String,
-      trim: true,
-    },
-    skills: {
-      type: [String],
-      default: [],
-    },
+    // Removed optional fields `location` and `skills` per Milestone 1 requirements
   },
   {
     timestamps: true,
