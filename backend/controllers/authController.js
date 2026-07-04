@@ -33,19 +33,10 @@ const registerUser = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
     }
 
-    const {
-      fullName,
-      username,
-      email,
-      password,
-      confirmPassword,
-      role,
-      location,
-      skills,
-    } = req.body;
+    const { fullName, username, email, password, confirmPassword, role } = req.body;
 
-    if (!fullName || !username || !email || !password || !confirmPassword) {
-      return res.status(400).json({ success: false, message: 'Full name, username, email, password, and confirm password are required' });
+    if (!fullName || !username || !email || !password || !confirmPassword || !role) {
+      return res.status(400).json({ success: false, message: 'Full name, username, email, password, confirm password, and role are required' });
     }
 
     if (password !== confirmPassword) {
@@ -60,14 +51,13 @@ const registerUser = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+
     const newUser = await User.create({
       fullName,
       username,
       email,
       password: hashedPassword,
       role: role || 'Volunteer',
-      location,
-      skills,
     });
 
     const token = generateToken(newUser);
@@ -82,8 +72,6 @@ const registerUser = async (req, res, next) => {
         username: newUser.username,
         email: newUser.email,
         role: newUser.role,
-        location: newUser.location,
-        skills: newUser.skills,
       },
     });
   } catch (error) {
@@ -101,16 +89,13 @@ const loginUser = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
     }
 
-    const { email, username, emailOrUsername, password } = req.body;
-    const loginIdentifier = emailOrUsername || email || username;
+    const { username, password } = req.body;
 
-    if (!loginIdentifier || !password) {
-      return res.status(400).json({ success: false, message: 'Email/username and password are required' });
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
-    const user = await User.findOne({
-      $or: [{ email: loginIdentifier }, { username: loginIdentifier }],
-    });
+    const user = await User.findOne({ username });
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -134,8 +119,6 @@ const loginUser = async (req, res, next) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        location: user.location,
-        skills: user.skills,
       },
     });
   } catch (error) {

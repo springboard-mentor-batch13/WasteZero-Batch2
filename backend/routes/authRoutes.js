@@ -34,9 +34,7 @@ router.post(
     body('email').isEmail().withMessage('Please enter a valid email address'),
     body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
     body('confirmPassword').notEmpty().withMessage('Confirm password is required'),
-    body('role').optional().isIn(allowedRoles).withMessage('Invalid role'),
-    body('location').optional().trim(),
-    body('skills').optional().isArray().withMessage('Skills must be an array'),
+    body('role').notEmpty().withMessage('Role is required').isIn(allowedRoles).withMessage('Invalid role'),
   ],
   registerUser
 );
@@ -64,6 +62,7 @@ router.post(
 router.post(
   '/login',
   [
+    body('username').trim().notEmpty().withMessage('Username is required'),
     body('password').notEmpty().withMessage('Password is required'),
   ],
   loginUser
