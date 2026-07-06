@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../auth.service';
 import { passwordMatchValidator } from '../validators/password-match.validator';
 
 @Component({
@@ -10,6 +11,8 @@ import { passwordMatchValidator } from '../validators/password-match.validator';
 })
 export class RegisterComponent {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   protected readonly registerForm = this.formBuilder.nonNullable.group(
     {
@@ -32,6 +35,8 @@ export class RegisterComponent {
   );
 
   protected submitted = false;
+  protected isSubmitting = false;
+  protected errorMessage = '';
 
   protected get fullName() {
     return this.registerForm.controls.fullName;
@@ -58,14 +63,40 @@ export class RegisterComponent {
     return this.registerForm.hasError('passwordMismatch') && (this.confirmPassword.touched || this.submitted);
   }
 
-  protected onSubmit(): void {
+  protected async onSubmit(): Promise<void> {
     this.submitted = true;
+    this.errorMessage = '';
 
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
     }
 
-    console.log('Registration form submitted', this.registerForm.getRawValue());
+    this.isSubmitting = true;
+
+    try {
+      const { fullName, email, password, confirmPassword } = this.registerForm.getRawValue();
+
+      await this.authService.register({
+        fullName,
+        username: email,
+        email,
+        password,
+        confirmPassword
+      });
+
+      await this.redirectIfRouteExists('login');
+    } catch (error) {
+      this.errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      alert(this.errorMessage);
+    } finally {
+      this.isSubmitting = false;
+    }
+  }
+
+  private async redirectIfRouteExists(path: string): Promise<void> {
+    if (this.router.config.some((route) => route.path === path)) {
+      await this.router.navigate([path]);
+    }
   }
 }
