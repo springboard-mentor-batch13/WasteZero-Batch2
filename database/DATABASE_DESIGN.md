@@ -1,102 +1,60 @@
 # WasteZero Database Design
 
-## Milestone 1: User Management
+Database Name: WasteZero
 
-
-## Database Information
-
-Database Name:
-
-```
-wastezero
-```
-
-Database Platform:
-
-```
+Database Used:
 MongoDB Atlas
-```
+
+## Collections
+
+1. users
+2. pickups
 
 
-## Users Collection
+# Users Collection
+
+Stores application user information including Volunteers, NGOs, and Admin users.
 
 Fields:
 
-- username
-- fullName
-- email
-- password
-- role
-- location
-- skills
-- createdAt
-- updatedAt
+- _id : ObjectId
+- fullName : String
+- username : String
+- email : String (unique)
+- password : String (hashed)
+- role : String
+- location : String
+- skills : Array
+- bio : String
+- profileImage : String
+- createdAt : Date
+- updatedAt : Date
 
 
-### Purpose
+# Pickups Collection
 
-Stores user information required for:
+Stores waste pickup requests and opportunities.
 
-- User Registration
-- Authentication
-- Role Based Access Control
-- Profile Management
+Fields:
 
-
-## Users Schema
-
-```javascript
-{
-    username: String,
-
-    fullName: String,
-
-    email: String,
-
-    password: String,
-
-    role: String,
-
-    location: String,
-
-    skills: Array
-}
-```
+- _id : ObjectId
+- userId : ObjectId (Reference users)
+- title : String
+- description : String
+- wasteType : String
+- quantity : String
+- pickupLocation : String
+- pickupDate : Date
+- status : String
+- createdAt : Date
+- updatedAt : Date
 
 
-## Field Details
+# Relationships
 
-| Field | Type | Required | Description |
-|----|----|----|----|
-| username | String | Yes | Unique username |
-| fullName | String | Yes | User full name |
-| email | String | Yes | Unique login email |
-| password | String | Yes | Hashed password |
-| role | String | Yes | Volunteer / NGO / Admin |
-| location | String | No | User location |
-| skills | Array | No | User skills |
+User → Pickups
 
+One user can create multiple pickup requests.
 
-## User Roles
-
-Allowed roles:
-
-- Volunteer
-- NGO
-- Admin
-
-
-## Indexes Created
-
-| Field | Type |
-|-|-|
-| username | Unique |
-| email | Unique |
-| role | Normal Index |
-
-
-## Security Notes
-
-- Passwords are stored after hashing by backend.
-- MongoDB Atlas connection string is stored in environment variables.
-- Database credentials are not pushed to GitHub.
+Relationship:
+users._id → pickups.userId
