@@ -1,3 +1,9 @@
+@if (isAuthPage) {
+
+  <router-outlet></router-outlet>
+
+} @else {
+
 <div class="app-layout">
 
   <app-sidebar></app-sidebar>
@@ -13,3 +19,5 @@
   </div>
 
 </div>
+
+}

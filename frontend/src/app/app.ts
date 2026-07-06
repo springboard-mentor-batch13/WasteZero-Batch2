@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 
 import { Navbar } from './layout/navbar/navbar';
 import { Sidebar } from './layout/sidebar/sidebar';
@@ -16,5 +16,11 @@ import { Sidebar } from './layout/sidebar/sidebar';
   styleUrl: './app.css'
 })
 export class App {
+
+  constructor(public router: Router) {}
+
+  get isAuthPage(): boolean {
+    return this.router.url === '/login' || this.router.url === '/register';
+  }
 
 }
