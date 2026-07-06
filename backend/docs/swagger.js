@@ -22,7 +22,7 @@ const options = {
       schemas: {
         UserRegistration: {
           type: 'object',
-          required: ['fullName', 'username', 'email', 'password', 'confirmPassword'],
+          required: ['fullName', 'username', 'email', 'password', 'confirmPassword', 'role'],
           properties: {
             fullName: { type: 'string', example: 'Ava Smith' },
             username: { type: 'string', example: 'ava_smith' },
@@ -34,19 +34,13 @@ const options = {
               enum: ['Volunteer', 'NGO', 'Admin'],
               default: 'Volunteer',
             },
-            location: { type: 'string', example: 'Lagos, Nigeria' },
-            skills: {
-              type: 'array',
-              items: { type: 'string' },
-              example: ['recycling', 'community outreach'],
-            },
           },
         },
         UserLogin: {
           type: 'object',
-          required: ['emailOrUsername', 'password'],
+          required: ['username', 'password'],
           properties: {
-            emailOrUsername: { type: 'string', example: 'ava@example.com' },
+            username: { type: 'string', example: 'ava_smith' },
             password: { type: 'string', example: 'StrongPass123' },
           },
         },

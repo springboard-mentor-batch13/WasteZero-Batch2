@@ -3,11 +3,11 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": "0b561126-3e29-4b7f-a4e9-dfc35c2e0f8b"
+    "analytics": "4b4d2a0e-5f67-4675-abcd-b22b98d8fe0a"
   },
   "newProjectRoot": "projects",
   "projects": {
-    "frontend": {
+    "wastezero-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -26,16 +26,9 @@
               }
             ],
             "styles": [
+               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "src/styles.css"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            ]
           },
           "configurations": {
             "production": {
@@ -65,10 +58,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "frontend:build:production"
+              "buildTarget": "wastezero-frontend:build:production"
             },
             "development": {
-              "buildTarget": "frontend:build:development"
+              "buildTarget": "wastezero-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
