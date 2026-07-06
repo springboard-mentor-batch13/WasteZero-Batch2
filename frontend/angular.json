@@ -2,12 +2,11 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm",
-    "analytics": "0b561126-3e29-4b7f-a4e9-dfc35c2e0f8b"
+    "packageManager": "npm"
   },
   "newProjectRoot": "projects",
   "projects": {
-    "frontend": {
+    "wastezero-frontend": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -26,16 +25,9 @@
               }
             ],
             "styles": [
+               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "src/styles.css"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "security": {
-              "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            ]
           },
           "configurations": {
             "production": {
@@ -65,10 +57,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "frontend:build:production"
+              "buildTarget": "wastezero-frontend:build:production"
             },
             "development": {
-              "buildTarget": "frontend:build:development"
+              "buildTarget": "wastezero-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"

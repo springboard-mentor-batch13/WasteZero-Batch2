@@ -1,0 +1,79 @@
+<div class="profile-page">
+
+  <h2>My Profile</h2>
+  <p class="sub-title">
+    Manage your account information and settings
+  </p>
+<div class="tabs">
+  <button
+    [class.active]="activeTab === 'profile'"
+    (click)="activeTab = 'profile'">
+    Profile
+  </button>
+
+  <button
+    [class.active]="activeTab === 'password'"
+    (click)="activeTab = 'password'">
+    Password
+  </button>
+</div>
+
+  <div class="profile-card" *ngIf="activeTab === 'profile'">
+
+    <h3>Personal Information</h3>
+    <p class="desc">
+      Update your personal information and profile details
+    </p>
+
+    <label>Full Name</label>
+    <input type="text" placeholder="Enter your full name">
+
+    <label>Email</label>
+    <input type="email" placeholder="Enter email">
+
+    <small>This is the email address used for account notifications.</small>
+
+    <label>Location</label>
+    <input type="text" placeholder="Enter location">
+
+    <small>This helps match you with nearby opportunities.</small>
+
+    <label>Skills</label>
+    <input type="text" placeholder="">
+
+    <label>Bio</label>
+    <textarea rows="5" placeholder="Tell something about yourself"></textarea>
+
+    <button class="save-btn">
+      Save Changes
+    </button>
+
+  </div>
+
+  <!-- Password Tab -->
+<div class="profile-card" *ngIf="activeTab === 'password'">
+
+    <h3>Change Password</h3>
+
+    <p class="desc">
+        Update your password to secure your account
+    </p>
+
+    <label>Current Password</label>
+    <input type="password" placeholder="">
+
+    <label>New Password</label>
+    <input type="password" placeholder="">
+
+    <small>Password must be at least 6 characters long.</small>
+
+    <label>Confirm New Password</label>
+    <input type="password" placeholder="">
+
+    <button class="change-btn" (click)="updatePassword()">
+        Change Password
+    </button>
+
+</div>
+
+</div>
