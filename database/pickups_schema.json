@@ -1,0 +1,36 @@
+{
+  "collection": "pickups",
+
+  "fields": {
+    "_id": "ObjectId",
+
+    "userId": "ObjectId (Reference users collection)",
+
+    "title": "String",
+
+    "description": "String",
+
+    "wasteType": "String",
+
+    "quantity": "String",
+
+    "pickupLocation": "String",
+
+    "pickupDate": "Date",
+
+    "status": [
+      "Pending",
+      "Accepted",
+      "Completed",
+      "Cancelled"
+    ],
+
+    "createdAt": "Date",
+
+    "updatedAt": "Date"
+  },
+
+  "relationships": {
+    "user": "Many pickups belong to one user"
+  }
+}
