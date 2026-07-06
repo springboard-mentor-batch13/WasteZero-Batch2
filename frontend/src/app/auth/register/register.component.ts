@@ -27,6 +27,7 @@ export class RegisterComponent {
         ]
       ],
       confirmPassword: ['', [Validators.required]],
+      role: ['', Validators.required],
       termsAccepted: [false, [Validators.requiredTrue]]
     },
     {
@@ -54,7 +55,11 @@ export class RegisterComponent {
     return this.registerForm.controls.confirmPassword;
   }
 
-  protected showError(controlName: 'fullName' | 'email' | 'password' | 'confirmPassword' | 'termsAccepted'): boolean {
+  protected get role() {
+  return this.registerForm.controls.role;
+}
+
+  protected showError(controlName: 'fullName' | 'email' | 'password' | 'confirmPassword' |'role'| 'termsAccepted'): boolean {
     const control = this.registerForm.controls[controlName];
     return control.invalid && (control.touched || this.submitted);
   }
@@ -75,14 +80,15 @@ export class RegisterComponent {
     this.isSubmitting = true;
 
     try {
-      const { fullName, email, password, confirmPassword } = this.registerForm.getRawValue();
+      const { fullName, email, password, confirmPassword,role } = this.registerForm.getRawValue();
 
       await this.authService.register({
         fullName,
         username: email,
         email,
         password,
-        confirmPassword
+        confirmPassword,
+        role
       });
 
       await this.redirectIfRouteExists('login');

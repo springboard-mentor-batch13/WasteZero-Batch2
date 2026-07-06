@@ -160,6 +160,38 @@
 
         </div>
 
+        <!-- Role -->
+<div>
+
+  <label
+    for="role"
+    class="block text-sm font-semibold text-slate-800"
+  >
+    
+    Role 
+  </label>
+
+  <select
+    id="role"
+    formControlName="role"
+    class="mt-2 w-full rounded-lg border px-4 py-3 outline-none transition"
+    [class.border-red-400]="showError('role')"
+    [class.border-slate-300]="!showError('role')"
+  >
+    <option value="">Select Role</option>
+    <option value="Volunteer">Volunteer</option>
+    <option value="NGO">NGO</option>
+    <option value="Admin">Admin</option>
+  </select>
+
+  @if (showError('role')) {
+    <p class="mt-2 text-sm text-red-600">
+      Please select a role.
+    </p>
+  }
+
+</div>
+
         <!-- Terms -->
         <div>
 
