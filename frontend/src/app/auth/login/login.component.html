@@ -1,8 +1,6 @@
 <main class="min-h-screen flex items-center justify-center bg-slate-100 px-4 py-8">
   <div class="w-full max-w-md">
-    
-    <!-- Logo -->
-   
+
     <!-- Login Card -->
     <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-lg">
 
@@ -27,33 +25,29 @@
         novalidate
       >
 
-        <!-- Email -->
+        <!-- Username -->
         <div>
           <label
-            for="email"
+            for="username"
             class="block text-sm font-semibold text-slate-800"
           >
-            Email address
+            Username
           </label>
 
           <input
-            id="email"
-            type="email"
-            formControlName="email"
-            autocomplete="email"
-            placeholder="you@example.com"
+            id="username"
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            placeholder="Enter your username"
             class="mt-2 w-full rounded-lg border px-4 py-3 outline-none transition"
-            [class.border-red-400]="showError('email')"
-            [class.border-slate-300]="!showError('email')"
+            [class.border-red-400]="showError('username')"
+            [class.border-slate-300]="!showError('username')"
           />
 
-          @if (showError('email')) {
+          @if (showError('username')) {
           <p class="mt-2 text-sm text-red-600">
-            @if (email.hasError('required')) {
-            Email address is required.
-            } @else {
-            Enter a valid email address.
-            }
+            Username is required.
           </p>
           }
 
@@ -92,7 +86,7 @@
 
         </div>
 
-        <!-- Remember -->
+        <!-- Remember Me -->
         <div class="flex items-center justify-between">
 
           <label class="flex items-center gap-2 text-sm">
@@ -112,8 +106,7 @@
 
         </div>
 
-        <!-- Button -->
-
+        <!-- Login Button -->
         <button
           type="submit"
           class="w-full rounded-lg bg-emerald-700 py-3 text-lg font-semibold text-white transition hover:bg-emerald-800"

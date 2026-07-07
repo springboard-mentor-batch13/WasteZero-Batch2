@@ -14,7 +14,7 @@ export class LoginComponent {
   private readonly router = inject(Router);
 
   protected readonly loginForm = this.formBuilder.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
+    username: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     rememberMe: [false]
   });
@@ -23,15 +23,15 @@ export class LoginComponent {
   protected isSubmitting = false;
   protected errorMessage = '';
 
-  protected get email() {
-    return this.loginForm.controls.email;
+  protected get username() {
+    return this.loginForm.controls.username;
   }
 
   protected get password() {
     return this.loginForm.controls.password;
   }
 
-  protected showError(controlName: 'email' | 'password'): boolean {
+  protected showError(controlName: 'username' | 'password'): boolean {
     const control = this.loginForm.controls[controlName];
     return control.invalid && (control.touched || this.submitted);
   }
@@ -48,10 +48,10 @@ export class LoginComponent {
     this.isSubmitting = true;
 
     try {
-      const { email, password } = this.loginForm.getRawValue();
+      const { username, password } = this.loginForm.getRawValue();
 
       const response = await this.authService.login({
-        username: email,
+        username,
         password
       });
 
