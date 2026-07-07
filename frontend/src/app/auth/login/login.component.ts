@@ -49,7 +49,11 @@ export class LoginComponent {
 
     try {
       const { email, password } = this.loginForm.getRawValue();
-      const response = await this.authService.login({ email, password });
+
+      const response = await this.authService.login({
+        username: email,
+        password
+      });
 
       if (response.token) {
         this.authService.saveToken(response.token);
@@ -57,7 +61,9 @@ export class LoginComponent {
 
       await this.redirectIfRouteExists('dashboard');
     } catch (error) {
-      this.errorMessage = error instanceof Error ? error.message : 'Login failed';
+      this.errorMessage =
+        error instanceof Error ? error.message : 'Login failed';
+
       alert(this.errorMessage);
     } finally {
       this.isSubmitting = false;
@@ -65,7 +71,7 @@ export class LoginComponent {
   }
 
   private async redirectIfRouteExists(path: string): Promise<void> {
-    if (this.router.config.some((route) => route.path === path)) {
+    if (this.router.config.some(route => route.path === path)) {
       await this.router.navigate([path]);
     }
   }

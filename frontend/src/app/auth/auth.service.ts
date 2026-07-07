@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -53,7 +53,10 @@ export class AuthService {
     localStorage.setItem(this.tokenKey, token);
   }
 
-  private async post<TResponse>(endpoint: string, payload: unknown): Promise<TResponse> {
+  private async post<TResponse>(
+    endpoint: string,
+    payload: unknown
+  ): Promise<TResponse> {
     const response = await fetch(`${this.apiUrl}${endpoint}`, {
       method: 'POST',
       headers: {
@@ -71,11 +74,16 @@ export class AuthService {
     return data as TResponse;
   }
 
-  private async parseJson<TResponse>(response: Response): Promise<TResponse> {
+  private async parseJson<TResponse>(
+    response: Response
+  ): Promise<TResponse> {
     try {
       return (await response.json()) as TResponse;
     } catch {
-      return { success: false, message: 'Unable to read authentication response' } as TResponse;
+      return {
+        success: false,
+        message: 'Unable to read authentication response'
+      } as TResponse;
     }
   }
 }
