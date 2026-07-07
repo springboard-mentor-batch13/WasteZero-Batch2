@@ -10,13 +10,19 @@ const User = require('../models/User');
 // Fetch the authenticated user's profile
 const getProfile = async (req, res) => {
   try {
-    // The protect middleware has already verified the JWT
-    // and attached the user data to req.user.
-    // We just return it.
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Profile fetched successfully",
-      data: req.user
+      data: user
     });
   } catch (error) {
     console.error(`Error in getProfile: ${error.message}`);
@@ -42,12 +48,19 @@ const updateProfile = async (req, res) => {
 
     // Extract only the allowed fields from the request body
     // email, password, and role are ignored if sent
-    const { name, bio, skills, location } = req.body;
+    const {
+      fullName,
+      location,
+      skills,
+      bio,
+      profileImage
+    } = req.body;
 
-    if (name) user.name = name;
-    if (bio) user.bio = bio;
-    if (skills) user.skills = skills;
+    if (fullName) user.fullName = fullName;
     if (location) user.location = location;
+    if (skills) user.skills = skills;
+    if (bio) user.bio = bio;
+    if (profileImage) user.profileImage = profileImage;
 
     // Save the updated user document
     const updatedUser = await user.save();

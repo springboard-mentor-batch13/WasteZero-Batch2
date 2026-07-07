@@ -31,7 +31,26 @@ const userSchema = new mongoose.Schema(
       enum: ['Volunteer', 'NGO', 'Admin'],
       default: 'Volunteer',
     },
-    // Removed optional fields `location` and `skills` per Milestone 1 requirements
+
+    location: {
+      type: String,
+      default: '',
+    },
+
+    skills: {
+      type: [String],
+      default: [],
+    },
+
+    bio: {
+      type: String,
+      default: '',
+    },
+
+    profileImage: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,
