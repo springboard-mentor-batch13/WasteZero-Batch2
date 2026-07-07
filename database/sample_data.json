@@ -1,0 +1,55 @@
+{
+  "users": [
+    {
+      "fullName": "Test Volunteer",
+      "username": "test_volunteer",
+      "email": "volunteer@test.com",
+      "password": "hashed_password",
+      "role": "Volunteer",
+      "location": "Hyderabad",
+      "skills": [
+        "Recycling",
+        "Waste Collection"
+      ],
+      "bio": "Passionate about keeping the environment clean",
+      "profileImage": "profile_image_url"
+    },
+
+    {
+      "fullName": "Test NGO",
+      "username": "test_ngo",
+      "email": "ngo@test.com",
+      "password": "hashed_password",
+      "role": "NGO",
+      "location": "Chennai",
+      "skills": [],
+      "bio": "Working towards sustainable waste management",
+      "profileImage": "profile_image_url"
+    }
+  ],
+
+
+  "pickups": [
+    {
+      "userId": "ObjectId",
+      "title": "Plastic Waste Collection",
+      "description": "Plastic bottles available for recycling",
+      "wasteType": "Plastic",
+      "quantity": "5kg",
+      "pickupLocation": "Hyderabad",
+      "pickupDate": "2026-07-10",
+      "status": "Pending"
+    },
+
+    {
+      "userId": "ObjectId",
+      "title": "Paper Recycling Pickup",
+      "description": "Old newspapers and books collection",
+      "wasteType": "Paper",
+      "quantity": "10kg",
+      "pickupLocation": "Chennai",
+      "pickupDate": "2026-07-12",
+      "status": "Accepted"
+    }
+  ]
+}

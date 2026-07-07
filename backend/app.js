@@ -6,6 +6,8 @@ const swaggerUi = require('swagger-ui-express');
 
 const { swaggerSpec } = require('./docs/swagger');
 const authRoutes = require('./routes/authRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const pickupRoutes = require('./routes/pickupRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
@@ -23,6 +25,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/pickups', pickupRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
