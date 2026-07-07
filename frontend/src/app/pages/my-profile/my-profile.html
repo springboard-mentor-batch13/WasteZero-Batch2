@@ -17,38 +17,73 @@
     Password
   </button>
 </div>
+    <!--Profile Image-->
+ 
+    <div class="profile-card" *ngIf="activeTab === 'profile'">
 
-  <div class="profile-card" *ngIf="activeTab === 'profile'">
+  <div class="profile-content">
 
-    <h3>Personal Information</h3>
-    <p class="desc">
-      Update your personal information and profile details
-    </p>
+    <!-- Left Side -->
+    <div class="profile-image-section">
 
-    <label>Full Name</label>
-    <input type="text" placeholder="Enter your full name">
+      <img
+        [src]="previewImage || 'assets/images/default-user.png'"
+        alt="Profile Image"
+        class="profile-image">
 
-    <label>Email</label>
-    <input type="email" placeholder="Enter email">
+      <label class="image-label">Profile Image</label>
 
-    <small>This is the email address used for account notifications.</small>
+      <input
+        type="file"
+        accept="image/*"
+        (change)="onFileSelected($event)">
 
-    <label>Location</label>
-    <input type="text" placeholder="Enter location">
+      <button
+        class="upload-btn"
+        (click)="uploadImage()">
+        Upload Photo
+      </button>
 
-    <small>This helps match you with nearby opportunities.</small>
+    </div>
 
-    <label>Skills</label>
-    <input type="text" placeholder="">
+    <!-- Right Side -->
+    <div class="profile-form">
 
-    <label>Bio</label>
-    <textarea rows="5" placeholder="Tell something about yourself"></textarea>
+      <h3>Personal Information</h3>
 
-    <button class="save-btn">
-      Save Changes
-    </button>
+      <p class="desc">
+        Update your personal information and profile details
+      </p>
+
+      <label>Full Name</label>
+      <input type="text" placeholder="Enter your full name">
+
+      <label>Email</label>
+      <input type="email" placeholder="Enter email">
+
+      <small>This is the email address used for account notifications.</small>
+
+      <label>Location</label>
+      <input type="text" placeholder="Enter location">
+
+      <small>This helps match you with nearby opportunities.</small>
+
+      <label>Skills</label>
+      <input type="text">
+
+      <label>Bio</label>
+      <textarea rows="5" placeholder="Tell something about yourself"></textarea>
+
+      <button class="save-btn">
+        Save Changes
+      </button>
+
+    </div>
 
   </div>
+
+</div>
+
 
   <!-- Password Tab -->
 <div class="profile-card" *ngIf="activeTab === 'password'">
@@ -76,4 +111,3 @@
 
 </div>
 
-</div>

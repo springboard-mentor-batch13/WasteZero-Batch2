@@ -11,8 +11,13 @@ import { FormsModule } from '@angular/forms';
 })
 export class MyProfile {
 
-   // Active Tab
   activeTab: 'profile' | 'password' = 'profile';
+
+  selectedFile!: File;
+
+  previewImage: string | ArrayBuffer | null = null;
+
+  profileImage = '';
 
   user = {
     fullName: '',
@@ -27,7 +32,36 @@ export class MyProfile {
     alert('Profile Saved Successfully!');
   }
 
+  onFileSelected(event: any) {
+
+    if (event.target.files.length > 0) {
+
+      this.selectedFile = event.target.files[0];
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        this.previewImage = reader.result;
+      };
+
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  uploadImage() {
+
+    if (!this.selectedFile) {
+      alert('Please select an image first.');
+      return;
+    }
+
+    alert('Image selected successfully.');
+
+    console.log(this.selectedFile);
+  }
+
   updatePassword() {
-  alert('Password Updated Successfully!');
-}
+    alert('Password Updated Successfully!');
+  }
+
 }
