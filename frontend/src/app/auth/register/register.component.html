@@ -58,6 +58,34 @@
           }
 
         </div>
+        <!-- Username -->
+<div>
+
+  <label
+    for="username"
+    class="block text-sm font-semibold text-slate-800"
+  >
+    Username
+  </label>
+
+  <input
+    id="username"
+    type="text"
+    formControlName="username"
+    autocomplete="username"
+    placeholder="Enter your username"
+    class="mt-2 w-full rounded-lg border px-4 py-3 outline-none transition"
+    [class.border-red-400]="showError('username')"
+    [class.border-slate-300]="!showError('username')"
+  />
+
+  @if (showError('username')) {
+  <p class="mt-2 text-sm text-red-600">
+    Username is required.
+  </p>
+  }
+
+</div>
 
         <!-- Email -->
         <div>
