@@ -17,7 +17,12 @@ export class RegisterComponent {
   protected readonly registerForm = this.formBuilder.nonNullable.group(
     {
       fullName: ['', [Validators.required, Validators.minLength(2)]],
+
+      // NEW FIELD
+      username: ['', [Validators.required, Validators.minLength(3)]],
+
       email: ['', [Validators.required, Validators.email]],
+
       password: [
         '',
         [
@@ -26,8 +31,11 @@ export class RegisterComponent {
           Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)
         ]
       ],
+
       confirmPassword: ['', [Validators.required]],
+
       role: ['', Validators.required],
+
       termsAccepted: [false, [Validators.requiredTrue]]
     },
     {
@@ -43,6 +51,10 @@ export class RegisterComponent {
     return this.registerForm.controls.fullName;
   }
 
+  protected get username() {
+    return this.registerForm.controls.username;
+  }
+
   protected get email() {
     return this.registerForm.controls.email;
   }
@@ -56,16 +68,28 @@ export class RegisterComponent {
   }
 
   protected get role() {
-  return this.registerForm.controls.role;
-}
+    return this.registerForm.controls.role;
+  }
 
-  protected showError(controlName: 'fullName' | 'email' | 'password' | 'confirmPassword' |'role'| 'termsAccepted'): boolean {
+  protected showError(
+    controlName:
+      | 'fullName'
+      | 'username'
+      | 'email'
+      | 'password'
+      | 'confirmPassword'
+      | 'role'
+      | 'termsAccepted'
+  ): boolean {
     const control = this.registerForm.controls[controlName];
     return control.invalid && (control.touched || this.submitted);
   }
 
   protected showPasswordMismatch(): boolean {
-    return this.registerForm.hasError('passwordMismatch') && (this.confirmPassword.touched || this.submitted);
+    return (
+      this.registerForm.hasError('passwordMismatch') &&
+      (this.confirmPassword.touched || this.submitted)
+    );
   }
 
   protected async onSubmit(): Promise<void> {
@@ -80,11 +104,18 @@ export class RegisterComponent {
     this.isSubmitting = true;
 
     try {
-      const { fullName, email, password, confirmPassword,role } = this.registerForm.getRawValue();
+      const {
+        fullName,
+        username,
+        email,
+        password,
+        confirmPassword,
+        role
+      } = this.registerForm.getRawValue();
 
       await this.authService.register({
         fullName,
-        username: email,
+        username,
         email,
         password,
         confirmPassword,
@@ -93,7 +124,9 @@ export class RegisterComponent {
 
       await this.redirectIfRouteExists('login');
     } catch (error) {
-      this.errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      this.errorMessage =
+        error instanceof Error ? error.message : 'Registration failed';
+
       alert(this.errorMessage);
     } finally {
       this.isSubmitting = false;
