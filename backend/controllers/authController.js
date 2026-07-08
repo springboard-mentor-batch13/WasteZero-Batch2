@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const RegistrationOTP = require('../models/RegistrationOTP');
+const mongoose = require('mongoose');
 const sendEmail = require('../utils/sendEmail');
 const { validationResult } = require('express-validator');
 
@@ -134,7 +135,9 @@ const sendRegisterOTP = async (req, res, next) => {
 
     await RegistrationOTP.deleteMany({ email: email.toLowerCase() });
 
-    const otpRecord = await RegistrationOTP.create({
+    // Debug: show OTP data before creating
+    console.log('Creating OTP...');
+    const otpData = {
       email: email.toLowerCase(),
       otp,
       hashedPassword,
@@ -143,7 +146,24 @@ const sendRegisterOTP = async (req, res, next) => {
       role: role || 'Volunteer',
       expiresAt,
       createdAt: new Date(),
-    });
+    };
+    console.log(otpData);
+
+    let otpRecord;
+    try {
+      otpRecord = await RegistrationOTP.create(otpData);
+      console.log('Saved OTP:', otpRecord);
+      console.log('Mongoose connection:', {
+        name: mongoose.connection.name,
+        host: mongoose.connection.host,
+        readyState: mongoose.connection.readyState,
+      });
+      const verify = await RegistrationOTP.findById(otpRecord._id);
+      console.log('Verified in MongoDB:', verify);
+    } catch (createError) {
+      console.error('[OTP CREATE] Failed to create OTP record:', createError.stack || createError);
+      return res.status(500).json({ success: false, message: 'Failed to create OTP record' });
+    }
 
     try {
       await sendEmail({
