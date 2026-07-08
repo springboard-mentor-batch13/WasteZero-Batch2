@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-my-profile',
@@ -10,6 +11,8 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './my-profile.css'
 })
 export class MyProfile {
+
+   constructor(private http: HttpClient) {}
 
   activeTab: 'profile' | 'password' = 'profile';
 
@@ -28,9 +31,41 @@ export class MyProfile {
   };
 
   saveProfile() {
-    console.log(this.user);
-    alert('Profile Saved Successfully!');
+
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    alert('Please login again.');
+    return;
   }
+
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`
+  });
+
+  const body = {
+    name: this.user.fullName,
+    bio: this.user.bio,
+    skills: this.user.skills,
+    location: this.user.location
+  };
+
+  this.http.put(
+    'http://localhost:5000/api/profile',
+    body,
+    { headers }
+  ).subscribe({
+    next: (response) => {
+      console.log('Profile Updated:', response);
+      alert('Profile Updated Successfully!');
+    },
+    error: (error) => {
+      console.error('Update Error:', error);
+      alert('Failed to update profile.');
+    }
+  });
+}
 
   onFileSelected(event: any) {
 

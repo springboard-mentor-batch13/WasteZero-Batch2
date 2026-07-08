@@ -157,14 +157,15 @@ small{
     text-align:center;
 }
 
-.profile-image{
+.profile-image {
     width:110px;
     height:110px;
     border-radius:50%;
     object-fit:cover;
     border:3px solid #22c55e;
     background:#f3f4f6;
-    margin-bottom:15px;
+    margin-bottom:20px;
+    margin-left:55px;   /* Right shift */
 }
 
 .image-label{
@@ -175,9 +176,13 @@ small{
 
 .profile-image-section input[type="file"]{
     width:100%;
-    border:none;
+    padding:8px;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    background:#fff;
     margin-bottom:15px;
 }
+
 
 .upload-btn{
     width:100%;
