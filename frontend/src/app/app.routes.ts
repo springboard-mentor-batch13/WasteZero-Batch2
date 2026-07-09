@@ -6,7 +6,9 @@ import { RegisterComponent } from './auth/register/register.component';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { MyProfile } from './pages/my-profile/my-profile';
 import { EditProfile } from './pages/edit-profile/edit-profile';
-
+import {ForgotPassword} from './pages/forgot-password/forgot-password';
+import{VerifyResetOtp}from './pages/verify-reset-otp/verify-reset-otp';
+import {ResetPassword} from './pages/reset-password/reset-password';
 export const routes: Routes = [
   {
     path: '',
@@ -34,5 +36,17 @@ export const routes: Routes = [
   {
     path: 'edit-profile',
     component: EditProfile
-  }
+  },
+  {
+  path: 'forgot-password',
+  component: ForgotPassword
+},
+{
+  path: 'verify-reset-otp',
+  component: VerifyResetOtp
+},
+{
+  path: 'reset-password',
+  component: ResetPassword
+}
 ];

@@ -13,6 +13,21 @@ export interface RegisterRequest {
   confirmPassword: string;
   role: string;
 }
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface VerifyResetOTPRequest {
+  email: string;
+  otp: string;
+}
+
+export interface ResetPasswordRequest {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
 export interface AuthResponse {
   success: boolean;
@@ -44,6 +59,30 @@ export class AuthService {
   async register(payload: RegisterRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>('/register', payload);
   }
+  async forgotPassword(email: string): Promise<AuthResponse> {
+  return this.post<AuthResponse>('/forgot-password', {
+    email
+  });
+}
+
+async verifyResetOTP(
+  payload: VerifyResetOTPRequest
+): Promise<AuthResponse> {
+  return this.post<AuthResponse>(
+    '/verify-reset-otp',
+    payload
+  );
+}
+
+async resetPassword(
+  payload: ResetPasswordRequest
+): Promise<AuthResponse> {
+  return this.post<AuthResponse>(
+    '/reset-password',
+    payload
+  );
+}
+  
 
   saveToken(token: string): void {
     if (typeof localStorage === 'undefined') {
