@@ -49,8 +49,9 @@ export class ForgotPassword {
 
       const { email } = this.forgotPasswordForm.getRawValue();
 
-      await this.authService.forgotPassword(email);
-
+      await this.authService.forgotPassword({
+  email: email
+});
       alert('OTP has been sent successfully.');
 
       await this.router.navigate(

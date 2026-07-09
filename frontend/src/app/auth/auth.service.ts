@@ -13,21 +13,31 @@ export interface RegisterRequest {
   confirmPassword: string;
   role: string;
 }
+
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface ResendOtpRequest {
+  email: string;
+}
+
 export interface ForgotPasswordRequest {
   email: string;
 }
 
-export interface VerifyResetOTPRequest {
+export interface VerifyResetOtpRequest {
   email: string;
   otp: string;
 }
 
 export interface ResetPasswordRequest {
   email: string;
-  otp: string;
   newPassword: string;
   confirmPassword: string;
 }
+
 
 export interface AuthResponse {
   success: boolean;
@@ -45,46 +55,74 @@ export interface AuthResponse {
   };
 }
 
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+
   private readonly apiUrl = 'http://localhost:5000/api/auth';
   private readonly tokenKey = 'token';
+
 
   async login(payload: LoginRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>('/login', payload);
   }
 
+
+  // Registration OTP
   async register(payload: RegisterRequest): Promise<AuthResponse> {
-    return this.post<AuthResponse>('/register', payload);
+    return this.post<AuthResponse>(
+      '/send-register-otp',
+      payload
+    );
   }
-  async forgotPassword(email: string): Promise<AuthResponse> {
-  return this.post<AuthResponse>('/forgot-password', {
-    email
-  });
-}
 
-async verifyResetOTP(
-  payload: VerifyResetOTPRequest
-): Promise<AuthResponse> {
-  return this.post<AuthResponse>(
-    '/verify-reset-otp',
-    payload
-  );
-}
 
-async resetPassword(
-  payload: ResetPasswordRequest
-): Promise<AuthResponse> {
-  return this.post<AuthResponse>(
-    '/reset-password',
-    payload
-  );
-}
-  
+  async verifyOtp(payload: VerifyOtpRequest): Promise<AuthResponse> {
+    return this.post<AuthResponse>(
+      '/verify-register-otp',
+      payload
+    );
+  }
+
+
+  async resendOtp(payload: ResendOtpRequest): Promise<AuthResponse> {
+    return this.post<AuthResponse>(
+      '/resend-otp',
+      payload
+    );
+  }
+
+
+  // Forgot password
+  async forgotPassword(payload: ForgotPasswordRequest): Promise<AuthResponse> {
+    return this.post<AuthResponse>(
+      '/forgot-password',
+      payload
+    );
+  }
+
+
+  async verifyResetOtp(payload: VerifyResetOtpRequest): Promise<AuthResponse> {
+    return this.post<AuthResponse>(
+      '/verify-reset-otp',
+      payload
+    );
+  }
+
+
+  async resetPassword(payload: ResetPasswordRequest): Promise<AuthResponse> {
+    return this.post<AuthResponse>(
+      '/reset-password',
+      payload
+    );
+  }
+
+
 
   saveToken(token: string): void {
+
     if (typeof localStorage === 'undefined') {
       return;
     }
@@ -92,37 +130,59 @@ async resetPassword(
     localStorage.setItem(this.tokenKey, token);
   }
 
+
+
   private async post<TResponse>(
     endpoint: string,
     payload: unknown
   ): Promise<TResponse> {
+
+
     const response = await fetch(`${this.apiUrl}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+
+      method:'POST',
+
+      headers:{
+        'Content-Type':'application/json'
       },
-      body: JSON.stringify(payload)
+
+      body:JSON.stringify(payload)
+
     });
 
-    const data = await this.parseJson<AuthResponse>(response);
 
-    if (!response.ok || data.success === false) {
-      throw new Error(data.message || 'Authentication request failed');
+    const data =
+      await this.parseJson<AuthResponse>(response);
+
+
+    if(!response.ok || data.success===false){
+      throw new Error(
+        data.message || 'Authentication request failed'
+      );
     }
 
+
     return data as TResponse;
+
   }
 
+
+
   private async parseJson<TResponse>(
-    response: Response
-  ): Promise<TResponse> {
-    try {
-      return (await response.json()) as TResponse;
-    } catch {
+    response:Response
+  ):Promise<TResponse>{
+
+    try{
+
+      return await response.json() as TResponse;
+
+    }catch{
+
       return {
-        success: false,
-        message: 'Unable to read authentication response'
+        success:false,
+        message:'Unable to read authentication response'
       } as TResponse;
+
     }
   }
 }

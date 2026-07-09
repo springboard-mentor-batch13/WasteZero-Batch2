@@ -61,7 +61,7 @@ export class VerifyResetOtp {
       const { otp } =
         this.otpForm.getRawValue();
 
-      await this.authService.verifyResetOTP({
+      await this.authService.verifyResetOtp({
         email: this.email,
         otp
       });

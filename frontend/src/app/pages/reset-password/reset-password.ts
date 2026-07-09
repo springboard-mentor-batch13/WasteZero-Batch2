@@ -85,7 +85,6 @@ export class ResetPassword {
 
       await this.authService.resetPassword({
         email: this.email,
-        otp: this.otp,
         newPassword,
         confirmPassword
       });
