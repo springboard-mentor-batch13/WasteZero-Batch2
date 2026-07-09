@@ -122,7 +122,9 @@ export class RegisterComponent {
         role
       });
 
-      await this.redirectIfRouteExists('login');
+      //await this.redirectIfRouteExists('login');
+      await this.redirectIfRouteExists('otp-verification');
+
     } catch (error) {
       this.errorMessage =
         error instanceof Error ? error.message : 'Registration failed';

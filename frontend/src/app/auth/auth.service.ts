@@ -14,6 +14,15 @@ export interface RegisterRequest {
   role: string;
 }
 
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface ResendOtpRequest {
+  email: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message: string;
@@ -44,6 +53,14 @@ export class AuthService {
   async register(payload: RegisterRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>('/register', payload);
   }
+
+  async verifyOtp(payload: VerifyOtpRequest): Promise<AuthResponse> {
+  return this.post<AuthResponse>('/verify-otp', payload);
+}
+
+async resendOtp(payload: ResendOtpRequest): Promise<AuthResponse> {
+  return this.post<AuthResponse>('/resend-otp', payload);
+}
 
   saveToken(token: string): void {
     if (typeof localStorage === 'undefined') {

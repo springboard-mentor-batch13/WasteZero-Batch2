@@ -6,6 +6,7 @@ import { RegisterComponent } from './auth/register/register.component';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { MyProfile } from './pages/my-profile/my-profile';
 import { EditProfile } from './pages/edit-profile/edit-profile';
+import { OtpVerification } from './auth/otp-verification/otp-verification';
 
 export const routes: Routes = [
   {
@@ -34,5 +35,11 @@ export const routes: Routes = [
   {
     path: 'edit-profile',
     component: EditProfile
-  }
+  },
+
+  {
+  path: 'otp-verification',
+  component: OtpVerification,
+  title: 'OTP Verification | WasteZero'
+}
 ];
