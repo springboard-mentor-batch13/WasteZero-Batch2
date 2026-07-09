@@ -20,13 +20,14 @@ export class App {
   constructor(public router: Router) {}
 
   get isAuthPage(): boolean {
-  return [
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/verify-reset-otp',
-    '/reset-password'
-  ].includes(this.router.url);
-}
+    return [
+      '/login',
+      '/register',
+      '/otp-verification',
+      '/forgot-password',
+      '/verify-reset-otp',
+      '/reset-password'
+    ].includes(this.router.url);
+  }
 
 }
