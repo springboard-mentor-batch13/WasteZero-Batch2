@@ -351,7 +351,7 @@ const forgotPassword = async (req, res, next) => {
 /**
  * Verify reset password OTP.
  */
-const verifyResetOTP = async (req, res, next) => {
+const verifyResetOtp = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -451,4 +451,12 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP, forgotPassword, verifyResetOTP, resetPassword };
+module.exports = {
+  registerUser,
+  loginUser,
+  sendRegisterOTP,
+  verifyRegisterOTP,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword
+};
