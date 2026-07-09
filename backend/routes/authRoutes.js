@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { registerUser, loginUser } = require('../controllers/authController');
+const { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles, allowedRoles } = require('../middleware/roleMiddleware');
 
@@ -66,6 +66,28 @@ router.post(
     body('password').notEmpty().withMessage('Password is required'),
   ],
   loginUser
+);
+
+router.post(
+  '/send-register-otp',
+  [
+    body('fullName').trim().notEmpty().withMessage('Full name is required'),
+    body('username').trim().notEmpty().withMessage('Username is required'),
+    body('email').isEmail().withMessage('Please enter a valid email address'),
+    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('confirmPassword').notEmpty().withMessage('Confirm password is required'),
+    body('role').notEmpty().withMessage('Role is required').isIn(allowedRoles).withMessage('Invalid role'),
+  ],
+  sendRegisterOTP
+);
+
+router.post(
+  '/verify-register-otp',
+  [
+    body('email').isEmail().withMessage('Please enter a valid email address'),
+    body('otp').trim().notEmpty().withMessage('OTP is required'),
+  ],
+  verifyRegisterOTP
 );
 
 router.get('/protected', protect, authorizeRoles(...allowedRoles), (req, res) => {
