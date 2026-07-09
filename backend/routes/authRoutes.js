@@ -1,6 +1,14 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP } = require('../controllers/authController');
+const { 
+  registerUser, 
+  loginUser, 
+  sendRegisterOTP, 
+  verifyRegisterOTP,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword
+} = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles, allowedRoles } = require('../middleware/roleMiddleware');
 
@@ -88,6 +96,54 @@ router.post(
     body('otp').trim().notEmpty().withMessage('OTP is required'),
   ],
   verifyRegisterOTP
+);
+
+// Send password reset OTP
+router.post(
+  '/forgot-password',
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Please enter a valid email address')
+  ],
+  forgotPassword
+);
+
+
+// Verify password reset OTP
+router.post(
+  '/verify-reset-otp',
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Please enter a valid email address'),
+
+    body('otp')
+      .trim()
+      .notEmpty()
+      .withMessage('OTP is required')
+  ],
+  verifyResetOtp
+);
+
+
+// Reset password
+router.post(
+  '/reset-password',
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Please enter a valid email address'),
+
+    body('newPassword')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters'),
+
+    body('confirmPassword')
+      .notEmpty()
+      .withMessage('Confirm password is required')
+  ],
+  resetPassword
 );
 
 router.get('/protected', protect, authorizeRoles(...allowedRoles), (req, res) => {
