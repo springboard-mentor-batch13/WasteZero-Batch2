@@ -114,15 +114,22 @@ export class RegisterComponent {
       } = this.registerForm.getRawValue();
 
       await this.authService.register({
-        fullName,
-        username,
-        email,
-        password,
-        confirmPassword,
-        role
-      });
+  fullName,
+  username,
+  email,
+  password,
+  confirmPassword,
+  role
+});
 
-      await this.redirectIfRouteExists('login');
+
+// save email for OTP verification
+localStorage.setItem('email', email);
+
+
+// go to OTP page
+await this.redirectIfRouteExists('otp-verification');
+
     } catch (error) {
       this.errorMessage =
         error instanceof Error ? error.message : 'Registration failed';
