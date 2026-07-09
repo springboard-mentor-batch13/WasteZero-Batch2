@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const RegistrationOTP = require('../models/RegistrationOTP');
-const mongoose = require('mongoose');
+const PasswordResetOTP = require('../models/PasswordResetOTP');
 const sendEmail = require('../utils/sendEmail');
 const { validationResult } = require('express-validator');
 
@@ -153,13 +153,6 @@ const sendRegisterOTP = async (req, res, next) => {
     try {
       otpRecord = await RegistrationOTP.create(otpData);
       console.log('Saved OTP:', otpRecord);
-      console.log('Mongoose connection:', {
-        name: mongoose.connection.name,
-        host: mongoose.connection.host,
-        readyState: mongoose.connection.readyState,
-      });
-      const verify = await RegistrationOTP.findById(otpRecord._id);
-      console.log('Verified in MongoDB:', verify);
     } catch (createError) {
       console.error('[OTP CREATE] Failed to create OTP record:', createError.stack || createError);
       return res.status(500).json({ success: false, message: 'Failed to create OTP record' });
@@ -293,4 +286,169 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP };
+/**
+ * Send OTP for forgot password.
+ */
+const forgotPassword = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await PasswordResetOTP.deleteMany({ email: email.toLowerCase() });
+
+    let otpRecord;
+    try {
+      otpRecord = await PasswordResetOTP.create({
+        email: email.toLowerCase(),
+        otp,
+        expiresAt,
+        createdAt: new Date(),
+      });
+    } catch (createError) {
+      console.error('[OTP CREATE] Failed to create OTP record:', createError.stack || createError);
+      return res.status(500).json({ success: false, message: 'Failed to create OTP record' });
+    }
+
+    try {
+      await sendEmail({
+        to: otpRecord.email,
+        subject: 'WasteZero Password Reset OTP',
+        html: `Hello ${user.fullName},<br><br>Your WasteZero password reset verification code is<br><br><strong>${otp}</strong><br><br>This OTP is valid for 10 minutes.<br><br>Do not share this code with anyone.<br><br>Regards,<br>WasteZero Team`,
+      });
+    } catch (emailError) {
+      console.error('[OTP EMAIL] Failed to send OTP email.');
+      console.error('[OTP EMAIL] Error:', emailError.message || emailError);
+
+      await PasswordResetOTP.deleteOne({ _id: otpRecord._id });
+      return res.status(500).json({ success: false, message: 'Failed to send OTP email' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Reset OTP sent successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Verify reset password OTP.
+ */
+const verifyResetOTP = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
+
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Email and OTP are required' });
+    }
+
+    const otpRecord = await PasswordResetOTP.findOne({ email: email.toLowerCase() });
+
+    if (!otpRecord) {
+      return res.status(400).json({ success: false, message: 'OTP not found' });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      await PasswordResetOTP.deleteOne({ _id: otpRecord._id });
+      return res.status(400).json({ success: false, message: 'OTP has expired' });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'OTP verified successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Reset password.
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+    }
+
+    const { email, otp, newPassword, confirmPassword } = req.body;
+
+    if (!email || !otp || !newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, message: 'Email, OTP, new password, and confirm password are required' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: 'Passwords do not match' });
+    }
+
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!passwordPattern.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character',
+      });
+    }
+
+    const otpRecord = await PasswordResetOTP.findOne({ email: email.toLowerCase() });
+
+    if (!otpRecord) {
+      return res.status(400).json({ success: false, message: 'OTP not found' });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      await PasswordResetOTP.deleteOne({ _id: otpRecord._id });
+      return res.status(400).json({ success: false, message: 'OTP has expired' });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    await PasswordResetOTP.deleteOne({ _id: otpRecord._id });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP, forgotPassword, verifyResetOTP, resetPassword };
