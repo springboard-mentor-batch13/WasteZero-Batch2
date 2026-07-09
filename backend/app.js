@@ -1,16 +1,17 @@
+const path = require('path');
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const swaggerUi = require('swagger-ui-express');
 
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+
 const { swaggerSpec } = require('./docs/swagger');
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const pickupRoutes = require('./routes/pickupRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
-
-dotenv.config();
 
 const app = express();
 
