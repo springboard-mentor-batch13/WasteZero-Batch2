@@ -1,77 +1,327 @@
 /**
  * Profile Controller
- * 
- * This controller handles logic related to user profiles.
- * Currently, it contains placeholder functions for fetching and updating
- * the profile, which will later integrate with the User model and database.
  */
-const User = require('../models/User');
 
-// Fetch the authenticated user's profile
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
+
+
+// Fetch user profile
 const getProfile = async (req, res) => {
+
   try {
-    // The protect middleware has already verified the JWT
-    // and attached the user data to req.user.
-    // We just return it.
+
+    const user = await User
+      .findById(req.user._id)
+      .select('-password');
+
+
     res.status(200).json({
+
       success: true,
       message: "Profile fetched successfully",
-      data: req.user
+      data: user
+
     });
+
+
   } catch (error) {
-    console.error(`Error in getProfile: ${error.message}`);
+
+
+    console.error(error);
+
+
     res.status(500).json({
-      success: false,
-      message: "Server Error"
+
+      success:false,
+      message:"Server Error"
+
     });
+
+
   }
+
 };
+
+
+
 
 // Update user profile
 const updateProfile = async (req, res) => {
+
   try {
-    // Fetch the user document using the ID from the protect middleware
+
+
+    console.log("REQUEST BODY:", req.body);
+
+
     const user = await User.findById(req.user._id);
 
+
+
     if (!user) {
+
+
       return res.status(404).json({
-        success: false,
-        message: "User not found"
+
+        success:false,
+        message:"User not found"
+
       });
+
+
     }
 
-    // Extract only the allowed fields from the request body
-    // email, password, and role are ignored if sent
-    const { name, bio, skills, location } = req.body;
 
-    if (name) user.name = name;
-    if (bio) user.bio = bio;
-    if (skills) user.skills = skills;
-    if (location) user.location = location;
 
-    // Save the updated user document
+    const {
+      fullName,
+      location,
+      skills,
+      bio
+    } = req.body;
+
+
+
+
+    user.fullName = fullName ?? user.fullName;
+
+    user.location = location ?? user.location;
+
+    user.skills = skills ?? user.skills;
+
+    user.bio = bio ?? user.bio;
+
+
+
+    console.log("USER BEFORE SAVE:", user);
+
+
+
     const updatedUser = await user.save();
 
-    // Convert the Mongoose document to a plain JavaScript object
-    // so we can delete the password field before sending it in the response
+
+
+    console.log("USER AFTER SAVE:", updatedUser);
+
+
+
     const userObj = updatedUser.toObject();
+
+
     delete userObj.password;
 
+
+
+
     res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      data: userObj
+
+      success:true,
+
+      message:"Profile updated successfully",
+
+      data:userObj
+
     });
-  } catch (error) {
-    console.error(`Error in updateProfile: ${error.message}`);
+
+
+
+  } catch(error) {
+
+
+    console.error("Profile update error:", error);
+
+
+
     res.status(500).json({
-      success: false,
-      message: "Server Error"
+
+      success:false,
+
+      message:"Server Error"
+
     });
+
+
   }
+
 };
 
+
+
+
+
+
+// Change Password
+const changePassword = async (req,res)=>{
+
+
+  try {
+
+
+    const {
+
+      currentPassword,
+
+      newPassword,
+
+      confirmPassword
+
+    } = req.body;
+
+
+
+
+    if(
+      !currentPassword ||
+      !newPassword ||
+      !confirmPassword
+    ){
+
+
+      return res.status(400).json({
+
+        success:false,
+
+        message:"All password fields required"
+
+      });
+
+
+    }
+
+
+
+
+    if(newPassword !== confirmPassword){
+
+
+      return res.status(400).json({
+
+        success:false,
+
+        message:"Passwords do not match"
+
+      });
+
+
+    }
+
+
+
+
+    const user = await User.findById(req.user._id);
+
+
+
+
+    if(!user){
+
+
+      return res.status(404).json({
+
+        success:false,
+
+        message:"User not found"
+
+      });
+
+
+    }
+
+
+
+
+
+    const match = await bcrypt.compare(
+
+      currentPassword,
+
+      user.password
+
+    );
+
+
+
+
+
+    if(!match){
+
+
+      return res.status(400).json({
+
+        success:false,
+
+        message:"Current password incorrect"
+
+      });
+
+
+    }
+
+
+
+
+    user.password = await bcrypt.hash(
+
+      newPassword,
+
+      10
+
+    );
+
+
+
+    await user.save();
+
+
+
+
+
+    res.status(200).json({
+
+      success:true,
+
+      message:"Password changed successfully"
+
+    });
+
+
+
+
+
+  } catch(error){
+
+
+
+    console.error(error);
+
+
+
+    res.status(500).json({
+
+      success:false,
+
+      message:"Server Error"
+
+    });
+
+
+
+  }
+
+
+};
+
+
+
+
+
 module.exports = {
+
   getProfile,
-  updateProfile
+
+  updateProfile,
+
+  changePassword
+
 };

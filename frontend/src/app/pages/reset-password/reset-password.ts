@@ -83,8 +83,10 @@ export class ResetPassword {
         confirmPassword
       } = this.resetPasswordForm.getRawValue();
 
+      
       await this.authService.resetPassword({
         email: this.email,
+        otp: this.otp,
         newPassword,
         confirmPassword
       });

@@ -59,7 +59,7 @@ export class LoginComponent {
         this.authService.saveToken(response.token);
       }
 
-      await this.redirectIfRouteExists('dashboard');
+      await this.redirectIfRouteExists('my-profile');
     } catch (error) {
       this.errorMessage =
         error instanceof Error ? error.message : 'Login failed';

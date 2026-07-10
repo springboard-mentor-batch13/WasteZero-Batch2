@@ -1,128 +1,242 @@
 <div class="profile-page">
 
   <h2>My Profile</h2>
+
   <p class="sub-title">
     Manage your account information and settings
   </p>
-<div class="tabs">
-  <button
-    [class.active]="activeTab === 'profile'"
-    (click)="activeTab = 'profile'">
-    Profile
-  </button>
 
-  <button
-    [class.active]="activeTab === 'password'"
-    (click)="activeTab = 'password'">
-    Password
-  </button>
-</div>
-    <!--Profile Image-->
- 
-    <div class="profile-card" *ngIf="activeTab === 'profile'">
 
-  <div class="profile-content">
+  <!-- Tabs -->
+  <div class="tabs">
 
-    <!-- Left Side -->
-    <div class="profile-image-section">
+    <button
+      [class.active]="activeTab === 'profile'"
+      (click)="activeTab = 'profile'">
+      Profile
+    </button>
 
-      <img
-        [src]="previewImage || 'assets/images/default-user.png'"
-        alt="Profile Image"
-        class="profile-image">
 
-      <label class="image-label">Profile Image</label>
-
-      <input
-        type="file"
-        accept="image/*"
-        (change)="onFileSelected($event)">
-
-      <button
-        class="upload-btn"
-        (click)="uploadImage()">
-        Upload Photo
-      </button>
-
-    </div>
-
-    <!-- Right Side -->
-    <div class="profile-form">
-
-      <h3>Personal Information</h3>
-
-      <p class="desc">
-        Update your personal information and profile details
-      </p>
-
-      <label>Full Name</label>
-      <input
-          type="text"
-          placeholder="Enter your full name"
-          [(ngModel)]="user.fullName">
-
-      <label>Email</label>
-       <input
-           type="email"
-           placeholder="Enter email"
-           [(ngModel)]="user.email">
-
-      <small>This is the email address used for account notifications.</small>
-
-      <label>Location</label>
-      <input
-         type="text"
-        placeholder="Enter location"
-        [(ngModel)]="user.location">
-
-      <small>This helps match you with nearby opportunities.</small>
-
-      <label>Skills</label>
-      <input
-          type="text"
-           [(ngModel)]="user.skills">
-
-      <label>Bio</label>
-      <textarea
-              rows="5"
-              placeholder="Tell something about yourself"
-               [(ngModel)]="user.bio">
-      </textarea>
-
-      <button class="save-btn" (click)="saveProfile()">
-        Save Changes
-        </button>
-
-    </div>
+    <button
+      [class.active]="activeTab === 'password'"
+      (click)="activeTab = 'password'">
+      Password
+    </button>
 
   </div>
 
-</div>
 
 
-  <!-- Password Tab -->
-<div class="profile-card" *ngIf="activeTab === 'password'">
+  <!-- PROFILE TAB -->
+  <div 
+    class="profile-card" 
+    *ngIf="activeTab === 'profile'">
+
+
+    <div class="profile-content">
+
+
+      <!-- Left Side Image -->
+      <div class="profile-image-section">
+
+
+        <img
+          [src]="previewImage || 'assets/images/default-user.png'"
+          alt="Profile Image"
+          class="profile-image">
+
+
+        <label class="image-label">
+          Profile Image
+        </label>
+
+
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)">
+
+
+
+        <button
+          class="upload-btn"
+          (click)="uploadImage()">
+
+          Upload Photo
+
+        </button>
+
+
+      </div>
+
+
+
+
+      <!-- Right Side Form -->
+      <div class="profile-form">
+
+
+        <h3>Personal Information</h3>
+
+
+        <p class="desc">
+          Update your personal information and profile details
+        </p>
+
+
+
+        <label>Full Name</label>
+
+        <input
+          type="text"
+          name="fullName"
+          placeholder="Enter your full name"
+          [(ngModel)]="user.fullName">
+
+
+
+        <label>Email</label>
+
+        <input
+          type="email"
+          name="email"
+          placeholder="Enter email"
+          [(ngModel)]="user.email">
+
+
+        <small>
+          This is the email address used for account notifications.
+        </small>
+
+
+
+        <label>Location</label>
+
+        <input
+          type="text"
+          name="location"
+          placeholder="Enter location"
+          [(ngModel)]="user.location">
+
+
+        <small>
+          This helps match you with nearby opportunities.
+        </small>
+
+
+
+
+        <label>Skills</label>
+
+        <input
+          type="text"
+          name="skills"
+          placeholder="Enter skills"
+          [(ngModel)]="user.skills">
+
+
+
+
+
+        <label>Bio</label>
+
+        <textarea
+          rows="5"
+          name="bio"
+          placeholder="Tell something about yourself"
+          [(ngModel)]="user.bio">
+        </textarea>
+
+
+
+
+
+        <button 
+          class="save-btn"
+          (click)="saveProfile()">
+
+          Save Changes
+
+        </button>
+
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- PASSWORD TAB -->
+  <div 
+    class="profile-card" 
+    *ngIf="activeTab === 'password'">
+
 
     <h3>Change Password</h3>
 
+
     <p class="desc">
-        Update your password to secure your account
+      Update your password to secure your account
     </p>
 
+
+
     <label>Current Password</label>
-    <input type="password" placeholder="">
+
+    <input
+      type="password"
+      name="currentPassword"
+      [(ngModel)]="password.currentPassword">
+
+
+
+
 
     <label>New Password</label>
-    <input type="password" placeholder="">
 
-    <small>Password must be at least 6 characters long.</small>
+    <input
+      type="password"
+      name="newPassword"
+      [(ngModel)]="password.newPassword">
+
+
+    <small>
+      Password must be at least 6 characters long.
+    </small>
+
+
+
+
 
     <label>Confirm New Password</label>
-    <input type="password" placeholder="">
 
-    <button class="change-btn" (click)="updatePassword()">
-        Change Password
+    <input
+      type="password"
+      name="confirmPassword"
+      [(ngModel)]="password.confirmPassword">
+
+
+
+
+
+
+    <button
+      class="change-btn"
+      (click)="updatePassword()">
+
+      Change Password
+
     </button>
 
-</div>
 
+  </div>
+
+
+</div>
