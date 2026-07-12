@@ -1,0 +1,16 @@
+{
+  "collection": "opportunities",
+  "fields": {
+    "_id": "ObjectId (Auto Generated)",
+    "ngoId": "ObjectId (Reference: Users._id)",
+    "title": "String",
+    "description": "String",
+    "requiredSkills": "Array<String>",
+    "duration": "String",
+    "location": "String",
+    "date": "Date",
+    "status": "String",
+    "createdAt": "Date (Auto Generated)",
+    "updatedAt": "Date (Auto Generated)"
+  }
+}

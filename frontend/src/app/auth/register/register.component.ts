@@ -7,7 +7,8 @@ import { passwordMatchValidator } from '../validators/password-match.validator';
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html'
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.css'
 })
 export class RegisterComponent {
   private readonly formBuilder = inject(FormBuilder);
