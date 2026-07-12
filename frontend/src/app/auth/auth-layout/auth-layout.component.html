@@ -1,0 +1,41 @@
+<main class="auth-page">
+
+  <div class="auth-overlay flex">
+
+    <!-- LEFT SIDE -->
+    <section
+      class="hidden lg:flex w-3/5 flex-col justify-center px-20 text-white"
+    >
+
+      <h1 class="text-7xl font-extrabold leading-none">
+        🌱
+        <span class="text-emerald-400">Waste</span><span class="text-white">Zero</span>
+      </h1>
+
+      <h2 class="mt-4 text-2xl font-semibold">
+        Smart Waste Management System
+      </h2>
+
+      <p class="mt-12 max-w-xl text-3xl leading-relaxed font-light">
+        "Every piece of waste recycled is a step toward a sustainable future."
+      </p>
+
+      <p class="mt-16 text-lg italic text-white/80">
+        ~ Batch_02
+      </p>
+
+    </section>
+
+    <!-- RIGHT SIDE -->
+    <section
+      class="flex w-full lg:w-2/5 items-center justify-end pr-16"
+    >
+
+      <!-- Child pages (Login/Register/OTP) will appear here -->
+      <router-outlet></router-outlet>
+
+    </section>
+
+  </div>
+
+</main>
