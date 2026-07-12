@@ -1,0 +1,8 @@
+:host {
+  display: block;
+}
+
+.login-page {
+  min-height: 100vh;
+  background: url('/assets/images/auth-bg.jpg') center center / cover no-repeat;
+}
