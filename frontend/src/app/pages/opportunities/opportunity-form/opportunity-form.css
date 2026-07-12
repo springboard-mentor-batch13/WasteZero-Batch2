@@ -1,0 +1,35 @@
+.opportunity-page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 42px) clamp(16px, 3vw, 32px) 48px;
+  animation: page-enter .55s ease-out both;
+}
+
+.page-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 0 0 26px; }
+.eyebrow { color: #138a5b; font-size: .76rem; font-weight: 800; letter-spacing: .14em; margin: 0 0 8px; }
+h1 { color: #123c31; font-size: clamp(2rem, 4vw, 2.7rem); font-weight: 750; letter-spacing: -.045em; line-height: 1.08; margin: 0; }
+.page-heading p:last-child { color: #58736a; font-size: 1.02rem; margin: 10px 0 0; }
+.heading-orb { align-items: center; background: radial-gradient(circle at 30% 25%, #baf4d2, #27a96e); border-radius: 50%; box-shadow: 0 16px 32px rgba(20, 139, 91, .2); color: #fff; display: flex; height: 76px; justify-content: center; width: 76px; animation: float 4s ease-in-out infinite; }
+.heading-orb mat-icon { height: 37px; width: 37px; font-size: 37px; }
+
+.form-card { --mat-card-elevated-container-color: rgba(255, 255, 255, .96); border: 1px solid rgba(104, 163, 133, .18); border-radius: 24px; box-shadow: 0 18px 45px rgba(27, 92, 65, .12); overflow: hidden; padding: clamp(12px, 2.4vw, 28px); }
+.card-intro { align-items: center; background: linear-gradient(100deg, #e9fbf0, #f7fffa); border: 1px solid #d2f2df; border-radius: 12px; color: #417060; display: flex; font-size: .88rem; gap: 9px; margin: 0 0 24px; padding: 11px 14px; }
+.card-intro mat-icon { color: #15965f; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
+.full-width { grid-column: 1 / -1; }
+mat-form-field { --mdc-outlined-text-field-focus-outline-color: #15965f; --mdc-outlined-text-field-focus-label-text-color: #138a5b; --mdc-outlined-text-field-hover-outline-color: #4b9877; --mdc-outlined-text-field-label-text-color: #58736a; --mdc-outlined-text-field-input-text-color: #173d31; width: 100%; }
+mat-form-field mat-icon { color: #15965f; }
+::ng-deep .mat-mdc-form-field-focus-overlay { background: #eafaf1; }
+::ng-deep .mdc-text-field--focused { transform: translateY(-1px); }
+::ng-deep .mat-mdc-form-field-subscript-wrapper { min-height: 22px; }
+
+.actions { border-top: 1px solid #e3f1e9; display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 16px; padding-top: 22px; }
+.primary-action { background: linear-gradient(135deg, #149762, #08784c); border-radius: 10px; box-shadow: 0 8px 18px rgba(11, 126, 78, .23); color: #fff; min-height: 44px; min-width: 190px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.primary-action:not(:disabled):hover { box-shadow: 0 12px 23px rgba(11, 126, 78, .3); transform: translateY(-2px); }
+.primary-action:disabled { background: #b9d6c6; color: #fff; }
+mat-spinner { display: inline-block; --mdc-circular-progress-active-indicator-color: #fff; }
+
+@keyframes page-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media (max-width: 640px) { .opportunity-page { padding: 20px 14px 36px; } .page-heading { align-items: flex-start; } .heading-orb { height: 54px; width: 54px; } .heading-orb mat-icon { font-size: 26px; height: 26px; width: 26px; } .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: auto; } .actions { flex-direction: column-reverse; align-items: stretch; } .actions button { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .opportunity-page, .heading-orb { animation: none; } .primary-action:not(:disabled):hover { transform: none; } }

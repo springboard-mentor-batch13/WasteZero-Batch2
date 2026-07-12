@@ -1,0 +1,16 @@
+<section class="opportunity-list-page">
+  <header>
+    <div><p class="eyebrow">NGO OPPORTUNITIES</p><h1>Volunteer opportunities</h1><p>Connect people with local causes that need a helping hand.</p></div>
+    <button mat-flat-button class="create-button" routerLink="/opportunities/create"><mat-icon>add</mat-icon>Create Opportunity</button>
+  </header>
+
+  <div class="opportunity-grid">
+    @for (opportunity of opportunities; track opportunity.id) {
+      <mat-card class="opportunity-card">
+        <mat-card-header><mat-card-title>{{ opportunity.title }}</mat-card-title><mat-card-subtitle>{{ opportunity.category }}</mat-card-subtitle></mat-card-header>
+        <mat-card-content><div class="meta"><span><mat-icon>location_on</mat-icon>{{ opportunity.location }}</span><span><mat-icon>event</mat-icon>{{ opportunity.eventDate | date:'mediumDate' }}</span><span><mat-icon>groups</mat-icon>{{ opportunity.requiredVolunteers }} volunteers</span></div></mat-card-content>
+        <mat-card-actions align="end"><button mat-button [routerLink]="['/opportunities', opportunity.id]">View</button><button mat-button [routerLink]="['/opportunities', opportunity.id, 'edit']">Edit</button><button mat-button class="delete-text" (click)="delete(opportunity)">Delete</button></mat-card-actions>
+      </mat-card>
+    } @empty { <mat-card class="empty-card"><mat-icon>volunteer_activism</mat-icon><h2>No opportunities yet</h2><p>Create the first opportunity for your community.</p></mat-card> }
+  </div>
+</section>

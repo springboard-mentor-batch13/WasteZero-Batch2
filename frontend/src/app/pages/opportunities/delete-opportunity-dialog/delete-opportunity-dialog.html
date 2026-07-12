@@ -1,0 +1,12 @@
+<h2 mat-dialog-title>Delete Opportunity</h2>
+
+<mat-dialog-content>
+  Are you sure you want to delete <strong>{{ data.title }}</strong>? This action cannot be undone.
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button [disabled]="loading" (click)="dialogRef.close(false)">Cancel</button>
+  <button mat-flat-button class="delete-button" [disabled]="loading" (click)="confirm()">
+    @if (loading) { <mat-spinner diameter="18"></mat-spinner> } @else { Delete }
+  </button>
+</mat-dialog-actions>

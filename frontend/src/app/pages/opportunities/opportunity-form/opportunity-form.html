@@ -1,0 +1,34 @@
+<section class="opportunity-page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">NGO OPPORTUNITIES</p>
+      <h1>{{ mode === 'create' ? 'Create opportunity' : 'Edit opportunity' }}</h1>
+      <p>{{ mode === 'create' ? 'Invite volunteers to make a meaningful impact.' : 'Keep your volunteer opportunity details up to date.' }}</p>
+    </div>
+    <div class="heading-orb" aria-hidden="true"><mat-icon>diversity_3</mat-icon></div>
+  </div>
+
+  <mat-card class="form-card">
+    <mat-card-content>
+      <div class="card-intro"><mat-icon>eco</mat-icon><span>Every opportunity starts with a positive step for the community.</span></div>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-grid">
+          <mat-form-field appearance="outline"><mat-label>Opportunity Title *</mat-label><input matInput formControlName="title" maxlength="100"><mat-icon matPrefix>volunteer_activism</mat-icon><mat-hint align="end">{{ form.controls.title.value.length }}/100</mat-hint><mat-error>{{ errorMessage('title') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Category *</mat-label><mat-select formControlName="category"><mat-option value="">Select category</mat-option>@for (category of categories; track category) { <mat-option [value]="category">{{ category }}</mat-option> }</mat-select><mat-icon matPrefix>category</mat-icon><mat-error>{{ errorMessage('category') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline" class="full-width"><mat-label>Description *</mat-label><textarea matInput rows="5" formControlName="description" maxlength="1000"></textarea><mat-hint align="end">{{ form.controls.description.value.length }}/1000</mat-hint><mat-error>{{ errorMessage('description') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Location *</mat-label><input matInput formControlName="location"><mat-icon matPrefix>location_on</mat-icon><mat-error>{{ errorMessage('location') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Event Date *</mat-label><input matInput [matDatepicker]="picker" [min]="today" formControlName="eventDate"><mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle><mat-datepicker #picker></mat-datepicker><mat-error>{{ errorMessage('eventDate') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Required Volunteers *</mat-label><input matInput type="number" min="1" formControlName="requiredVolunteers"><mat-icon matPrefix>groups</mat-icon><mat-error>{{ errorMessage('requiredVolunteers') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Skills Required (optional)</mat-label><input matInput formControlName="skillsRequired" placeholder="e.g. First aid, Teaching"><mat-icon matPrefix>handyman</mat-icon><mat-hint>Separate skills with commas</mat-hint></mat-form-field>
+        </div>
+        <div class="actions">
+          @if (mode === 'edit') { <button mat-button type="button" [disabled]="loading" (click)="cancel()">Cancel</button> }
+          <button mat-flat-button type="submit" class="primary-action" [disabled]="loading || form.invalid">
+            @if (loading) { <mat-spinner diameter="20"></mat-spinner> } @else { <mat-icon>{{ mode === 'create' ? 'add_circle' : 'save' }}</mat-icon> }
+            {{ mode === 'create' ? 'Create Opportunity' : 'Update Opportunity' }}
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</section>
