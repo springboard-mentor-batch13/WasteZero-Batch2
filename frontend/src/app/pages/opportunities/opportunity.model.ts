@@ -7,6 +7,8 @@ export interface Opportunity {
   eventDate: string;
   requiredVolunteers: number;
   skillsRequired: string[];
+  imageFile?: File;
+  imagePreviewUrl?: string;
 }
 
 export type OpportunityCategory =
@@ -16,7 +18,9 @@ export type OpportunityCategory =
   | 'Animal Welfare'
   | 'Community Service';
 
-export type OpportunityDraft = Omit<Opportunity, 'id'>;
+export type OpportunityDraft = Omit<Opportunity, 'id' | 'imagePreviewUrl'> & {
+  removeImage?: boolean;
+};
 
 export const OPPORTUNITY_CATEGORIES: OpportunityCategory[] = [
   'Environment',

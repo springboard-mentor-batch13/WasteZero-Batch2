@@ -16,6 +16,57 @@
           <mat-form-field appearance="outline"><mat-label>Opportunity Title *</mat-label><input matInput formControlName="title" maxlength="100"><mat-icon matPrefix>volunteer_activism</mat-icon><mat-hint align="end">{{ form.controls.title.value.length }}/100</mat-hint><mat-error>{{ errorMessage('title') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Category *</mat-label><mat-select formControlName="category"><mat-option value="">Select category</mat-option>@for (category of categories; track category) { <mat-option [value]="category">{{ category }}</mat-option> }</mat-select><mat-icon matPrefix>category</mat-icon><mat-error>{{ errorMessage('category') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline" class="full-width"><mat-label>Description *</mat-label><textarea matInput rows="5" formControlName="description" maxlength="1000"></textarea><mat-hint align="end">{{ form.controls.description.value.length }}/1000</mat-hint><mat-error>{{ errorMessage('description') }}</mat-error></mat-form-field>
+          <div class="image-upload-section full-width">
+            <input
+              #imageInput
+              class="image-input"
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+              (change)="onImageSelected($event)"
+            >
+
+            <div
+              class="upload-card"
+              [class.dragging]="isDraggingImage"
+              (dragover)="onImageDragOver($event)"
+              (dragleave)="onImageDragLeave($event)"
+              (drop)="onImageDrop($event)"
+            >
+              <div class="upload-icon"><mat-icon>cloud_upload</mat-icon></div>
+              <div class="upload-copy">
+                <h2>Upload Opportunity Image</h2>
+                <p>Drag & Drop an image here</p>
+                <span>or</span>
+                <button mat-stroked-button type="button" class="browse-button" (click)="browseImage()">
+                  <mat-icon>image</mat-icon>
+                  Browse Image
+                </button>
+                <small>Supported formats: JPG, JPEG, PNG, WEBP</small>
+                <small>Maximum size: 5 MB</small>
+              </div>
+            </div>
+
+            @if (selectedImageFile && imagePreviewUrl) {
+              <div class="image-preview-card">
+                <img [src]="imagePreviewUrl" alt="Image Preview">
+                <div class="preview-details">
+                  <p class="preview-label">Image Preview</p>
+                  <h3>{{ selectedImageFile.name }}</h3>
+                  <span>{{ imageFileSize() }}</span>
+                </div>
+                <div class="preview-actions">
+                  <button mat-stroked-button type="button" (click)="replaceImage()">
+                    <mat-icon>sync</mat-icon>
+                    Replace
+                  </button>
+                  <button mat-button type="button" class="remove-image" (click)="removeImage()">
+                    <mat-icon>delete</mat-icon>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
           <mat-form-field appearance="outline"><mat-label>Location *</mat-label><input matInput formControlName="location"><mat-icon matPrefix>location_on</mat-icon><mat-error>{{ errorMessage('location') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Event Date *</mat-label><input matInput [matDatepicker]="picker" [min]="today" formControlName="eventDate"><mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle><mat-datepicker #picker></mat-datepicker><mat-error>{{ errorMessage('eventDate') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Required Volunteers *</mat-label><input matInput type="number" min="1" formControlName="requiredVolunteers"><mat-icon matPrefix>groups</mat-icon><mat-error>{{ errorMessage('requiredVolunteers') }}</mat-error></mat-form-field>
