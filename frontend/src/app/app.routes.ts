@@ -13,6 +13,10 @@ import { ForgotPassword } from './pages/forgot-password/forgot-password';
 import { VerifyResetOtp } from './pages/verify-reset-otp/verify-reset-otp';
 import { ResetPassword } from './pages/reset-password/reset-password';
 
+import { OpportunityList } from './pages/opportunities/opportunity-list/opportunity-list';
+import { OpportunityDetails } from './pages/opportunities/opportunity-details/opportunity-details';
+
+
 
 export const routes: Routes = [
   {
@@ -70,5 +74,15 @@ export const routes: Routes = [
   {
     path: 'reset-password',
     component: ResetPassword
+  },
+
+  {
+    path: 'opportunities',
+    component: OpportunityList
+  },
+
+  {
+    path: 'opportunities/:id',
+    component: OpportunityDetails
   }
 ];
