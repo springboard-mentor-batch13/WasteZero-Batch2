@@ -1,0 +1,7 @@
+input::placeholder{
+    color:rgba(255,255,255,.65);
+}
+
+input:focus{
+    border-color:#10b981;
+}

@@ -7,7 +7,8 @@ import { passwordMatchValidator } from '../validators/password-match.validator';
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],
-  templateUrl: './register.component.html'
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.css'
 })
 export class RegisterComponent {
   private readonly formBuilder = inject(FormBuilder);
@@ -17,7 +18,12 @@ export class RegisterComponent {
   protected readonly registerForm = this.formBuilder.nonNullable.group(
     {
       fullName: ['', [Validators.required, Validators.minLength(2)]],
+
+      // NEW FIELD
+      username: ['', [Validators.required, Validators.minLength(3)]],
+
       email: ['', [Validators.required, Validators.email]],
+
       password: [
         '',
         [
@@ -26,7 +32,11 @@ export class RegisterComponent {
           Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)
         ]
       ],
+
       confirmPassword: ['', [Validators.required]],
+
+      role: ['', Validators.required],
+
       termsAccepted: [false, [Validators.requiredTrue]]
     },
     {
@@ -42,6 +52,10 @@ export class RegisterComponent {
     return this.registerForm.controls.fullName;
   }
 
+  protected get username() {
+    return this.registerForm.controls.username;
+  }
+
   protected get email() {
     return this.registerForm.controls.email;
   }
@@ -54,13 +68,29 @@ export class RegisterComponent {
     return this.registerForm.controls.confirmPassword;
   }
 
-  protected showError(controlName: 'fullName' | 'email' | 'password' | 'confirmPassword' | 'termsAccepted'): boolean {
+  protected get role() {
+    return this.registerForm.controls.role;
+  }
+
+  protected showError(
+    controlName:
+      | 'fullName'
+      | 'username'
+      | 'email'
+      | 'password'
+      | 'confirmPassword'
+      | 'role'
+      | 'termsAccepted'
+  ): boolean {
     const control = this.registerForm.controls[controlName];
     return control.invalid && (control.touched || this.submitted);
   }
 
   protected showPasswordMismatch(): boolean {
-    return this.registerForm.hasError('passwordMismatch') && (this.confirmPassword.touched || this.submitted);
+    return (
+      this.registerForm.hasError('passwordMismatch') &&
+      (this.confirmPassword.touched || this.submitted)
+    );
   }
 
   protected async onSubmit(): Promise<void> {
@@ -75,19 +105,36 @@ export class RegisterComponent {
     this.isSubmitting = true;
 
     try {
-      const { fullName, email, password, confirmPassword } = this.registerForm.getRawValue();
-
-      await this.authService.register({
+      const {
         fullName,
-        username: email,
+        username,
         email,
         password,
-        confirmPassword
-      });
+        confirmPassword,
+        role
+      } = this.registerForm.getRawValue();
 
-      await this.redirectIfRouteExists('login');
+      await this.authService.register({
+  fullName,
+  username,
+  email,
+  password,
+  confirmPassword,
+  role
+});
+
+
+// save email for OTP verification
+localStorage.setItem('email', email);
+
+
+// go to OTP page
+await this.redirectIfRouteExists('otp-verification');
+
     } catch (error) {
-      this.errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      this.errorMessage =
+        error instanceof Error ? error.message : 'Registration failed';
+
       alert(this.errorMessage);
     } finally {
       this.isSubmitting = false;

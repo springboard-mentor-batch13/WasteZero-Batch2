@@ -6,7 +6,8 @@ import { AuthService } from '../auth.service';
 @Component({
   selector: 'app-login',
   imports: [ReactiveFormsModule, RouterLink],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css'
 })
 export class LoginComponent {
   private readonly formBuilder = inject(FormBuilder);
@@ -14,7 +15,7 @@ export class LoginComponent {
   private readonly router = inject(Router);
 
   protected readonly loginForm = this.formBuilder.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
+    username: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(8)]],
     rememberMe: [false]
   });
@@ -23,15 +24,15 @@ export class LoginComponent {
   protected isSubmitting = false;
   protected errorMessage = '';
 
-  protected get email() {
-    return this.loginForm.controls.email;
+  protected get username() {
+    return this.loginForm.controls.username;
   }
 
   protected get password() {
     return this.loginForm.controls.password;
   }
 
-  protected showError(controlName: 'email' | 'password'): boolean {
+  protected showError(controlName: 'username' | 'password'): boolean {
     const control = this.loginForm.controls[controlName];
     return control.invalid && (control.touched || this.submitted);
   }
@@ -48,16 +49,22 @@ export class LoginComponent {
     this.isSubmitting = true;
 
     try {
-      const { email, password } = this.loginForm.getRawValue();
-      const response = await this.authService.login({ email, password });
+      const { username, password } = this.loginForm.getRawValue();
+
+      const response = await this.authService.login({
+        username,
+        password
+      });
 
       if (response.token) {
         this.authService.saveToken(response.token);
       }
 
-      await this.redirectIfRouteExists('dashboard');
+      await this.redirectIfRouteExists('my-profile');
     } catch (error) {
-      this.errorMessage = error instanceof Error ? error.message : 'Login failed';
+      this.errorMessage =
+        error instanceof Error ? error.message : 'Login failed';
+
       alert(this.errorMessage);
     } finally {
       this.isSubmitting = false;
@@ -65,7 +72,7 @@ export class LoginComponent {
   }
 
   private async redirectIfRouteExists(path: string): Promise<void> {
-    if (this.router.config.some((route) => route.path === path)) {
+    if (this.router.config.some(route => route.path === path)) {
       await this.router.navigate([path]);
     }
   }
