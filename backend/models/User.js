@@ -36,17 +36,25 @@ const userSchema = new mongoose.Schema(
       default: 'Volunteer',
     },
 
+<<<<<<< HEAD
 
     // Profile fields
 
+=======
+>>>>>>> origin/ritika
     location: {
       type: String,
       default: '',
     },
 
     skills: {
+<<<<<<< HEAD
       type: String,
       default: '',
+=======
+      type: [String],
+      default: [],
+>>>>>>> origin/ritika
     },
 
     bio: {
@@ -57,8 +65,12 @@ const userSchema = new mongoose.Schema(
     profileImage: {
       type: String,
       default: '',
+<<<<<<< HEAD
     }
 
+=======
+    },
+>>>>>>> origin/ritika
   },
   {
     timestamps: true,

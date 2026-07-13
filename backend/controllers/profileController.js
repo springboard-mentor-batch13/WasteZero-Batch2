@@ -1,6 +1,11 @@
 /**
  * Profile Controller
  */
+<<<<<<< HEAD
+=======
+
+const User = require('../models/User');
+>>>>>>> origin/ritika
 
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
@@ -10,18 +15,32 @@ const bcrypt = require('bcrypt');
 const getProfile = async (req, res) => {
 
   try {
+<<<<<<< HEAD
 
     const user = await User
       .findById(req.user._id)
       .select('-password');
 
+=======
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+>>>>>>> origin/ritika
 
     res.status(200).json({
 
       success: true,
       message: "Profile fetched successfully",
       data: user
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/ritika
     });
 
 
@@ -50,11 +69,14 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
 
   try {
+<<<<<<< HEAD
 
 
     console.log("REQUEST BODY:", req.body);
 
 
+=======
+>>>>>>> origin/ritika
     const user = await User.findById(req.user._id);
 
 
@@ -72,6 +94,7 @@ const updateProfile = async (req, res) => {
 
     }
 
+<<<<<<< HEAD
 
 
     const {
@@ -106,6 +129,24 @@ const updateProfile = async (req, res) => {
 
 
 
+=======
+    const {
+      fullName,
+      location,
+      skills,
+      bio,
+      profileImage
+    } = req.body;
+
+    if (fullName) user.fullName = fullName;
+    if (location) user.location = location;
+    if (skills) user.skills = skills;
+    if (bio) user.bio = bio;
+    if (profileImage) user.profileImage = profileImage;
+
+    const updatedUser = await user.save();
+
+>>>>>>> origin/ritika
     const userObj = updatedUser.toObject();
 
 
@@ -146,6 +187,7 @@ const updateProfile = async (req, res) => {
 
 };
 
+<<<<<<< HEAD
 
 
 
@@ -324,4 +366,9 @@ module.exports = {
 
   changePassword
 
+=======
+module.exports = {
+  getProfile,
+  updateProfile
+>>>>>>> origin/ritika
 };
