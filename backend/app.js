@@ -11,6 +11,7 @@ const { swaggerSpec } = require('./docs/swagger');
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const pickupRoutes = require('./routes/pickupRoutes');
+const opportunityRoutes = require('./routes/opportunityRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -28,6 +29,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/pickups', pickupRoutes);
+app.use('/api/opportunities', opportunityRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

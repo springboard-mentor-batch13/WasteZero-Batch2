@@ -451,12 +451,4 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  registerUser,
-  loginUser,
-  sendRegisterOTP,
-  verifyRegisterOTP,
-  forgotPassword,
-  verifyResetOtp,
-  resetPassword
-};
+module.exports = { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP, forgotPassword, verifyResetOTP, resetPassword };

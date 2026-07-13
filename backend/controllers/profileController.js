@@ -72,6 +72,22 @@ const updateProfile = async (req, res) => {
 
     }
 
+    const {
+      fullName,
+      location,
+      skills,
+      bio,
+      profileImage
+    } = req.body;
+
+    if (fullName) user.fullName = fullName;
+    if (location) user.location = location;
+    if (skills) user.skills = skills;
+    if (bio) user.bio = bio;
+    if (profileImage) user.profileImage = profileImage;
+
+    const updatedUser = await user.save();
+
 
 
     const {

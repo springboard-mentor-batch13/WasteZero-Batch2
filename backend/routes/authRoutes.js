@@ -150,4 +150,32 @@ router.get('/protected', protect, authorizeRoles(...allowedRoles), (req, res) =>
   res.status(200).json({ success: true, message: 'Access granted', user: req.user });
 });
 
+router.post(
+  '/forgot-password',
+  [
+    body('email').isEmail().withMessage('Please enter a valid email address'),
+  ],
+  forgotPassword
+);
+
+router.post(
+  '/verify-reset-otp',
+  [
+    body('email').isEmail().withMessage('Please enter a valid email address'),
+    body('otp').trim().notEmpty().withMessage('OTP is required'),
+  ],
+  verifyResetOTP
+);
+
+router.post(
+  '/reset-password',
+  [
+    body('email').isEmail().withMessage('Please enter a valid email address'),
+    body('otp').trim().notEmpty().withMessage('OTP is required'),
+    body('newPassword').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+    body('confirmPassword').notEmpty().withMessage('Confirm password is required'),
+  ],
+  resetPassword
+);
+
 module.exports = router;
