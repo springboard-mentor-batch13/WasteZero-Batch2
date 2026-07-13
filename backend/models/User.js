@@ -37,11 +37,17 @@ const userSchema = new mongoose.Schema(
     },
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     // Profile fields
 
 =======
 >>>>>>> origin/ritika
+=======
+
+    // Profile fields
+
+>>>>>>> main
     location: {
       type: String,
       default: '',
@@ -49,12 +55,17 @@ const userSchema = new mongoose.Schema(
 
     skills: {
 <<<<<<< HEAD
+<<<<<<< HEAD
       type: String,
       default: '',
 =======
       type: [String],
       default: [],
 >>>>>>> origin/ritika
+=======
+      type: [String],
+      default: [],
+>>>>>>> main
     },
 
     bio: {
@@ -66,11 +77,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
 <<<<<<< HEAD
+<<<<<<< HEAD
     }
 
 =======
     },
 >>>>>>> origin/ritika
+=======
+    }
+
+>>>>>>> main
   },
   {
     timestamps: true,

@@ -1,6 +1,18 @@
 const express = require('express');
 const { body } = require('express-validator');
+<<<<<<< HEAD
 const { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP, forgotPassword, verifyResetOTP, resetPassword } = require('../controllers/authController');
+=======
+const { 
+  registerUser, 
+  loginUser, 
+  sendRegisterOTP, 
+  verifyRegisterOTP,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword
+} = require('../controllers/authController');
+>>>>>>> main
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles, allowedRoles } = require('../middleware/roleMiddleware');
 

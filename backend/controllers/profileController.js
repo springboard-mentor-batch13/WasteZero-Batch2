@@ -2,10 +2,13 @@
  * Profile Controller
  */
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 const User = require('../models/User');
 >>>>>>> origin/ritika
+=======
+>>>>>>> main
 
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
@@ -16,11 +19,15 @@ const getProfile = async (req, res) => {
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main
 
     const user = await User
       .findById(req.user._id)
       .select('-password');
 
+<<<<<<< HEAD
 =======
     const user = await User.findById(req.user._id).select("-password");
 
@@ -31,6 +38,8 @@ const getProfile = async (req, res) => {
       });
     }
 >>>>>>> origin/ritika
+=======
+>>>>>>> main
 
     res.status(200).json({
 
@@ -38,9 +47,13 @@ const getProfile = async (req, res) => {
       message: "Profile fetched successfully",
       data: user
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> origin/ritika
+=======
+
+>>>>>>> main
     });
 
 
@@ -70,13 +83,19 @@ const updateProfile = async (req, res) => {
 
   try {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main
 
 
     console.log("REQUEST BODY:", req.body);
 
 
+<<<<<<< HEAD
 =======
 >>>>>>> origin/ritika
+=======
+>>>>>>> main
     const user = await User.findById(req.user._id);
 
 
@@ -95,6 +114,25 @@ const updateProfile = async (req, res) => {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+    const {
+      fullName,
+      location,
+      skills,
+      bio,
+      profileImage
+    } = req.body;
+
+    if (fullName) user.fullName = fullName;
+    if (location) user.location = location;
+    if (skills) user.skills = skills;
+    if (bio) user.bio = bio;
+    if (profileImage) user.profileImage = profileImage;
+
+    const updatedUser = await user.save();
+
+>>>>>>> main
 
 
     const {
@@ -129,6 +167,7 @@ const updateProfile = async (req, res) => {
 
 
 
+<<<<<<< HEAD
 =======
     const {
       fullName,
@@ -147,6 +186,8 @@ const updateProfile = async (req, res) => {
     const updatedUser = await user.save();
 
 >>>>>>> origin/ritika
+=======
+>>>>>>> main
     const userObj = updatedUser.toObject();
 
 
@@ -188,6 +229,9 @@ const updateProfile = async (req, res) => {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> main
 
 
 
@@ -366,9 +410,12 @@ module.exports = {
 
   changePassword
 
+<<<<<<< HEAD
 =======
 module.exports = {
   getProfile,
   updateProfile
 >>>>>>> origin/ritika
+=======
+>>>>>>> main
 };
