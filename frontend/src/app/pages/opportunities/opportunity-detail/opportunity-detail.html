@@ -1,0 +1,57 @@
+@if (opportunity; as item) {
+  <section class="detail-page">
+    <a mat-button routerLink="/opportunities"><mat-icon>arrow_back</mat-icon>Back to Opportunities</a>
+
+    <div class="detail-heading">
+      <div>
+        <h1>{{ item.title }}</h1>
+        <p>Volunteer opportunity details</p>
+      </div>
+      <span class="status-pill">Open</span>
+    </div>
+
+    <div class="detail-layout">
+      <div class="main-column">
+        @if (item.imagePreviewUrl) {
+          <img class="hero-image" [src]="item.imagePreviewUrl" [alt]="item.title">
+        } @else {
+          <div class="hero-placeholder"><mat-icon>image</mat-icon><span>No image available</span></div>
+        }
+
+        <mat-card>
+          <mat-card-content>
+            <h2>Description</h2>
+            <p class="description">{{ item.description }}</p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card>
+          <mat-card-content>
+            <h2>Required Skills</h2>
+            @if (item.skillsRequired.length) {
+              <mat-chip-set>@for (skill of item.skillsRequired; track skill) { <mat-chip>{{ skill }}</mat-chip> }</mat-chip-set>
+            } @else {
+              <p class="muted">No specific skills required.</p>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <mat-card class="details-card">
+        <mat-card-content>
+          <h2>Opportunity Details</h2>
+          <div class="details-list">
+            <div><mat-icon>event</mat-icon><span><small>Date</small>{{ item.eventDate | date:'mediumDate' }}</span></div>
+            <div><mat-icon>category</mat-icon><span><small>Category</small>{{ item.category }}</span></div>
+            <div><mat-icon>location_on</mat-icon><span><small>Location</small>{{ item.location }}</span></div>
+            <div><mat-icon>groups</mat-icon><span><small>Volunteers Needed</small>{{ item.requiredVolunteers }}</span></div>
+          </div>
+          <div class="detail-actions">
+            <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
+            <button mat-flat-button class="delete-button" (click)="delete()"><mat-icon>delete</mat-icon>Delete</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+}

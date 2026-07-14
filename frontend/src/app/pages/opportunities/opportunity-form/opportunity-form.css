@@ -1,0 +1,60 @@
+.opportunity-page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 42px) clamp(16px, 3vw, 32px) 48px;
+  animation: page-enter .55s ease-out both;
+}
+
+.page-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 0 0 26px; }
+.eyebrow { color: #138a5b; font-size: .76rem; font-weight: 800; letter-spacing: .14em; margin: 0 0 8px; }
+h1 { color: #123c31; font-size: clamp(2rem, 4vw, 2.7rem); font-weight: 750; letter-spacing: -.045em; line-height: 1.08; margin: 0; }
+.page-heading p:last-child { color: #58736a; font-size: 1.02rem; margin: 10px 0 0; }
+.heading-orb { align-items: center; background: radial-gradient(circle at 30% 25%, #baf4d2, #27a96e); border-radius: 50%; box-shadow: 0 16px 32px rgba(20, 139, 91, .2); color: #fff; display: flex; height: 76px; justify-content: center; width: 76px; animation: float 4s ease-in-out infinite; }
+.heading-orb mat-icon { height: 37px; width: 37px; font-size: 37px; }
+
+.form-card { --mat-card-elevated-container-color: rgba(255, 255, 255, .96); border: 1px solid rgba(104, 163, 133, .18); border-radius: 24px; box-shadow: 0 18px 45px rgba(27, 92, 65, .12); overflow: hidden; padding: clamp(12px, 2.4vw, 28px); }
+.card-intro { align-items: center; background: linear-gradient(100deg, #e9fbf0, #f7fffa); border: 1px solid #d2f2df; border-radius: 12px; color: #417060; display: flex; font-size: .88rem; gap: 9px; margin: 0 0 24px; padding: 11px 14px; }
+.card-intro mat-icon { color: #15965f; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
+.full-width { grid-column: 1 / -1; }
+mat-form-field { --mdc-outlined-text-field-focus-outline-color: #15965f; --mdc-outlined-text-field-focus-label-text-color: #138a5b; --mdc-outlined-text-field-hover-outline-color: #4b9877; --mdc-outlined-text-field-label-text-color: #58736a; --mdc-outlined-text-field-input-text-color: #173d31; width: 100%; }
+mat-form-field mat-icon { color: #15965f; }
+::ng-deep .mat-mdc-form-field-focus-overlay { background: #eafaf1; }
+::ng-deep .mdc-text-field--focused { transform: translateY(-1px); }
+::ng-deep .mat-mdc-form-field-subscript-wrapper { min-height: 22px; }
+
+.image-upload-section { display: grid; gap: 14px; margin: 2px 0 14px; }
+.image-input { display: none; }
+.upload-card { align-items: center; background: linear-gradient(135deg, #f7fffa, #edf9f2); border: 2px dashed #a7dfbd; border-radius: 18px; display: grid; gap: 18px; grid-template-columns: auto 1fr; min-height: 220px; padding: clamp(18px, 3vw, 28px); transition: background .25s ease, border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
+.upload-card:hover, .upload-card.dragging { background: #f0fff6; border-color: #15965f; box-shadow: 0 14px 28px rgba(21, 150, 95, .14); transform: translateY(-2px); }
+.upload-icon { align-items: center; background: #e2f7eb; border: 1px solid #c2ebd2; border-radius: 16px; color: #128555; display: flex; height: 86px; justify-content: center; width: 86px; }
+.upload-icon mat-icon { font-size: 42px; height: 42px; width: 42px; }
+.upload-copy { align-items: flex-start; color: #58736a; display: flex; flex-direction: column; gap: 7px; }
+.upload-copy h2 { color: #123c31; font-size: 1.16rem; font-weight: 750; margin: 0; }
+.upload-copy p, .upload-copy span { margin: 0; }
+.upload-copy span { color: #79978c; font-size: .86rem; }
+.upload-copy small { color: #6b877c; line-height: 1.35; }
+.browse-button { border-color: #8ed2ac; border-radius: 10px; color: #08784c; margin: 2px 0; }
+.browse-button mat-icon { color: #15965f; }
+.image-preview-card { align-items: center; background: #fff; border: 1px solid #d8efe2; border-radius: 16px; box-shadow: 0 10px 26px rgba(27, 92, 65, .1); display: grid; gap: 16px; grid-template-columns: 128px 1fr auto; padding: 14px; }
+.image-preview-card img { aspect-ratio: 4 / 3; border-radius: 12px; height: 96px; object-fit: cover; width: 128px; }
+.preview-details { min-width: 0; }
+.preview-label { color: #15965f; font-size: .78rem; font-weight: 800; letter-spacing: .08em; margin: 0 0 4px; text-transform: uppercase; }
+.preview-details h3 { color: #173d31; font-size: 1rem; font-weight: 700; margin: 0 0 6px; overflow-wrap: anywhere; }
+.preview-details span { color: #6b877c; font-size: .9rem; }
+.preview-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.preview-actions button { border-radius: 10px; }
+.preview-actions button:first-child { border-color: #8ed2ac; color: #08784c; }
+.remove-image { color: #c73d38; }
+
+.actions { border-top: 1px solid #e3f1e9; display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 16px; padding-top: 22px; }
+.primary-action { background: linear-gradient(135deg, #149762, #08784c); border-radius: 10px; box-shadow: 0 8px 18px rgba(11, 126, 78, .23); color: #fff; min-height: 44px; min-width: 190px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.primary-action:not(:disabled):hover { box-shadow: 0 12px 23px rgba(11, 126, 78, .3); transform: translateY(-2px); }
+.primary-action:disabled { background: #b9d6c6; color: #fff; }
+mat-spinner { display: inline-block; --mdc-circular-progress-active-indicator-color: #fff; }
+
+@keyframes page-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media (max-width: 720px) { .upload-card, .image-preview-card { grid-template-columns: 1fr; } .upload-icon { height: 72px; width: 72px; } .image-preview-card img { height: auto; width: 100%; } .preview-actions { justify-content: stretch; } .preview-actions button { flex: 1; } }
+@media (max-width: 640px) { .opportunity-page { padding: 20px 14px 36px; } .page-heading { align-items: flex-start; } .heading-orb { height: 54px; width: 54px; } .heading-orb mat-icon { font-size: 26px; height: 26px; width: 26px; } .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: auto; } .actions { flex-direction: column-reverse; align-items: stretch; } .actions button { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .opportunity-page, .heading-orb { animation: none; } .upload-card, .primary-action:not(:disabled):hover { transform: none; } }
