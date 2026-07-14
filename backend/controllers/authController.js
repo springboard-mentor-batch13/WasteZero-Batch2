@@ -351,15 +351,9 @@ const forgotPassword = async (req, res, next) => {
 /**
  * Verify reset password OTP.
  */
-<<<<<<< HEAD
-<<<<<<< HEAD
+
+
 const verifyResetOtp = async (req, res, next) => {
-=======
-const verifyResetOTP = async (req, res, next) => {
->>>>>>> origin/ritika
-=======
-const verifyResetOtp = async (req, res, next) => {
->>>>>>> main
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -459,8 +453,7 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 module.exports = {
   registerUser,
   loginUser,
@@ -470,9 +463,14 @@ module.exports = {
   verifyResetOtp,
   resetPassword
 };
-=======
-module.exports = { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP, forgotPassword, verifyResetOTP, resetPassword };
->>>>>>> origin/ritika
-=======
-module.exports = { registerUser, loginUser, sendRegisterOTP, verifyRegisterOTP, forgotPassword, verifyResetOTP, resetPassword };
->>>>>>> main
+
+module.exports = {
+  registerUser,
+  loginUser,
+  sendRegisterOTP,
+  verifyRegisterOTP,
+  forgotPassword,
+  verifyResetOtp,
+  resetPassword,
+};
+

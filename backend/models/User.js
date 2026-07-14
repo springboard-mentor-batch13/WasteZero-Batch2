@@ -36,36 +36,15 @@ const userSchema = new mongoose.Schema(
       default: 'Volunteer',
     },
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
     // Profile fields
-
-=======
->>>>>>> origin/ritika
-=======
-
-    // Profile fields
-
->>>>>>> main
     location: {
       type: String,
       default: '',
     },
 
     skills: {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      type: String,
-      default: '',
-=======
       type: [String],
       default: [],
->>>>>>> origin/ritika
-=======
-      type: [String],
-      default: [],
->>>>>>> main
     },
 
     bio: {
@@ -76,22 +55,11 @@ const userSchema = new mongoose.Schema(
     profileImage: {
       type: String,
       default: '',
-<<<<<<< HEAD
-<<<<<<< HEAD
-    }
-
-=======
     },
->>>>>>> origin/ritika
-=======
-    }
-
->>>>>>> main
   },
   {
     timestamps: true,
   }
 );
-
 
 module.exports = mongoose.model('User', userSchema, 'Users');
