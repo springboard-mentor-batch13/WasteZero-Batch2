@@ -76,6 +76,135 @@ const getAllOpportunities = async (req, res) => {
 };
 
 /**
+ * Search opportunities by title or description.
+ */
+const searchOpportunities = async (req, res) => {
+  try {
+    const { keyword } = req.query;
+
+    if (!keyword || keyword.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Search keyword is required',
+      });
+    }
+
+    const opportunities = await Opportunity.find({
+      $or: [
+        {
+          title: {
+            $regex: keyword,
+            $options: 'i',
+          },
+        },
+        {
+          description: {
+            $regex: keyword,
+            $options: 'i',
+          },
+        },
+      ],
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      count: opportunities.length,
+      data: opportunities,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message,
+    });
+  }
+};
+/**
+ * Filter opportunities by location, status, and required skills.
+ */
+const filterOpportunities = async (req, res) => {
+  try {
+    const { location, status, skill } = req.query;
+
+    const filter = {};
+
+    // Filter by location
+    if (location) {
+      filter.location = {
+        $regex: location,
+        $options: 'i',
+      };
+    }
+
+    // Filter by status
+    if (status) {
+      filter.status = status;
+    }
+
+    // Filter by required skill
+    if (skill) {
+      filter.requiredSkills = {
+        $in: [new RegExp(skill, 'i')],
+      };
+    }
+
+    const opportunities = await Opportunity.find(filter)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      count: opportunities.length,
+      data: opportunities,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message,
+    });
+  }
+};
+/**
+ * Get dashboard statistics.
+ */
+const getDashboardStatistics = async (req, res) => {
+  try {
+    const totalOpportunities = await Opportunity.countDocuments();
+
+    const openOpportunities = await Opportunity.countDocuments({
+      status: 'Open',
+    });
+
+    const closedOpportunities = await Opportunity.countDocuments({
+      status: 'Closed',
+    });
+
+    const inProgressOpportunities = await Opportunity.countDocuments({
+      status: 'In Progress',
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalOpportunities,
+        openOpportunities,
+        closedOpportunities,
+        inProgressOpportunities,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message,
+    });
+  }
+};
+
+/**
  * Get a single opportunity by its ID.
  */
 const getOpportunityById = async (req, res) => {
@@ -157,6 +286,9 @@ const deleteOpportunity = async (req, res) => {
 module.exports = {
   createOpportunity,
   getAllOpportunities,
+  searchOpportunities,
+  filterOpportunities,
+getDashboardStatistics,
   getOpportunityById,
   updateOpportunity,
   deleteOpportunity,
