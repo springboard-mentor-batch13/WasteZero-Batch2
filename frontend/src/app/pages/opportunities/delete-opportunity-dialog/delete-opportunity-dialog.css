@@ -1,0 +1,5 @@
+:host { display: block; }
+::ng-deep .mat-mdc-dialog-surface { border-radius: 12px; }
+h2 { color: #173d31; font-weight: 750; }
+mat-dialog-content { color: #4f6f63; line-height: 1.65; padding-top: 8px; }
+.delete-button { background: linear-gradient(135deg, #d4544e, #b93632); border-radius: 9px; color: #fff; min-width: 92px; }

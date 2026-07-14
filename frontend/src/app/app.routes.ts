@@ -12,6 +12,9 @@ import { OtpVerification } from './auth/otp-verification/otp-verification';
 import { ForgotPassword } from './pages/forgot-password/forgot-password';
 import { VerifyResetOtp } from './pages/verify-reset-otp/verify-reset-otp';
 import { ResetPassword } from './pages/reset-password/reset-password';
+import { OpportunityForm } from './pages/opportunities/opportunity-form/opportunity-form';
+import { OpportunityList } from './pages/opportunities/opportunity-list/opportunity-list';
+import { OpportunityDetail } from './pages/opportunities/opportunity-detail/opportunity-detail';
 
 import { OpportunityList } from './pages/opportunities/opportunity-list/opportunity-list';
 import { OpportunityDetails } from './pages/opportunities/opportunity-details/opportunity-details';
@@ -76,13 +79,26 @@ export const routes: Routes = [
     component: ResetPassword
   },
 
+  // Kavipriya - NGO Opportunity CRUD
   {
     path: 'opportunities',
-    component: OpportunityList
+    component: OpportunityList,
+    title: 'Opportunities | WasteZero'
   },
-
+  {
+    path: 'opportunities/create',
+    component: OpportunityForm,
+    title: 'Create Opportunity | WasteZero'
+  },
+  {
+    path: 'opportunities/:id/edit',
+    component: OpportunityForm,
+    title: 'Edit Opportunity | WasteZero',
+    data: { mode: 'edit' }
+  },
   {
     path: 'opportunities/:id',
-    component: OpportunityDetails
+    component: OpportunityDetail,
+    title: 'Opportunity Details | WasteZero'
   }
 ];

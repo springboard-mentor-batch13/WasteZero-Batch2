@@ -1,80 +1,19 @@
-<div class="container">
+<section class="opportunity-list-page">
+  <header>
+    <div><p class="eyebrow">NGO OPPORTUNITIES</p><h1>Volunteer opportunities</h1><p>Connect people with local causes that need a helping hand.</p></div>
+    <button mat-flat-button class="create-button" routerLink="/opportunities/create"><mat-icon>add</mat-icon>Create Opportunity</button>
+  </header>
 
-  <h2>Volunteer Opportunities</h2>
-
-  <div class="top-section">
-
-    <!-- Search -->
-    <input
-      type="text"
-      placeholder="Search Opportunity..."
-      [(ngModel)]="searchText">
-
-    <!-- Location Filter -->
-    <select [(ngModel)]="selectedLocation">
-      <option value="All">All Locations</option>
-      <option value="Marina Beach, Chennai">Marina Beach, Chennai</option>
-      <option value="Adyar Community Hall, Chennai">Adyar Community Hall, Chennai</option>
-      <option value="Velachery Learning Centre">Velachery Learning Centre</option>
-      <option value="Besant Nagar, Chennai">Besant Nagar, Chennai</option>
-      <option value="T. Nagar, Chennai">T. Nagar, Chennai</option>
-    </select>
-
+  <div class="opportunity-grid">
+    @for (opportunity of opportunities; track opportunity.id) {
+      <mat-card class="opportunity-card">
+        @if (opportunity.imagePreviewUrl) {
+          <img mat-card-image [src]="opportunity.imagePreviewUrl" [alt]="opportunity.title">
+        }
+        <mat-card-header><mat-card-title>{{ opportunity.title }}</mat-card-title><mat-card-subtitle>{{ opportunity.category }}</mat-card-subtitle></mat-card-header>
+        <mat-card-content><div class="meta"><span><mat-icon>location_on</mat-icon>{{ opportunity.location }}</span><span><mat-icon>event</mat-icon>{{ opportunity.eventDate | date:'mediumDate' }}</span><span><mat-icon>groups</mat-icon>{{ opportunity.requiredVolunteers }} volunteers</span></div></mat-card-content>
+        <mat-card-actions><button mat-flat-button class="details-button" [routerLink]="['/opportunities', opportunity.id]">View Details</button></mat-card-actions>
+      </mat-card>
+    } @empty { <mat-card class="empty-card"><mat-icon>volunteer_activism</mat-icon><h2>No opportunities yet</h2><p>Create the first opportunity for your community.</p></mat-card> }
   </div>
-
-  <div class="card-grid">
-
-    <div
-      class="card"
-      *ngFor="let opportunity of filteredOpportunities">
-
-      <img
-        src="https://placehold.co/600x350?text=Volunteer+Opportunity"
-        alt="Opportunity">
-
-      <div class="card-body">
-
-        <h3>{{ opportunity.title }}</h3>
-
-        <p>{{ opportunity.description }}</p>
-
-        <p>
-          <strong>Category:</strong>
-          {{ opportunity.category }}
-        </p>
-
-        <p>
-          📍 {{ opportunity.location }}
-        </p>
-
-        <p>
-          📅 {{ opportunity.eventDate }}
-        </p>
-
-        <p>
-          👥 {{ opportunity.requiredVolunteers }} Volunteers
-        </p>
-
-        <p><strong>Skills Required:</strong></p>
-
-        <div class="skills">
-
-          <span
-            *ngFor="let skill of opportunity.skillsRequired">
-            {{ skill }}
-          </span>
-
-        </div>
-
-        <button
-          (click)="viewDetails(opportunity.id)">
-          View Details
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-</div>
+</section>
