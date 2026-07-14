@@ -16,7 +16,6 @@ import { OpportunityForm } from './pages/opportunities/opportunity-form/opportun
 import { OpportunityList } from './pages/opportunities/opportunity-list/opportunity-list';
 import { OpportunityDetail } from './pages/opportunities/opportunity-detail/opportunity-detail';
 
-import { OpportunityList } from './pages/opportunities/opportunity-list/opportunity-list';
 import { OpportunityDetails } from './pages/opportunities/opportunity-details/opportunity-details';
 
 
