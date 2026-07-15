@@ -4,6 +4,9 @@ const router = express.Router();
 const {
   createOpportunity,
   getAllOpportunities,
+  searchOpportunities,
+  filterOpportunities,
+  getDashboardStatistics,
   getOpportunityById,
   updateOpportunity,
   deleteOpportunity,
@@ -34,6 +37,38 @@ router.get(
   '/',
   protect,
   getAllOpportunities
+);
+
+/**
+ * @route   GET /api/opportunities/search
+ * @desc    Search opportunities by title or description
+ * @access  Private (Authenticated Users)
+ */
+router.get(
+  '/search',
+  protect,
+  searchOpportunities
+);
+
+/**
+ * @route   GET /api/opportunities/filter
+ * @desc    Filter opportunities
+ * @access  Private (Authenticated Users)
+ */
+router.get(
+  '/filter',
+  protect,
+  filterOpportunities
+);
+/**
+ * @route   GET /api/opportunities/dashboard/stats
+ * @desc    Get dashboard statistics
+ * @access  Private (Authenticated Users)
+ */
+router.get(
+  '/dashboard/stats',
+  protect,
+  getDashboardStatistics
 );
 
 /**
