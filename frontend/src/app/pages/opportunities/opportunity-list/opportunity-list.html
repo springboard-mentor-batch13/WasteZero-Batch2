@@ -4,8 +4,43 @@
     <button mat-flat-button class="create-button" routerLink="/opportunities/create"><mat-icon>add</mat-icon>Create Opportunity</button>
   </header>
 
+ <div class="filter-row">
+
+  <mat-form-field appearance="outline" class="search-field">
+    <mat-label>Search Opportunities</mat-label>
+
+    <input
+      matInput
+      type="text"
+      placeholder="Search by title, category or location"
+      [(ngModel)]="searchText"
+      (input)="searchOpportunities()">
+
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="category-field">
+    <mat-label>Category</mat-label>
+
+    <mat-select
+      [(value)]="selectedCategory"
+      (selectionChange)="searchOpportunities()">
+
+      <mat-option value="">All Categories</mat-option>
+
+      @for(category of categories; track category) {
+        <mat-option [value]="category">
+          {{ category }}
+        </mat-option>
+      }
+
+    </mat-select>
+  </mat-form-field>
+
+</div>
+
   <div class="opportunity-grid">
-    @for (opportunity of opportunities; track opportunity.id) {
+   @for (opportunity of filteredOpportunities; track opportunity.id)  {
       <mat-card class="opportunity-card">
         @if (opportunity.imagePreviewUrl) {
           <img mat-card-image [src]="opportunity.imagePreviewUrl" [alt]="opportunity.title">
