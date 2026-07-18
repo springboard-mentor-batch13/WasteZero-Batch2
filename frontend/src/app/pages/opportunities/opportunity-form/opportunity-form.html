@@ -46,13 +46,13 @@
               </div>
             </div>
 
-            @if (selectedImageFile && imagePreviewUrl) {
+            @if (imagePreviewUrl) {
               <div class="image-preview-card">
                 <img [src]="imagePreviewUrl" alt="Image Preview">
                 <div class="preview-details">
                   <p class="preview-label">Image Preview</p>
-                  <h3>{{ selectedImageFile.name }}</h3>
-                  <span>{{ imageFileSize() }}</span>
+                  <h3>{{ selectedImageFile?.name || 'Current opportunity image' }}</h3>
+                  @if (selectedImageFile) { <span>{{ imageFileSize() }}</span> }
                 </div>
                 <div class="preview-actions">
                   <button mat-stroked-button type="button" (click)="replaceImage()">
@@ -69,6 +69,7 @@
           </div>
           <mat-form-field appearance="outline"><mat-label>Location *</mat-label><input matInput formControlName="location"><mat-icon matPrefix>location_on</mat-icon><mat-error>{{ errorMessage('location') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Event Date *</mat-label><input matInput [matDatepicker]="picker" [min]="today" formControlName="eventDate"><mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle><mat-datepicker #picker></mat-datepicker><mat-error>{{ errorMessage('eventDate') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Duration *</mat-label><input matInput formControlName="duration" placeholder="e.g. 3 Hours" maxlength="100"><mat-icon matPrefix>schedule</mat-icon><mat-error>{{ errorMessage('duration') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Required Volunteers *</mat-label><input matInput type="number" min="1" formControlName="requiredVolunteers"><mat-icon matPrefix>groups</mat-icon><mat-error>{{ errorMessage('requiredVolunteers') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Skills Required (optional)</mat-label><input matInput formControlName="skillsRequired" placeholder="e.g. First aid, Teaching"><mat-icon matPrefix>handyman</mat-icon><mat-hint>Separate skills with commas</mat-hint></mat-form-field>
         </div>

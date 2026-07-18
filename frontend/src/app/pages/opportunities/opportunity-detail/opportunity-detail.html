@@ -1,4 +1,6 @@
-@if (opportunity; as item) {
+@if (loading) {
+  <section class="detail-page"><p class="muted">Loading opportunity details...</p></section>
+} @else if (opportunity; as item) {
   <section class="detail-page">
     <a mat-button routerLink="/opportunities"><mat-icon>arrow_back</mat-icon>Back to Opportunities</a>
 
@@ -7,16 +9,12 @@
         <h1>{{ item.title }}</h1>
         <p>Volunteer opportunity details</p>
       </div>
-      <span class="status-pill">Open</span>
+      <span class="status-pill">{{ item.status || 'Open' }}</span>
     </div>
 
     <div class="detail-layout">
       <div class="main-column">
-        @if (item.imagePreviewUrl) {
-          <img class="hero-image" [src]="item.imagePreviewUrl" [alt]="item.title">
-        } @else {
-          <div class="hero-placeholder"><mat-icon>image</mat-icon><span>No image available</span></div>
-        }
+        <img class="hero-image" [src]="item.imageUrl || placeholderImage" [alt]="item.title" (error)="usePlaceholder($event)">
 
         <mat-card>
           <mat-card-content>
@@ -42,9 +40,12 @@
           <h2>Opportunity Details</h2>
           <div class="details-list">
             <div><mat-icon>event</mat-icon><span><small>Date</small>{{ item.eventDate | date:'mediumDate' }}</span></div>
+            <div><mat-icon>schedule</mat-icon><span><small>Duration</small>{{ item.duration || 'Not Specified' }}</span></div>
             <div><mat-icon>category</mat-icon><span><small>Category</small>{{ item.category }}</span></div>
             <div><mat-icon>location_on</mat-icon><span><small>Location</small>{{ item.location }}</span></div>
             <div><mat-icon>groups</mat-icon><span><small>Volunteers Needed</small>{{ item.requiredVolunteers }}</span></div>
+            <div><mat-icon>person</mat-icon><span><small>Posted By</small>{{ postedByName(item.postedBy) }}</span></div>
+            @if (item.createdAt) { <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div> }
           </div>
           <div class="detail-actions">
             <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
@@ -54,4 +55,6 @@
       </mat-card>
     </div>
   </section>
+} @else {
+  <section class="detail-page"><p class="muted">{{ errorMessage || 'Unable to load opportunity details.' }}</p></section>
 }

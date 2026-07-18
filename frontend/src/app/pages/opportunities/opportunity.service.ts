@@ -1,76 +1,106 @@
-import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map, tap } from 'rxjs';
 
 import { Opportunity, OpportunityDraft } from './opportunity.model';
 
+interface ApiResponse<T> { success: boolean; message?: string; data: T; }
+
+interface OpportunityApiModel {
+  _id: string;
+  title: string;
+  description: string;
+  requiredSkills?: string[];
+  duration: string;
+  location: string;
+  category?: Opportunity['category'];
+  eventDate?: string;
+  requiredVolunteers?: number;
+  imageUrl?: string | null;
+  status?: string;
+  createdAt?: string;
+  ngoId?: string;
+  postedBy?: Opportunity['postedBy'];
+}
+
 @Injectable({ providedIn: 'root' })
 export class OpportunityService {
-  private nextId = 1;
-  private opportunities: Opportunity[] = [];
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = 'http://localhost:5000/api/opportunities';
 
-  // TODO: Replace these in-memory methods with backend API calls when available.
-  // TODO:
-  // Replace local image preview with backend upload
-  // POST /api/opportunities/upload
-  // Backend will upload to Cloudinary
-  // Backend returns imageUrl
-  // Store imageUrl inside Opportunity model
-  getAll(): Opportunity[] {
-    return this.opportunities.map((opportunity) => this.copy(opportunity));
+  getAll(): Observable<Opportunity[]> {
+    return this.http.get<ApiResponse<OpportunityApiModel[]>>(this.apiUrl, { headers: this.headers() }).pipe(
+      tap((response) => {
+        console.log('Fetched opportunities:', response);
+        console.log('Number of opportunities received:', response.data.length);
+      }),
+      map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
+    );
   }
 
-  getById(id: number): Opportunity | undefined {
-    const opportunity = this.opportunities.find((item) => item.id === id);
-    return opportunity ? this.copy(opportunity) : undefined;
+  getById(id: string): Observable<Opportunity> {
+    return this.http.get<ApiResponse<OpportunityApiModel>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(
+      tap((response) => console.log('Opportunity:', response.data)),
+      map((response) => this.fromApi(response.data))
+    );
   }
 
-  create(draft: OpportunityDraft): Opportunity {
-    const opportunity = this.toOpportunity(draft, this.nextId++);
-    this.opportunities = [...this.opportunities, opportunity];
-    return this.copy(opportunity);
+  create(draft: OpportunityDraft): Observable<Opportunity> {
+    return this.http.post<ApiResponse<OpportunityApiModel>>(this.apiUrl, this.toFormData(draft), { headers: this.headers() }).pipe(
+      map((response) => this.fromApi(response.data))
+    );
   }
 
-  update(id: number, draft: OpportunityDraft): Opportunity | undefined {
-    const index = this.opportunities.findIndex((item) => item.id === id);
-    if (index < 0) return undefined;
-
-    this.revokeImagePreview(this.opportunities[index], draft.imageFile, draft.removeImage);
-    const opportunity = this.toOpportunity(draft, id, this.opportunities[index]);
-    this.opportunities = this.opportunities.map((item, itemIndex) => itemIndex === index ? opportunity : item);
-    return this.copy(opportunity);
+  update(id: string, draft: OpportunityDraft): Observable<Opportunity> {
+    return this.http.put<ApiResponse<OpportunityApiModel>>(`${this.apiUrl}/${id}`, this.toFormData(draft), { headers: this.headers() }).pipe(
+      map((response) => this.fromApi(response.data))
+    );
   }
 
-  delete(id: number): boolean {
-    const opportunity = this.opportunities.find((item) => item.id === id);
-    this.revokeImagePreview(opportunity);
-    const initialLength = this.opportunities.length;
-    this.opportunities = this.opportunities.filter((item) => item.id !== id);
-    return this.opportunities.length !== initialLength;
+  delete(id: string): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(map(() => undefined));
   }
 
-  private copy(opportunity: Opportunity): Opportunity {
-    return { ...opportunity, skillsRequired: [...opportunity.skillsRequired] };
+  private headers(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
 
-  private toOpportunity(draft: OpportunityDraft, id: number, previous?: Opportunity): Opportunity {
-    const { removeImage, ...opportunityDraft } = draft;
-    const hasNewImage = !!opportunityDraft.imageFile && opportunityDraft.imageFile !== previous?.imageFile;
-    const imagePreviewUrl = removeImage
-      ? undefined
-      : hasNewImage
-        ? URL.createObjectURL(opportunityDraft.imageFile!)
-        : previous?.imagePreviewUrl;
-
+  private fromApi(opportunity: OpportunityApiModel): Opportunity {
     return {
-      ...opportunityDraft,
-      id,
-      imagePreviewUrl,
-      imageFile: removeImage ? undefined : opportunityDraft.imageFile,
-      skillsRequired: [...opportunityDraft.skillsRequired]
+      id: opportunity._id,
+      title: opportunity.title,
+      description: opportunity.description,
+      location: opportunity.location,
+      category: opportunity.category ?? 'Community Service',
+      eventDate: opportunity.eventDate ?? opportunity.duration,
+      requiredVolunteers: opportunity.requiredVolunteers ?? 0,
+      skillsRequired: opportunity.requiredSkills ?? [],
+      imageUrl: opportunity.imageUrl ?? undefined,
+      status: opportunity.status,
+      createdAt: opportunity.createdAt,
+      ngoId: opportunity.ngoId,
+      // Older records were created while the form incorrectly submitted the
+      // event date as duration. Do not present that date as a duration.
+      duration: opportunity.duration && opportunity.duration !== opportunity.eventDate
+        ? opportunity.duration
+        : undefined,
+      postedBy: opportunity.postedBy
     };
   }
 
-  private revokeImagePreview(opportunity?: Opportunity, replacementFile?: File, removeImage = false): void {
-    if (!opportunity?.imagePreviewUrl || (!removeImage && replacementFile === opportunity.imageFile)) return;
-    URL.revokeObjectURL(opportunity.imagePreviewUrl);
+  private toFormData(draft: OpportunityDraft): FormData {
+    const formData = new FormData();
+    formData.append('title', draft.title);
+    formData.append('category', draft.category);
+    formData.append('description', draft.description);
+    formData.append('location', draft.location);
+    formData.append('eventDate', draft.eventDate);
+    formData.append('requiredVolunteers', String(draft.requiredVolunteers));
+    formData.append('requiredSkills', JSON.stringify(draft.skillsRequired));
+    formData.append('duration', draft.duration || '');
+    formData.append('removeImage', String(!!draft.removeImage));
+    if (draft.imageFile) formData.append('image', draft.imageFile);
+    return formData;
   }
 }
