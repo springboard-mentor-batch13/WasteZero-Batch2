@@ -46,7 +46,7 @@
               </div>
             </div>
 
-            @if (imagePreviewUrl) {
+            @if (selectedImageFile && imagePreviewUrl) {
               <div class="image-preview-card">
                 <img [src]="imagePreviewUrl" alt="Image Preview">
                 <div class="preview-details">
