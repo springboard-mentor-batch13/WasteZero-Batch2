@@ -1,22 +1,17 @@
-<h1>Dashboard</h1>
+<!-- Admin Dashboard -->
+<app-admin-dashboard
+  *ngIf="isAdmin"
+  [userName]="user?.fullName">
+</app-admin-dashboard>
 
-<br>
+<!-- NGO Dashboard -->
+<app-ngo-dashboard
+  *ngIf="isNGO"
+  [userName]="user?.fullName">
+</app-ngo-dashboard>
 
-<div class="cards">
-
-    <div class="card">
-        <h2>120</h2>
-        <p>Total Pickups</p>
-    </div>
-
-    <div class="card">
-        <h2>85%</h2>
-        <p>Recycling Rate</p>
-    </div>
-
-    <div class="card">
-        <h2>42</h2>
-        <p>Active Users</p>
-    </div>
-
-</div>
+<!-- Volunteer Dashboard -->
+<app-volunteer-dashboard
+  *ngIf="isVolunteer"
+  [userName]="user?.fullName">
+</app-volunteer-dashboard>

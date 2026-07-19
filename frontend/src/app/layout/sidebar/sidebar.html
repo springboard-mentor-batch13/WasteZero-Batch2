@@ -1,111 +1,102 @@
 <div class="sidebar">
 
-    <div class="logo">
+  <!-- Logo -->
+  <div class="logo">
+    <h2>♻️ WasteZero</h2>
+  </div>
 
-    <div class="logo-icon">
-        <i class="bi bi-recycle"></i>
+  <!-- User -->
+  <div class="profile-section">
+
+    <div class="avatar">
+      {{ user?.fullName?.charAt(0) || 'U' }}
     </div>
 
-    <span>WasteZero</span>
-
-</div>
-
-    <!-- User -->
-    <div class="user-card">
-
-        <div class="avatar">
-            A
-        </div>
-
-        <div class="user-details">
-            <h4>Admin User</h4>
-            <p>Admin</p>
-        </div>
-
+    <div class="user-details">
+      <h4>{{ user?.fullName }}</h4>
+      <p>{{ user?.role }}</p>
     </div>
 
-    <!-- Main Menu -->
+  </div>
 
-    <p class="menu-title">MAIN MENU</p>
+  <!-- Menu -->
+  <ul class="menu">
 
-    <ul>
+    <!-- Dashboard -->
+    <li>
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <span>🏠</span>
+        Dashboard
+      </a>
+    </li>
 
-        <li routerLink="/dashboard" routerLinkActive="active">
-    <i class="bi bi-grid"></i>
-    Dashboard
-</li>
+    @if (isAdmin) {
 
-        <li>
-            <i class="bi bi-calendar-check"></i>
-            Schedule Pickup
-        </li>
+      <li>
+        <a routerLink="/users" routerLinkActive="active">
+          <span>👥</span>
+          Users
+        </a>
+      </li>
 
-        <li routerLink="/opportunities" routerLinkActive="active">
-            <i class="bi bi-recycle"></i>
-            Opportunities
-        </li>
+      <li>
+        <a routerLink="/opportunities" routerLinkActive="active">
+          <span>♻️</span>
+          Opportunities
+        </a>
+      </li>
 
-        <li>
-            <i class="bi bi-chat-left-text"></i>
-            Messages
-        </li>
+      <li>
+        <a routerLink="/reports" routerLinkActive="active">
+          <span>📊</span>
+          Reports
+        </a>
+      </li>
 
-        <li>
-            <i class="bi bi-bar-chart"></i>
-            My Impact
-        </li>
+    }
 
-    </ul>
+    @if (isNGO) {
 
-    <!-- Settings -->
+      <li>
+        <a routerLink="/opportunities" routerLinkActive="active">
+          <span>📢</span>
+          Opportunities
+        </a>
+      </li>
 
-    <p class="menu-title">SETTINGS</p>
+    }
 
-    <ul>
-        <li routerLink="/my-profile" routerLinkActive="active">
-             <i class="bi bi-person"></i>
-             My Profile
-        </li>
+    @if (isVolunteer) {
 
-        <li>
-            <i class="bi bi-gear"></i>
-            Settings
-        </li>
+      <li>
+        <a routerLink="/opportunities" routerLinkActive="active">
+          <span>🌱</span>
+          Opportunities
+        </a>
+      </li>
 
-        <li>
-            <i class="bi bi-question-circle"></i>
-            Help & Support
-        </li>
+    }
 
-        <li>
-            <i class="bi bi-shield-lock"></i>
-            Admin Panel
-        </li>
+    <!-- Common -->
+    <li>
+      <a routerLink="/my-profile" routerLinkActive="active">
+        <span>👤</span>
+        My Profile
+      </a>
+    </li>
 
-    </ul>
+  </ul>
 
-   <div class="dark-mode">
+  <!-- Logout -->
+  <div class="logout-section">
 
-    <span>Dark Mode</span>
+    <button (click)="logout()">
+      🚪 Logout
+    </button>
 
-    <div class="theme-toggle">
-        <i class="bi bi-sun"></i>
-
-        <label class="switch">
-            <input type="checkbox">
-            <span class="slider"></span>
-        </label>
-
-        <i class="bi bi-moon"></i>
-    </div>
-
-</div>
-
-<!-- Sign Out -->
-
-<button class="sign-out" (click)="logout()">
-    <i class="bi bi-box-arrow-right"></i>
-    Sign Out
-</button>
+  </div>
 
 </div>

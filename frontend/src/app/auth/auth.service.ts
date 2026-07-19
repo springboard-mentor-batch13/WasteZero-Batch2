@@ -186,4 +186,39 @@ export class AuthService {
 
     }
   }
+  saveUser(user: AuthResponse['user']): void {
+  if (typeof localStorage === 'undefined' || !user) {
+    return;
+  }
+
+  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('role', user.role);
+}
+
+getUser(): AuthResponse['user'] | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  const user = localStorage.getItem('user');
+  return user ? JSON.parse(user) : null;
+}
+
+getRole(): string | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  return localStorage.getItem('role');
+}
+
+logout(): void {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+
+  localStorage.removeItem(this.tokenKey);
+  localStorage.removeItem('user');
+  localStorage.removeItem('role');
+}
 }
