@@ -4,12 +4,9 @@ const router = express.Router();
 const {
   createOpportunity,
   getAllOpportunities,
-<<<<<<< HEAD
   searchOpportunities,
   filterOpportunities,
   getDashboardStatistics,
-=======
->>>>>>> 74657f5b18b9671f0069dc53cd7b7c1a27336275
   getOpportunityById,
   updateOpportunity,
   deleteOpportunity,
@@ -18,10 +15,7 @@ const {
 // Middleware
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
-<<<<<<< HEAD
 const { upload } = require('../config/cloudinary');
-=======
->>>>>>> 74657f5b18b9671f0069dc53cd7b7c1a27336275
 
 /**
  * @route   POST /api/opportunities
@@ -32,10 +26,7 @@ router.post(
   '/',
   protect,
   authorizeRoles('NGO', 'Admin'),
-<<<<<<< HEAD
   upload.single('image'),
-=======
->>>>>>> 74657f5b18b9671f0069dc53cd7b7c1a27336275
   createOpportunity
 );
 
@@ -51,7 +42,6 @@ router.get(
 );
 
 /**
-<<<<<<< HEAD
  * @route   GET /api/opportunities/search
  * @desc    Search opportunities by title or description
  * @access  Private (Authenticated Users)
@@ -84,8 +74,6 @@ router.get(
 );
 
 /**
-=======
->>>>>>> 74657f5b18b9671f0069dc53cd7b7c1a27336275
  * @route   GET /api/opportunities/:id
  * @desc    Get a single opportunity by ID
  * @access  Private (Authenticated Users)
@@ -105,10 +93,7 @@ router.put(
   '/:id',
   protect,
   authorizeRoles('NGO', 'Admin'),
-<<<<<<< HEAD
   upload.single('image'),
-=======
->>>>>>> 74657f5b18b9671f0069dc53cd7b7c1a27336275
   updateOpportunity
 );
 
@@ -124,8 +109,4 @@ router.delete(
   deleteOpportunity
 );
 
-<<<<<<< HEAD
 module.exports = router;
-=======
-module.exports = router;
->>>>>>> 74657f5b18b9671f0069dc53cd7b7c1a27336275
