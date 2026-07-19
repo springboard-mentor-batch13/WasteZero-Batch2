@@ -17,7 +17,8 @@
       "Admin"
     ],
 
-    "location": "String",
+    "city": "String",
+    "state": "String",
 
     "skills": [
       "String"
