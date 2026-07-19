@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 
-import { Opportunity } from '../opportunity.model';
+import { OPPORTUNITY_STATUSES, Opportunity, OpportunityStatus } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
 import { AuthService } from '../../../auth/auth.service';
 
@@ -29,9 +29,9 @@ export class OpportunityList implements OnInit {
   filteredOpportunities: Opportunity[] = [];
   loading = true;
   searchText = '';
-  selectedStatus = '';
+  selectedStatus: OpportunityStatus | '' = '';
   selectedLocation = '';
-  statuses: string[] = [];
+  readonly statuses = OPPORTUNITY_STATUSES;
   locations: string[] = [];
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
@@ -40,10 +40,14 @@ export class OpportunityList implements OnInit {
   }
 
   private loadOpportunities(): void {
-    this.opportunitiesService.getAll().subscribe({
+    this.loading = true;
+    const request = this.selectedStatus
+      ? this.opportunitiesService.getByStatus(this.selectedStatus)
+      : this.opportunitiesService.getAll();
+
+    request.subscribe({
       next: (opportunities) => {
         this.opportunities = opportunities;
-        this.statuses = [...new Set(opportunities.map((opportunity) => opportunity.status || 'Open'))];
         this.locations = [...new Set(opportunities.map((opportunity) => opportunity.location))];
         this.applyFilters();
         this.loading = false;
@@ -53,12 +57,16 @@ export class OpportunityList implements OnInit {
         console.error('Failed to load opportunities:', error);
         this.opportunities = [];
         this.filteredOpportunities = [];
-        this.statuses = [];
         this.locations = [];
         this.loading = false;
         this.cdr.detectChanges();
       }
     });
+  }
+
+  onStatusChange(): void {
+    this.selectedLocation = '';
+    this.loadOpportunities();
   }
 
   applyFilters(): void {

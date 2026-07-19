@@ -1,8 +1,8 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 
-import { Opportunity, OpportunityDraft } from './opportunity.model';
+import { Opportunity, OpportunityDraft, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> { success: boolean; message?: string; data: T; }
 
@@ -45,6 +45,13 @@ export class OpportunityService {
     );
   }
 
+  getByStatus(status: OpportunityStatus): Observable<Opportunity[]> {
+    const params = new HttpParams().set('status', status);
+    return this.http.get<ApiResponse<OpportunityApiModel[]>>(`${this.apiUrl}/filter`, { headers: this.headers(), params }).pipe(
+      map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
+    );
+  }
+
   create(draft: OpportunityDraft): Observable<Opportunity> {
     return this.http.post<ApiResponse<OpportunityApiModel>>(this.apiUrl, this.toFormData(draft), { headers: this.headers() }).pipe(
       map((response) => this.fromApi(response.data))
@@ -77,7 +84,7 @@ export class OpportunityService {
       requiredVolunteers: opportunity.requiredVolunteers ?? 0,
       skillsRequired: opportunity.requiredSkills ?? [],
       imageUrl: opportunity.imageUrl ?? undefined,
-      status: opportunity.status,
+      status: opportunity.status ?? 'Open',
       createdAt: opportunity.createdAt,
       ngoId: opportunity.ngoId,
       // Older records were created while the form incorrectly submitted the
@@ -92,7 +99,7 @@ export class OpportunityService {
   private toFormData(draft: OpportunityDraft): FormData {
     const formData = new FormData();
     formData.append('title', draft.title);
-    formData.append('category', draft.category);
+    formData.append('status', draft.status);
     formData.append('description', draft.description);
     formData.append('location', draft.location);
     formData.append('eventDate', draft.eventDate);

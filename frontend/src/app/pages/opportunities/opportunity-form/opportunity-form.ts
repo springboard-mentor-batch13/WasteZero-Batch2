@@ -11,7 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { OPPORTUNITY_CATEGORIES, Opportunity, OpportunityCategory, OpportunityDraft } from '../opportunity.model';
+import { OPPORTUNITY_STATUSES, Opportunity, OpportunityDraft, OpportunityStatus } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
 
 @Component({
@@ -31,7 +31,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly snackBar = inject(MatSnackBar);
 
-  readonly categories = OPPORTUNITY_CATEGORIES;
+  readonly statuses = OPPORTUNITY_STATUSES;
   readonly today = new Date();
   readonly acceptedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   readonly maxImageSize = 5 * 1024 * 1024;
@@ -45,7 +45,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
-    category: ['' as OpportunityCategory | '', Validators.required],
+    status: ['' as OpportunityStatus | '', Validators.required],
     description: ['', [Validators.required, Validators.minLength(30), Validators.maxLength(1000)]],
     location: ['', Validators.required],
     eventDate: [null as Date | null, Validators.required],
@@ -62,7 +62,12 @@ export class OpportunityForm implements OnInit, OnDestroy {
     this.opportunities.getById(id).subscribe({
       next: (opportunity) => {
         this.opportunityId = id;
-        this.form.patchValue({ ...opportunity, eventDate: this.toLocalDate(opportunity.eventDate), skillsRequired: opportunity.skillsRequired.join(', ') });
+        this.form.patchValue({
+          ...opportunity,
+          status: this.toOpportunityStatus(opportunity.status),
+          eventDate: this.toLocalDate(opportunity.eventDate),
+          skillsRequired: opportunity.skillsRequired.join(', ')
+        });
         this.imagePreviewUrl = opportunity.imageUrl;
         this.serviceOwnedPreview = !!opportunity.imageUrl;
       },
@@ -170,7 +175,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
   private toDraft(): OpportunityDraft {
     const value = this.form.getRawValue();
     return {
-      title: value.title.trim(), category: value.category as OpportunityCategory, description: value.description.trim(),
+      title: value.title.trim(), status: value.status as OpportunityStatus, description: value.description.trim(),
       location: value.location.trim(), eventDate: this.toIsoDate(value.eventDate!), duration: value.duration.trim(), requiredVolunteers: Number(value.requiredVolunteers),
       skillsRequired: value.skillsRequired.split(',').map((skill) => skill.trim()).filter(Boolean),
       imageFile: this.selectedImageFile,
@@ -209,5 +214,6 @@ export class OpportunityForm implements OnInit, OnDestroy {
 
   private toIsoDate(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
   private toLocalDate(date: string): Date { const [year, month, day] = date.split('-').map(Number); return new Date(year, month - 1, day); }
+  private toOpportunityStatus(status: string): OpportunityStatus { return this.statuses.includes(status as OpportunityStatus) ? status as OpportunityStatus : 'Open'; }
   private showMessage(message: string): void { this.snackBar.open(message, 'Close', { duration: 3500 }); }
 }

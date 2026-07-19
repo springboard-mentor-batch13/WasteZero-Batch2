@@ -14,7 +14,7 @@
       <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="form-grid">
           <mat-form-field appearance="outline"><mat-label>Opportunity Title *</mat-label><input matInput formControlName="title" maxlength="100"><mat-icon matPrefix>volunteer_activism</mat-icon><mat-hint align="end">{{ form.controls.title.value.length }}/100</mat-hint><mat-error>{{ errorMessage('title') }}</mat-error></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Category *</mat-label><mat-select formControlName="category"><mat-option value="">Select category</mat-option>@for (category of categories; track category) { <mat-option [value]="category">{{ category }}</mat-option> }</mat-select><mat-icon matPrefix>category</mat-icon><mat-error>{{ errorMessage('category') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Status *</mat-label><mat-select formControlName="status"><mat-option value="">Select status</mat-option>@for (status of statuses; track status) { <mat-option [value]="status">{{ status }}</mat-option> }</mat-select><mat-icon matPrefix>flag</mat-icon><mat-error>{{ errorMessage('status') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline" class="full-width"><mat-label>Description *</mat-label><textarea matInput rows="5" formControlName="description" maxlength="1000"></textarea><mat-hint align="end">{{ form.controls.description.value.length }}/1000</mat-hint><mat-error>{{ errorMessage('description') }}</mat-error></mat-form-field>
           <div class="image-upload-section full-width">
             <input

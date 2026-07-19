@@ -8,7 +8,7 @@ export interface Opportunity {
   requiredVolunteers: number;
   skillsRequired: string[];
   imageUrl?: string;
-  status?: string;
+  status: string;
   createdAt?: string;
   ngoId?: string;
   duration?: string;
@@ -28,7 +28,10 @@ export type OpportunityCategory =
   | 'Animal Welfare'
   | 'Community Service';
 
-export type OpportunityDraft = Omit<Opportunity, 'id' | 'imagePreviewUrl'> & {
+export type OpportunityStatus = 'Open' | 'In Progress' | 'Closed';
+
+export type OpportunityDraft = Omit<Opportunity, 'id' | 'category' | 'imagePreviewUrl' | 'status'> & {
+  status: OpportunityStatus;
   removeImage?: boolean;
 };
 
@@ -39,3 +42,5 @@ export const OPPORTUNITY_CATEGORIES: OpportunityCategory[] = [
   'Animal Welfare',
   'Community Service'
 ];
+
+export const OPPORTUNITY_STATUSES: OpportunityStatus[] = ['Open', 'In Progress', 'Closed'];
