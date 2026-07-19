@@ -5,6 +5,7 @@ const {
   loginUser, 
   sendRegisterOTP, 
   verifyRegisterOTP,
+  resendRegisterOTP,
   forgotPassword,
   verifyResetOtp,
   resetPassword
@@ -96,6 +97,14 @@ router.post(
     body('otp').trim().notEmpty().withMessage('OTP is required'),
   ],
   verifyRegisterOTP
+);
+
+router.post(
+  '/resend-otp',
+  [
+    body('email').isEmail().withMessage('Please enter a valid email address'),
+  ],
+  resendRegisterOTP
 );
 
 // Send password reset OTP

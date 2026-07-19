@@ -11,6 +11,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DeleteOpportunityDialog } from '../delete-opportunity-dialog/delete-opportunity-dialog';
 import { Opportunity } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-opportunity-detail',
@@ -26,6 +27,7 @@ export class OpportunityDetail implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
 
   opportunity?: Opportunity;
   loading = true;
@@ -61,7 +63,7 @@ export class OpportunityDetail implements OnInit {
   }
 
   delete(): void {
-    if (!this.opportunity) return;
+    if (!this.opportunity || !this.canManageOpportunities()) return;
     this.dialog.open(DeleteOpportunityDialog, { data: { title: this.opportunity.title }, width: '420px' })
       .afterClosed()
       .subscribe((confirmed) => {
@@ -88,4 +90,6 @@ export class OpportunityDetail implements OnInit {
     if (typeof postedBy === 'string') return postedBy;
     return postedBy?.name || postedBy?.email || 'Unknown User';
   }
+
+  canManageOpportunities(): boolean { return this.authService.canManageOpportunities(); }
 }

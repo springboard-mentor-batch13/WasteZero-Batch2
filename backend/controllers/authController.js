@@ -246,6 +246,45 @@ const verifyRegisterOTP = async (req, res, next) => {
 };
 
 /**
+ * Resend a registration verification OTP for an unverified registration.
+ */
+const resendRegisterOTP = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    const otpRecord = await RegistrationOTP.findOne({ email: email.toLowerCase() });
+
+    if (!otpRecord) {
+      return res.status(404).json({ success: false, message: 'No pending registration found for this email' });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      await RegistrationOTP.deleteOne({ _id: otpRecord._id });
+      return res.status(400).json({ success: false, message: 'OTP has expired. Please register again.' });
+    }
+
+    const otp = generateOTP();
+    otpRecord.otp = otp;
+    otpRecord.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await otpRecord.save();
+
+    await sendEmail({
+      to: otpRecord.email,
+      subject: 'WasteZero Account Verification',
+      html: `Hello ${otpRecord.fullName},<br><br>Your new WasteZero verification code is<br><br><strong>${otp}</strong><br><br>This OTP is valid for 10 minutes.<br><br>Do not share this code with anyone.<br><br>Regards,<br>WasteZero Team`,
+    });
+
+    res.status(200).json({ success: true, message: 'A new OTP has been sent to your email' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * Login an existing user.
  */
 const loginUser = async (req, res, next) => {
@@ -456,6 +495,7 @@ module.exports = {
   loginUser,
   sendRegisterOTP,
   verifyRegisterOTP,
+  resendRegisterOTP,
   forgotPassword,
   verifyResetOtp,
   resetPassword

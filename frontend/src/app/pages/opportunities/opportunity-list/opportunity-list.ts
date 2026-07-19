@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 
 import { Opportunity } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-opportunity-list',
@@ -22,13 +23,16 @@ import { OpportunityService } from '../opportunity.service';
 export class OpportunityList implements OnInit {
   private readonly opportunitiesService = inject(OpportunityService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService);
 
   opportunities: Opportunity[] = [];
   filteredOpportunities: Opportunity[] = [];
   loading = true;
   searchText = '';
-  selectedCategory = '';
-  categories: string[] = [];
+  selectedStatus = '';
+  selectedLocation = '';
+  statuses: string[] = [];
+  locations: string[] = [];
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
   ngOnInit(): void {
@@ -39,7 +43,8 @@ export class OpportunityList implements OnInit {
     this.opportunitiesService.getAll().subscribe({
       next: (opportunities) => {
         this.opportunities = opportunities;
-        this.categories = [...new Set(opportunities.map((opportunity) => opportunity.category))];
+        this.statuses = [...new Set(opportunities.map((opportunity) => opportunity.status || 'Open'))];
+        this.locations = [...new Set(opportunities.map((opportunity) => opportunity.location))];
         this.applyFilters();
         this.loading = false;
         this.cdr.detectChanges();
@@ -48,7 +53,8 @@ export class OpportunityList implements OnInit {
         console.error('Failed to load opportunities:', error);
         this.opportunities = [];
         this.filteredOpportunities = [];
-        this.categories = [];
+        this.statuses = [];
+        this.locations = [];
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -62,8 +68,9 @@ export class OpportunityList implements OnInit {
         opportunity.title.toLowerCase().includes(search) ||
         opportunity.location.toLowerCase().includes(search) ||
         opportunity.category.toLowerCase().includes(search);
-      const matchesCategory = !this.selectedCategory || opportunity.category === this.selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesStatus = !this.selectedStatus || (opportunity.status || 'Open') === this.selectedStatus;
+      const matchesLocation = !this.selectedLocation || opportunity.location === this.selectedLocation;
+      return matchesSearch && matchesStatus && matchesLocation;
     });
   }
 
@@ -71,4 +78,6 @@ export class OpportunityList implements OnInit {
     const image = event.target as HTMLImageElement;
     if (!image.src.endsWith(this.placeholderImage)) image.src = this.placeholderImage;
   }
+
+  canManageOpportunities(): boolean { return this.authService.canManageOpportunities(); }
 }
