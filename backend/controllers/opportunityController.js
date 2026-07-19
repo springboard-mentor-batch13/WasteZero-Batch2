@@ -63,6 +63,8 @@ const createOpportunity = async (req, res) => {
     };
     console.log('Creating opportunity for user:', req.user._id);
     if (skills !== undefined) opportunityData.requiredSkills = skills;
+    
+    if (requiredSkills) opportunityData.requiredSkills = requiredSkills;
     if (status) opportunityData.status = status;
 
     const opportunity = await Opportunity.create(opportunityData);
@@ -283,6 +285,9 @@ const updateOpportunity = async (req, res) => {
     if (requiredVolunteers !== undefined) updateFields.requiredVolunteers = requiredVolunteers;
     if (req.file) updateFields.imageUrl = req.file.path;
     else if (removeImage === 'true') updateFields.imageUrl = '';
+    if (requiredSkills) updateFields.requiredSkills = requiredSkills;
+    if (duration) updateFields.duration = duration;
+    if (location) updateFields.location = location;
     if (status) updateFields.status = status;
 
     const opportunity = await Opportunity.findByIdAndUpdate(
