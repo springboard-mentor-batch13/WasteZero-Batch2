@@ -1,11 +1,24 @@
 const Opportunity = require('../models/Opportunity');
 
+const parseRequiredSkills = (requiredSkills) => {
+  if (Array.isArray(requiredSkills)) return requiredSkills;
+  if (typeof requiredSkills !== 'string') return undefined;
+
+  try {
+    const parsed = JSON.parse(requiredSkills);
+    return Array.isArray(parsed) ? parsed : undefined;
+  } catch {
+    return requiredSkills.split(',').map((skill) => skill.trim()).filter(Boolean);
+  }
+};
+
 /**
  * Create a new opportunity.
  */
 const createOpportunity = async (req, res) => {
   try {
-    const { title, description, requiredSkills, duration, location, status } = req.body;
+    const { title, description, requiredSkills, duration, location, status, category, eventDate, requiredVolunteers } = req.body;
+    const skills = parseRequiredSkills(requiredSkills);
 
     // Validate required fields
     if (!title?.trim()) {
@@ -38,11 +51,19 @@ const createOpportunity = async (req, res) => {
 
     const opportunityData = {
       ngoId: req.user._id,
+      postedBy: req.user._id,
       title,
       description,
       duration,
       location,
+      category,
+      eventDate,
+      requiredVolunteers,
+      imageUrl: req.file?.path || '',
     };
+    console.log('Creating opportunity for user:', req.user._id);
+    if (skills !== undefined) opportunityData.requiredSkills = skills;
+    
     if (requiredSkills) opportunityData.requiredSkills = requiredSkills;
     if (status) opportunityData.status = status;
 
@@ -209,16 +230,35 @@ const getDashboardStatistics = async (req, res) => {
  */
 const getOpportunityById = async (req, res) => {
   try {
-    const opportunity = await Opportunity.findById(req.params.id);
+    const opportunity = await Opportunity.findById(req.params.id)
+      .populate('postedBy', 'fullName email role')
+      .populate('ngoId', 'fullName email role');
 
     // Return 404 if not found
     if (!opportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });
     }
 
+    const data = opportunity.toObject();
+    const isPopulatedUser = (user) => user && typeof user === 'object' && (user.fullName || user.email);
+    // ngoId is retained as a fallback for opportunities created before postedBy
+    // was added to the schema.
+    const creator = isPopulatedUser(data.postedBy)
+      ? data.postedBy
+      : isPopulatedUser(data.ngoId)
+        ? data.ngoId
+        : data.postedBy || data.ngoId;
+    const postedBy = isPopulatedUser(creator)
+      ? {
+        _id: creator._id,
+        name: creator.fullName,
+        email: creator.email,
+      }
+      : creator;
+
     res.status(200).json({
       success: true,
-      data: opportunity,
+      data: { ...data, postedBy },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
@@ -230,12 +270,21 @@ const getOpportunityById = async (req, res) => {
  */
 const updateOpportunity = async (req, res) => {
   try {
-    const { title, description, requiredSkills, duration, location, status } = req.body;
+    const { title, description, requiredSkills, duration, location, status, category, eventDate, requiredVolunteers, removeImage } = req.body;
+    const skills = parseRequiredSkills(requiredSkills);
 
     // Build update object based on provided fields
     const updateFields = {};
     if (title) updateFields.title = title;
     if (description) updateFields.description = description;
+    if (skills !== undefined) updateFields.requiredSkills = skills;
+    if (duration) updateFields.duration = duration;
+    if (location) updateFields.location = location;
+    if (category !== undefined) updateFields.category = category;
+    if (eventDate !== undefined) updateFields.eventDate = eventDate;
+    if (requiredVolunteers !== undefined) updateFields.requiredVolunteers = requiredVolunteers;
+    if (req.file) updateFields.imageUrl = req.file.path;
+    else if (removeImage === 'true') updateFields.imageUrl = '';
     if (requiredSkills) updateFields.requiredSkills = requiredSkills;
     if (duration) updateFields.duration = duration;
     if (location) updateFields.location = location;

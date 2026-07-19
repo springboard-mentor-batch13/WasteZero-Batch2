@@ -1,5 +1,5 @@
 export interface Opportunity {
-  id: number;
+  id: string;
   title: string;
   category: OpportunityCategory;
   description: string;
@@ -7,6 +7,16 @@ export interface Opportunity {
   eventDate: string;
   requiredVolunteers: number;
   skillsRequired: string[];
+  imageUrl?: string;
+  status?: string;
+  createdAt?: string;
+  ngoId?: string;
+  duration?: string;
+  postedBy?: {
+    _id?: string;
+    name?: string;
+    email?: string;
+  } | string;
   imageFile?: File;
   imagePreviewUrl?: string;
 }

@@ -36,7 +36,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
   readonly acceptedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   readonly maxImageSize = 5 * 1024 * 1024;
   loading = false;
-  opportunityId?: number;
+  opportunityId?: string;
   selectedImageFile?: File;
   imagePreviewUrl?: string;
   isDraggingImage = false;
@@ -49,6 +49,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
     description: ['', [Validators.required, Validators.minLength(30), Validators.maxLength(1000)]],
     location: ['', Validators.required],
     eventDate: [null as Date | null, Validators.required],
+    duration: ['', Validators.required],
     requiredVolunteers: [null as number | null, [Validators.required, Validators.min(1)]],
     skillsRequired: ['']
   });
@@ -56,20 +57,21 @@ export class OpportunityForm implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.mode = this.route.snapshot.data['mode'] === 'edit' ? 'edit' : this.mode;
     if (this.mode !== 'edit') return;
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    const opportunity = this.opportunities.getById(id);
-    if (!opportunity) {
-      this.showMessage('Unable to complete action.');
-      this.router.navigate(['/opportunities']);
-      return;
-    }
-    this.opportunityId = id;
-    this.form.patchValue({ ...opportunity, eventDate: this.toLocalDate(opportunity.eventDate), skillsRequired: opportunity.skillsRequired.join(', ') });
-    if (opportunity.imageFile && opportunity.imagePreviewUrl) {
-      this.selectedImageFile = opportunity.imageFile;
-      this.imagePreviewUrl = opportunity.imagePreviewUrl;
-      this.serviceOwnedPreview = true;
-    }
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) return;
+    this.opportunities.getById(id).subscribe({
+      next: (opportunity) => {
+        this.opportunityId = id;
+        this.form.patchValue({ ...opportunity, eventDate: this.toLocalDate(opportunity.eventDate), skillsRequired: opportunity.skillsRequired.join(', ') });
+        this.imagePreviewUrl = opportunity.imageUrl;
+        this.serviceOwnedPreview = !!opportunity.imageUrl;
+      },
+      error: (error) => {
+        console.error('Failed to load opportunity:', error);
+        this.showMessage('Unable to load opportunity.');
+        this.router.navigate(['/opportunities']);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -83,22 +85,25 @@ export class OpportunityForm implements OnInit, OnDestroy {
       return;
     }
     this.loading = true;
-    window.setTimeout(() => {
-      try {
-        const draft = this.toDraft();
-        const result = this.mode === 'create'
-          ? this.opportunities.create(draft)
-          : this.opportunities.update(this.opportunityId!, draft);
-        if (!result) throw new Error('Opportunity not found');
+    const draft = this.toDraft();
+    const request = this.mode === 'create'
+      ? this.opportunities.create(draft)
+      : this.opportunities.update(this.opportunityId!, draft);
+    request.subscribe({
+      next: () => {
         this.showMessage(this.mode === 'create' ? 'Opportunity created successfully.' : 'Opportunity updated successfully.');
         this.form.reset();
         this.router.navigate(['/opportunities']);
-      } catch {
-        this.showMessage('Unable to complete action.');
-      } finally {
+      },
+      error: (error) => {
+        console.error('Failed to save opportunity:', error);
+        this.showMessage(error.error?.message || 'Unable to complete action.');
+        this.loading = false;
+      },
+      complete: () => {
         this.loading = false;
       }
-    }, 350);
+    });
   }
 
   cancel(): void { this.router.navigate(['/opportunities']); }
@@ -166,7 +171,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
     const value = this.form.getRawValue();
     return {
       title: value.title.trim(), category: value.category as OpportunityCategory, description: value.description.trim(),
-      location: value.location.trim(), eventDate: this.toIsoDate(value.eventDate!), requiredVolunteers: Number(value.requiredVolunteers),
+      location: value.location.trim(), eventDate: this.toIsoDate(value.eventDate!), duration: value.duration.trim(), requiredVolunteers: Number(value.requiredVolunteers),
       skillsRequired: value.skillsRequired.split(',').map((skill) => skill.trim()).filter(Boolean),
       imageFile: this.selectedImageFile,
       removeImage: this.imageRemoved

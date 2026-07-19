@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -25,12 +25,39 @@ export class OpportunityDetail implements OnInit {
   private readonly opportunities = inject(OpportunityService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   opportunity?: Opportunity;
+  loading = true;
+  errorMessage = '';
+  readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
   ngOnInit(): void {
-    this.opportunity = this.opportunities.getById(Number(this.route.snapshot.paramMap.get('id')));
-    if (!this.opportunity) this.router.navigate(['/opportunities']);
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (!id) {
+        this.loading = false;
+        this.errorMessage = 'Unable to load opportunity details.';
+        return;
+      }
+
+      this.loading = true;
+      this.errorMessage = '';
+      this.opportunities.getById(id).subscribe({
+        next: (opportunity) => {
+          console.log('Loaded opportunity details:', opportunity);
+          this.opportunity = opportunity;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to load opportunity:', error);
+          this.loading = false;
+          this.errorMessage = 'Unable to load opportunity details.';
+          this.cdr.detectChanges();
+        }
+      });
+    });
   }
 
   delete(): void {
@@ -39,12 +66,26 @@ export class OpportunityDetail implements OnInit {
       .afterClosed()
       .subscribe((confirmed) => {
         if (!confirmed) return;
-        if (this.opportunities.delete(this.opportunity!.id)) {
+        this.opportunities.delete(this.opportunity!.id).subscribe({
+          next: () => {
           this.snackBar.open('Opportunity deleted successfully.', 'Close', { duration: 3500 });
           this.router.navigate(['/opportunities']);
-        } else {
-          this.snackBar.open('Unable to complete action.', 'Close', { duration: 3500 });
-        }
+          },
+          error: (error) => {
+            console.error('Failed to delete opportunity:', error);
+            this.snackBar.open(error.error?.message || 'Unable to complete action.', 'Close', { duration: 3500 });
+          }
+        });
       });
+  }
+
+  usePlaceholder(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    if (!image.src.endsWith(this.placeholderImage)) image.src = this.placeholderImage;
+  }
+
+  postedByName(postedBy?: Opportunity['postedBy']): string {
+    if (typeof postedBy === 'string') return postedBy;
+    return postedBy?.name || postedBy?.email || 'Unknown User';
   }
 }

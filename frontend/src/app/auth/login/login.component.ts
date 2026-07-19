@@ -57,10 +57,14 @@ export class LoginComponent {
       });
 
       if (response.token) {
-        this.authService.saveToken(response.token);
-      }
+  this.authService.saveToken(response.token);
+}
 
-      await this.redirectIfRouteExists('my-profile');
+if (response.user) {
+  this.authService.saveUser(response.user);
+}
+
+await this.router.navigate(['/dashboard']);
     } catch (error) {
       this.errorMessage =
         error instanceof Error ? error.message : 'Login failed';
@@ -71,9 +75,5 @@ export class LoginComponent {
     }
   }
 
-  private async redirectIfRouteExists(path: string): Promise<void> {
-    if (this.router.config.some(route => route.path === path)) {
-      await this.router.navigate([path]);
-    }
-  }
+  
 }

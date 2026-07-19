@@ -1,29 +1,20 @@
 <div class="sidebar">
 
-    <div class="logo">
+  <!-- Logo -->
+  <div class="logo">
+    <h2>♻️ WasteZero</h2>
+  </div>
 
-    <div class="logo-icon">
-        <i class="bi bi-recycle"></i>
+  <!-- User -->
+  <div class="profile-section">
+
+    <div class="avatar">
+      {{ user?.fullName?.charAt(0) || 'U' }}
     </div>
 
-    <span>WasteZero</span>
-
-</div>
-
-    <!-- User -->
-    <div class="user-card">
-
-        <div class="avatar">
-            A
-        </div>
-
-        <div class="user-details">
-            <h4>Admin User</h4>
-            <p>Admin</p>
-        </div>
-
-    </div>
-
+    <div class="user-details">
+      <h4>{{ user?.fullName }}</h4>
+      <p>{{ user?.role }}</p>
     <!-- Main Menu -->
 
     <p class="menu-title">MAIN MENU</p>
@@ -99,13 +90,86 @@
         <i class="bi bi-moon"></i>
     </div>
 
-</div>
+  </div>
 
-<!-- Sign Out -->
+  <!-- Menu -->
+  <ul class="menu">
 
-<button class="sign-out" (click)="logout()">
-    <i class="bi bi-box-arrow-right"></i>
-    Sign Out
-</button>
+    <!-- Dashboard -->
+    <li>
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
+        <span>🏠</span>
+        Dashboard
+      </a>
+    </li>
+
+    @if (isAdmin) {
+
+      <li>
+        <a routerLink="/users" routerLinkActive="active">
+          <span>👥</span>
+          Users
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/opportunities" routerLinkActive="active">
+          <span>♻️</span>
+          Opportunities
+        </a>
+      </li>
+
+      <li>
+        <a routerLink="/reports" routerLinkActive="active">
+          <span>📊</span>
+          Reports
+        </a>
+      </li>
+
+    }
+
+    @if (isNGO) {
+
+      <li>
+        <a routerLink="/opportunities" routerLinkActive="active">
+          <span>📢</span>
+          Opportunities
+        </a>
+      </li>
+
+    }
+
+    @if (isVolunteer) {
+
+      <li>
+        <a routerLink="/opportunities" routerLinkActive="active">
+          <span>🌱</span>
+          Opportunities
+        </a>
+      </li>
+
+    }
+
+    <!-- Common -->
+    <li>
+      <a routerLink="/my-profile" routerLinkActive="active">
+        <span>👤</span>
+        My Profile
+      </a>
+    </li>
+
+  </ul>
+
+  <!-- Logout -->
+  <div class="logout-section">
+
+    <button (click)="logout()">
+      🚪 Logout
+    </button>
+
+  </div>
 
 </div>

@@ -15,6 +15,7 @@ const {
 // Middleware
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
+const { upload } = require('../config/cloudinary');
 
 /**
  * @route   POST /api/opportunities
@@ -25,6 +26,7 @@ router.post(
   '/',
   protect,
   authorizeRoles('NGO', 'Admin'),
+  upload.single('image'),
   createOpportunity
 );
 
@@ -91,6 +93,7 @@ router.put(
   '/:id',
   protect,
   authorizeRoles('NGO', 'Admin'),
+  upload.single('image'),
   updateOpportunity
 );
 
