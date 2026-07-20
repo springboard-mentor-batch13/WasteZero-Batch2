@@ -144,6 +144,11 @@ router.post(
       .isEmail()
       .withMessage('Please enter a valid email address'),
 
+    body('otp')
+      .trim()
+      .notEmpty()
+      .withMessage('OTP is required'),
+
     body('newPassword')
       .isLength({ min: 8 })
       .withMessage('Password must be at least 8 characters'),

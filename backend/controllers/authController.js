@@ -498,5 +498,5 @@ module.exports = {
   resendRegisterOTP,
   forgotPassword,
   verifyResetOtp,
-  resetPassword
+  resetPassword,
 };

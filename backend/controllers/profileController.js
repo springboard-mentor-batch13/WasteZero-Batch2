@@ -72,13 +72,12 @@ const updateProfile = async (req, res) => {
 
     }
 
-
-
     const {
       fullName,
       location,
       skills,
-      bio
+      bio,
+      profileImage
     } = req.body;
 
 
@@ -91,6 +90,8 @@ const updateProfile = async (req, res) => {
     user.skills = skills ?? user.skills;
 
     user.bio = bio ?? user.bio;
+
+    user.profileImage = profileImage ?? user.profileImage;
 
 
 

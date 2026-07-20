@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 
-import { OPPORTUNITY_STATUSES, Opportunity, OpportunityStatus } from '../opportunity.model';
+import { OPPORTUNITY_STATE_CITIES, OPPORTUNITY_STATUSES, Opportunity, OpportunityStatus } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
 import { AuthService } from '../../../auth/auth.service';
 
@@ -30,9 +30,10 @@ export class OpportunityList implements OnInit {
   loading = true;
   searchText = '';
   selectedStatus: OpportunityStatus | '' = '';
-  selectedLocation = '';
+  selectedState = '';
+  selectedCity = '';
   readonly statuses = OPPORTUNITY_STATUSES;
-  locations: string[] = [];
+  readonly stateCities = OPPORTUNITY_STATE_CITIES;
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
   ngOnInit(): void {
@@ -48,7 +49,6 @@ export class OpportunityList implements OnInit {
     request.subscribe({
       next: (opportunities) => {
         this.opportunities = opportunities;
-        this.locations = [...new Set(opportunities.map((opportunity) => opportunity.location))];
         this.applyFilters();
         this.loading = false;
         this.cdr.detectChanges();
@@ -57,7 +57,6 @@ export class OpportunityList implements OnInit {
         console.error('Failed to load opportunities:', error);
         this.opportunities = [];
         this.filteredOpportunities = [];
-        this.locations = [];
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -65,21 +64,51 @@ export class OpportunityList implements OnInit {
   }
 
   onStatusChange(): void {
-    this.selectedLocation = '';
     this.loadOpportunities();
+  }
+
+  onStateChange(): void {
+    this.selectedCity = '';
+    this.applyFilters();
   }
 
   applyFilters(): void {
     const search = this.searchText.toLowerCase().trim();
-    this.filteredOpportunities = this.opportunities.filter((opportunity) => {
+    const searchableOpportunities = this.opportunities.filter((opportunity) => {
       const matchesSearch = !search ||
         opportunity.title.toLowerCase().includes(search) ||
-        opportunity.location.toLowerCase().includes(search) ||
-        opportunity.category.toLowerCase().includes(search);
+        opportunity.description.toLowerCase().includes(search) ||
+        opportunity.city.toLowerCase().includes(search) ||
+        opportunity.state.toLowerCase().includes(search) ||
+        opportunity.requiredSkills.some((skill) => skill.toLowerCase().includes(search));
       const matchesStatus = !this.selectedStatus || (opportunity.status || 'Open') === this.selectedStatus;
-      const matchesLocation = !this.selectedLocation || opportunity.location === this.selectedLocation;
-      return matchesSearch && matchesStatus && matchesLocation;
+      const matchesState = !this.selectedState || opportunity.state === this.selectedState;
+      return matchesSearch && matchesStatus && matchesState;
     });
+
+    if (!this.selectedCity) {
+      this.filteredOpportunities = searchableOpportunities;
+      return;
+    }
+
+    const cityMatches = searchableOpportunities.filter((opportunity) => opportunity.city === this.selectedCity);
+    this.filteredOpportunities = cityMatches.length ? cityMatches : searchableOpportunities;
+  }
+
+  availableStates(): string[] {
+    return [...new Set([
+      ...this.stateCities.map((option) => option.state),
+      ...this.opportunities.map((opportunity) => opportunity.state),
+    ].filter(Boolean))].sort();
+  }
+
+  availableCities(): string[] {
+    if (!this.selectedState) return [];
+    const configuredCities = this.stateCities.find((option) => option.state === this.selectedState)?.cities ?? [];
+    const opportunityCities = this.opportunities
+      .filter((opportunity) => opportunity.state === this.selectedState)
+      .map((opportunity) => opportunity.city);
+    return [...new Set([...configuredCities, ...opportunityCities].filter(Boolean))].sort();
   }
 
   usePlaceholder(event: Event): void {
