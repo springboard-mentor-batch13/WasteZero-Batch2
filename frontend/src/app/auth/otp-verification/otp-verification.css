@@ -1,3 +1,7 @@
+.otp-page {
+    background-image: url('/images/auth-bg.jpg');
+}
+
 input::placeholder{
     color:rgba(255,255,255,.65);
 }

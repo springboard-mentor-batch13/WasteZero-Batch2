@@ -58,3 +58,6 @@ mat-spinner { display: inline-block; --mdc-circular-progress-active-indicator-co
 @media (max-width: 720px) { .upload-card, .image-preview-card { grid-template-columns: 1fr; } .upload-icon { height: 72px; width: 72px; } .image-preview-card img { height: auto; width: 100%; } .preview-actions { justify-content: stretch; } .preview-actions button { flex: 1; } }
 @media (max-width: 640px) { .opportunity-page { padding: 20px 14px 36px; } .page-heading { align-items: flex-start; } .heading-orb { height: 54px; width: 54px; } .heading-orb mat-icon { font-size: 26px; height: 26px; width: 26px; } .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: auto; } .actions { flex-direction: column-reverse; align-items: stretch; } .actions button { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .opportunity-page, .heading-orb { animation: none; } .upload-card, .primary-action:not(:disabled):hover { transform: none; } }
+ .opportunity-page {
+  background: linear-gradient(rgba(245, 250, 247, .91), rgba(245, 250, 247, .95)), url('/images/auth-bg.jpg') center / cover fixed;
+}

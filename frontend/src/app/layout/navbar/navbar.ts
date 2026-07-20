@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -10,6 +11,7 @@ import { Router, RouterModule } from '@angular/router';
   styleUrl: './navbar.css'
 })
 export class Navbar {
+  private readonly authService = inject(AuthService);
 
   isDropdownOpen = false;
 
@@ -20,7 +22,7 @@ export class Navbar {
   }
 
   logout() {
-    localStorage.removeItem('token');
+    this.authService.clearSession();
     this.router.navigate(['/login']);
   }
 

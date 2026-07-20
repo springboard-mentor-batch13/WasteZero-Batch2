@@ -56,8 +56,11 @@ export class LoginComponent {
         password
       });
 
-      if (response.token) {
-  this.authService.saveToken(response.token);
+     if (response.token) {
+  this.authService.saveToken(
+    response.token,
+    response.role || response.user?.role
+  );
 }
 
 if (response.user) {
@@ -77,3 +80,4 @@ await this.router.navigate(['/dashboard']);
 
   
 }
+

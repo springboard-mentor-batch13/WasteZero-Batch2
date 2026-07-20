@@ -15,6 +15,7 @@ import { ResetPassword } from './pages/reset-password/reset-password';
 import { OpportunityForm } from './pages/opportunities/opportunity-form/opportunity-form';
 import { OpportunityList } from './pages/opportunities/opportunity-list/opportunity-list';
 import { OpportunityDetail } from './pages/opportunities/opportunity-detail/opportunity-detail';
+import { opportunityManagerGuard } from './core/guards/opportunity-manager-guard';
 
 
 export const routes: Routes = [
@@ -84,11 +85,13 @@ export const routes: Routes = [
   {
     path: 'opportunities/create',
     component: OpportunityForm,
+    canActivate: [opportunityManagerGuard],
     title: 'Create Opportunity | WasteZero'
   },
   {
     path: 'opportunities/:id/edit',
     component: OpportunityForm,
+    canActivate: [opportunityManagerGuard],
     title: 'Edit Opportunity | WasteZero',
     data: { mode: 'edit' }
   },
