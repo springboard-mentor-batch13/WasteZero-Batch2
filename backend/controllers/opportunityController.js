@@ -5,7 +5,16 @@ const Opportunity = require('../models/Opportunity');
  */
 const createOpportunity = async (req, res) => {
   try {
-    const { title, description, requiredSkills, duration, location, status } = req.body;
+    const {
+      title,
+      description,
+      requiredSkills,
+      duration,
+      city,
+      state,
+      date,
+      status,
+    } = req.body;
 
     // Validate required fields
     if (!title?.trim()) {
@@ -29,10 +38,24 @@ const createOpportunity = async (req, res) => {
       });
     }
 
-    if (!location?.trim()) {
+    if (!city?.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Location is required',
+        message: 'City is required',
+      });
+    }
+
+    if (!state?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'State is required',
+      });
+    }
+
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        message: 'Date is required',
       });
     }
 
@@ -41,8 +64,11 @@ const createOpportunity = async (req, res) => {
       title,
       description,
       duration,
-      location,
+      city,
+      state,
+      date,
     };
+
     if (requiredSkills) opportunityData.requiredSkills = requiredSkills;
     if (status) opportunityData.status = status;
 
@@ -54,16 +80,18 @@ const createOpportunity = async (req, res) => {
       data: opportunity,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message,
+    });
   }
 };
-
 /**
  * Get all opportunities.
  */
 const getAllOpportunities = async (req, res) => {
   try {
-    // Find all opportunities and sort by newest first
     const opportunities = await Opportunity.find().sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -71,20 +99,26 @@ const getAllOpportunities = async (req, res) => {
       data: opportunities,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message,
+    });
   }
 };
 
 /**
- * Get a single opportunity by its ID.
+ * Get a single opportunity by ID.
  */
 const getOpportunityById = async (req, res) => {
   try {
     const opportunity = await Opportunity.findById(req.params.id);
 
-    // Return 404 if not found
     if (!opportunity) {
-      return res.status(404).json({ success: false, message: 'Opportunity not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Opportunity not found',
+      });
     }
 
     res.status(200).json({
@@ -92,16 +126,28 @@ const getOpportunityById = async (req, res) => {
       data: opportunity,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message,
+    });
   }
 };
-
 /**
  * Update an existing opportunity by ID.
  */
 const updateOpportunity = async (req, res) => {
   try {
-    const { title, description, requiredSkills, duration, location, status } = req.body;
+    const {
+      title,
+      description,
+      requiredSkills,
+      duration,
+      city,
+      state,
+      date,
+      status,
+    } = req.body;
 
     // Build update object based on provided fields
     const updateFields = {};
@@ -109,7 +155,9 @@ const updateOpportunity = async (req, res) => {
     if (description) updateFields.description = description;
     if (requiredSkills) updateFields.requiredSkills = requiredSkills;
     if (duration) updateFields.duration = duration;
-    if (location) updateFields.location = location;
+    if (city) updateFields.city = city;
+    if (state) updateFields.state = state;
+    if (date) updateFields.date = date;
     if (status) updateFields.status = status;
 
     const opportunity = await Opportunity.findByIdAndUpdate(

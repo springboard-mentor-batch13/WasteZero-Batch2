@@ -24,10 +24,23 @@ const opportunitySchema = new mongoose.Schema(
       type: String,
       required: [true, 'Duration is required'],
     },
-    location: {
+    city: {
       type: String,
-      required: [true, 'Location is required'],
+      required: [true, 'City is required'],
+      trim: true,
     },
+
+    state: {
+      type: String,
+      required: [true, 'State is required'],
+      trim: true,
+    },
+
+    date: {
+      type: Date,
+      required: [true, 'Date is required'],
+    },
+  
     status: {
       type: String,
       enum: ['Open', 'Closed', 'In Progress'],
