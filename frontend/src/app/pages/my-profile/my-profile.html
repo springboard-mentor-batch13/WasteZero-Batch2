@@ -1,242 +1,246 @@
 <div class="profile-page">
 
-  <h2>My Profile</h2>
-
-  <p class="sub-title">
-    Manage your account information and settings
-  </p>
-
+  <!-- Header -->
+  <div class="page-header">
+    <h2>My Profile</h2>
+    <p>Manage your personal information and account settings.</p>
+  </div>
 
   <!-- Tabs -->
   <div class="tabs">
-
     <button
       [class.active]="activeTab === 'profile'"
-      (click)="activeTab = 'profile'">
-      Profile
-    </button>
+      (click)="activeTab='profile'">
 
+      Profile
+
+    </button>
 
     <button
       [class.active]="activeTab === 'password'"
-      (click)="activeTab = 'password'">
-      Password
-    </button>
+      (click)="activeTab='password'">
 
+      Password
+
+    </button>
   </div>
 
+  <!-- ================= PROFILE TAB ================= -->
 
-
-  <!-- PROFILE TAB -->
-  <div 
-    class="profile-card" 
-    *ngIf="activeTab === 'profile'">
-
+  <div
+    class="profile-card"
+    *ngIf="activeTab==='profile'">
 
     <div class="profile-content">
 
+      <!-- LEFT PANEL -->
 
-      <!-- Left Side Image -->
-      <div class="profile-image-section">
-
+      <div class="profile-left">
 
         <img
-          [src]="previewImage || 'assets/images/default-user.png'"
-          alt="Profile Image"
-          class="profile-image">
+  class="profile-image"
+  [src]="previewImage || 'assets/images/default-user.png'"
+  alt="Profile Image">
 
+<h3>{{ user.fullName || 'User Name' }}</h3>
 
-        <label class="image-label">
-          Profile Image
-        </label>
+<label class="upload-btn">
 
+  Upload Photo
 
-        <input
-          type="file"
-          accept="image/*"
-          (change)="onFileSelected($event)">
+  <input
+    hidden
+    type="file"
+    accept="image/*"
+    (change)="onFileSelected($event)">
 
+</label>
 
+<button
+  class="secondary-btn"
+  (click)="uploadImage()">
 
-        <button
-          class="upload-btn"
-          (click)="uploadImage()">
+  Save Photo
 
-          Upload Photo
-
-        </button>
-
-
-      </div>
-
-
-
-
-      <!-- Right Side Form -->
-      <div class="profile-form">
-
-
-        <h3>Personal Information</h3>
-
-
-        <p class="desc">
-          Update your personal information and profile details
-        </p>
-
-
-
-        <label>Full Name</label>
-
-        <input
-          type="text"
-          name="fullName"
-          placeholder="Enter your full name"
-          [(ngModel)]="user.fullName">
-
-
-
-        <label>Email</label>
-
-        <input
-          type="email"
-          name="email"
-          placeholder="Enter email"
-          [(ngModel)]="user.email">
-
-
-        <small>
-          This is the email address used for account notifications.
-        </small>
-
-
-
-        <label>Location</label>
-
-        <input
-          type="text"
-          name="location"
-          placeholder="Enter location"
-          [(ngModel)]="user.location">
-
-
-        <small>
-          This helps match you with nearby opportunities.
-        </small>
-
-
-
-
-        <label>Skills</label>
-
-        <input
-          type="text"
-          name="skills"
-          placeholder="Enter skills"
-          [(ngModel)]="user.skills">
-
-
-
-
-
-        <label>Bio</label>
-
-        <textarea
-          rows="5"
-          name="bio"
-          placeholder="Tell something about yourself"
-          [(ngModel)]="user.bio">
-        </textarea>
-
-
-
-
-
-        <button 
-          class="save-btn"
-          (click)="saveProfile()">
-
-          Save Changes
-
-        </button>
-
-
+</button>
 
       </div>
 
+      <!-- RIGHT PANEL -->
+
+      <div class="profile-right">
+
+        <div class="section-header">
+
+          <h3>Personal Information</h3>
+
+          <p>
+            Update your profile information below.
+          </p>
+
+        </div>
+
+        <div class="form-grid">
+
+          <!-- Full Name -->
+
+          <div class="form-group">
+
+            <label>Full Name</label>
+
+            <input
+              type="text"
+              [(ngModel)]="user.fullName"
+              placeholder="Enter your full name">
+
+          </div>
+
+          <!-- Email -->
+
+          <div class="form-group">
+
+            <label>Email</label>
+
+            <input
+              type="email"
+              [(ngModel)]="user.email"
+              readonly>
+
+            <small>
+              Email cannot be changed.
+            </small>
+
+          </div>
+
+          <!-- Location -->
+
+          <div class="form-group">
+
+            <label>Location</label>
+
+            <input
+              type="text"
+              [(ngModel)]="user.location"
+              placeholder="City, State">
+
+          </div>
+
+          <!-- Skills -->
+
+          <div class="form-group">
+
+            <label>Skills</label>
+
+            <input
+              type="text"
+              [(ngModel)]="user.skills"
+              placeholder="Angular, Node.js, MongoDB">
+
+          </div>
+
+        </div>
+
+        <!-- BIO -->
+
+        <div class="form-group full-width">
+
+          <label>Bio</label>
+
+          <textarea
+            rows="6"
+            [(ngModel)]="user.bio"
+            placeholder="Tell everyone about yourself...">
+          </textarea>
+
+        </div>
+
+        <div class="button-row">
+
+          <button
+            class="save-btn"
+            (click)="saveProfile()">
+
+            Save Changes
+
+          </button>
+
+        </div>
+
+      </div>
 
     </div>
 
-
   </div>
 
+  <!-- ================= PASSWORD TAB ================= -->
 
+  <div
+    class="profile-card"
+    *ngIf="activeTab==='password'">
 
+    <div class="section-header">
 
+      <h3>Change Password</h3>
 
-  <!-- PASSWORD TAB -->
-  <div 
-    class="profile-card" 
-    *ngIf="activeTab === 'password'">
+      <p>
+        Keep your account secure by using a strong password.
+      </p>
 
+    </div>
 
-    <h3>Change Password</h3>
+    <div class="password-grid">
 
+      <div class="form-group">
 
-    <p class="desc">
-      Update your password to secure your account
-    </p>
+        <label>Current Password</label>
 
+        <input
+          type="password"
+          [(ngModel)]="password.currentPassword"
+          placeholder="Current password">
 
+      </div>
 
-    <label>Current Password</label>
+      <div class="form-group">
 
-    <input
-      type="password"
-      name="currentPassword"
-      [(ngModel)]="password.currentPassword">
+        <label>New Password</label>
 
+        <input
+          type="password"
+          [(ngModel)]="password.newPassword"
+          placeholder="New password">
 
+      </div>
 
+      <div class="form-group">
 
+        <label>Confirm Password</label>
 
-    <label>New Password</label>
+        <input
+          type="password"
+          [(ngModel)]="password.confirmPassword"
+          placeholder="Confirm password">
 
-    <input
-      type="password"
-      name="newPassword"
-      [(ngModel)]="password.newPassword">
+      </div>
 
+    </div>
 
-    <small>
-      Password must be at least 6 characters long.
+    <small class="password-note">
+      Password should contain at least 6 characters.
     </small>
 
+    <div class="button-row">
 
+      <button
+        class="change-btn"
+        (click)="updatePassword()">
 
+        Change Password
 
+      </button>
 
-    <label>Confirm New Password</label>
-
-    <input
-      type="password"
-      name="confirmPassword"
-      [(ngModel)]="password.confirmPassword">
-
-
-
-
-
-
-    <button
-      class="change-btn"
-      (click)="updatePassword()">
-
-      Change Password
-
-    </button>
-
+    </div>
 
   </div>
-
 
 </div>
