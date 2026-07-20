@@ -20,3 +20,31 @@
     </div>
 
 </div>
+
+@if (opportunityStats) {
+    <br>
+
+    <div class="cards">
+
+        <div class="card">
+            <h2>{{ opportunityStats.totalOpportunities }}</h2>
+            <p>Total Opportunities</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ opportunityStats.openOpportunities }}</h2>
+            <p>Open Opportunities</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ opportunityStats.closedOpportunities }}</h2>
+            <p>Closed Opportunities</p>
+        </div>
+
+        <div class="card">
+            <h2>{{ opportunityStats.inProgressOpportunities }}</h2>
+            <p>In Progress Opportunities</p>
+        </div>
+
+    </div>
+}

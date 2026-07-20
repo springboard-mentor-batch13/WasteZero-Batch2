@@ -1,5 +1,5 @@
 export interface Opportunity {
-  id: number;
+  id: string;
   title: string;
   category: OpportunityCategory;
   description: string;

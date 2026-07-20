@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const upload = require("../middleware/upload");
 
 const {
   createOpportunity,
@@ -22,10 +23,11 @@ const { authorizeRoles } = require('../middleware/roleMiddleware');
  * @access  Private (NGO/Admin)
  */
 router.post(
-  '/',
-  protect,
-  authorizeRoles('NGO', 'Admin'),
-  createOpportunity
+    "/",
+    protect,
+    authorizeRoles("NGO", "Admin"),
+    upload.single("image"),
+    createOpportunity
 );
 
 /**
@@ -91,6 +93,7 @@ router.put(
   '/:id',
   protect,
   authorizeRoles('NGO', 'Admin'),
+  upload.single("image"),
   updateOpportunity
 );
 

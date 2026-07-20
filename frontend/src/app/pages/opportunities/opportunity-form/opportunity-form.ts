@@ -36,12 +36,13 @@ export class OpportunityForm implements OnInit, OnDestroy {
   readonly acceptedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   readonly maxImageSize = 5 * 1024 * 1024;
   loading = false;
-  opportunityId?: number;
+  opportunityId?: string;
   selectedImageFile?: File;
   imagePreviewUrl?: string;
   isDraggingImage = false;
   private serviceOwnedPreview = false;
   private imageRemoved = false;
+  private allowedRoles = ['NGO', 'Admin'];
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
@@ -53,22 +54,41 @@ export class OpportunityForm implements OnInit, OnDestroy {
     skillsRequired: ['']
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    const role = this.opportunities.getUserRole();
+    if (!this.allowedRoles.includes(role ?? '')) {
+      this.showMessage('Only NGO or Admin users can create or edit opportunities.');
+      this.router.navigate(['/opportunities']);
+      return;
+    }
+
     this.mode = this.route.snapshot.data['mode'] === 'edit' ? 'edit' : this.mode;
     if (this.mode !== 'edit') return;
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    const opportunity = this.opportunities.getById(id);
-    if (!opportunity) {
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
       this.showMessage('Unable to complete action.');
       this.router.navigate(['/opportunities']);
       return;
     }
-    this.opportunityId = id;
-    this.form.patchValue({ ...opportunity, eventDate: this.toLocalDate(opportunity.eventDate), skillsRequired: opportunity.skillsRequired.join(', ') });
-    if (opportunity.imageFile && opportunity.imagePreviewUrl) {
-      this.selectedImageFile = opportunity.imageFile;
-      this.imagePreviewUrl = opportunity.imagePreviewUrl;
-      this.serviceOwnedPreview = true;
+
+    try {
+      const opportunity = await this.opportunities.getById(id);
+      if (!opportunity) {
+        this.showMessage('Unable to complete action.');
+        this.router.navigate(['/opportunities']);
+        return;
+      }
+
+      this.opportunityId = id;
+      this.form.patchValue({ ...opportunity, eventDate: this.toLocalDate(opportunity.eventDate), skillsRequired: opportunity.skillsRequired.join(', ') });
+      if (opportunity.imagePreviewUrl) {
+        this.imagePreviewUrl = opportunity.imagePreviewUrl;
+        this.serviceOwnedPreview = true;
+      }
+    } catch {
+      this.showMessage('Unable to complete action.');
+      this.router.navigate(['/opportunities']);
     }
   }
 
@@ -76,29 +96,33 @@ export class OpportunityForm implements OnInit, OnDestroy {
     this.revokeImagePreview();
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.showMessage('Invalid form.');
       return;
     }
+
     this.loading = true;
-    window.setTimeout(() => {
-      try {
-        const draft = this.toDraft();
-        const result = this.mode === 'create'
-          ? this.opportunities.create(draft)
-          : this.opportunities.update(this.opportunityId!, draft);
-        if (!result) throw new Error('Opportunity not found');
-        this.showMessage(this.mode === 'create' ? 'Opportunity created successfully.' : 'Opportunity updated successfully.');
-        this.form.reset();
-        this.router.navigate(['/opportunities']);
-      } catch {
-        this.showMessage('Unable to complete action.');
-      } finally {
-        this.loading = false;
-      }
-    }, 350);
+
+    try {
+      const draft = this.toDraft();
+      const result = this.mode === 'create'
+        ? await this.opportunities.create(draft)
+        : await this.opportunities.update(this.opportunityId!, draft);
+
+      if (!result) throw new Error('Opportunity not found');
+
+      this.showMessage(this.mode === 'create' ? 'Opportunity created successfully.' : 'Opportunity updated successfully.');
+      this.form.reset();
+      this.router.navigate(['/opportunities']);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to complete action.';
+      console.error('Opportunity create/update failed:', error);
+      this.showMessage(message);
+    } finally {
+      this.loading = false;
+    }
   }
 
   cancel(): void { this.router.navigate(['/opportunities']); }
@@ -203,6 +227,10 @@ export class OpportunityForm implements OnInit, OnDestroy {
   }
 
   private toIsoDate(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
-  private toLocalDate(date: string): Date { const [year, month, day] = date.split('-').map(Number); return new Date(year, month - 1, day); }
+  private toLocalDate(date: string): Date {
+    const normalized = date?.split('T')[0];
+    const [year, month, day] = normalized.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
   private showMessage(message: string): void { this.snackBar.open(message, 'Close', { duration: 3500 }); }
 }

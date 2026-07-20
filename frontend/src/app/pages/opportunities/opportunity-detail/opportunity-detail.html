@@ -1,4 +1,12 @@
-@if (opportunity; as item) {
+@if (loading) {
+  <section class="detail-page">
+    <a mat-button routerLink="/opportunities"><mat-icon>arrow_back</mat-icon>Back to Opportunities</a>
+    <mat-card style="margin-top: 24px; padding: 24px; text-align: center;">
+      <mat-spinner diameter="36"></mat-spinner>
+      <h2 style="margin-top: 12px;">Loading opportunity...</h2>
+    </mat-card>
+  </section>
+} @else if (opportunity; as item) {
   <section class="detail-page">
     <a mat-button routerLink="/opportunities"><mat-icon>arrow_back</mat-icon>Back to Opportunities</a>
 
@@ -46,10 +54,12 @@
             <div><mat-icon>location_on</mat-icon><span><small>Location</small>{{ item.location }}</span></div>
             <div><mat-icon>groups</mat-icon><span><small>Volunteers Needed</small>{{ item.requiredVolunteers }}</span></div>
           </div>
-          <div class="detail-actions">
-            <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
-            <button mat-flat-button class="delete-button" (click)="delete()"><mat-icon>delete</mat-icon>Delete</button>
-          </div>
+          @if (canManageOpportunity) {
+            <div class="detail-actions">
+              <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
+              <button mat-flat-button class="delete-button" (click)="delete()"><mat-icon>delete</mat-icon>Delete</button>
+            </div>
+          }
         </mat-card-content>
       </mat-card>
     </div>

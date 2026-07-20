@@ -16,6 +16,20 @@ const opportunitySchema = new mongoose.Schema(
       type: String,
       required: [true, 'Description is required'],
     },
+    category: {
+      type: String,
+      enum: ['Environment', 'Healthcare', 'Education', 'Animal Welfare', 'Community Service'],
+      required: [true, 'Category is required'],
+    },
+    imageUrl: {
+    type: String,
+    default: "",
+},
+    requiredVolunteers: {
+      type: Number,
+      required: [true, 'Required volunteers is required'],
+      min: [1, 'Required volunteers must be at least 1'],
+    },
     requiredSkills: {
       type: [String],
       default: [],

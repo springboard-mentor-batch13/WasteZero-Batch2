@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -7,13 +7,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { RouterLink } from '@angular/router';
 
 import { Opportunity } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
-
-import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-opportunity-list',
@@ -26,6 +27,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
+    MatProgressSpinnerModule,
     RouterLink,
     MatSelectModule,
   ],
@@ -35,47 +37,89 @@ import { MatSelectModule } from '@angular/material/select';
 export class OpportunityList {
 
   private readonly opportunitiesService = inject(OpportunityService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   opportunities: Opportunity[] = [];
   filteredOpportunities: Opportunity[] = [];
+  userRole: string | null = null;
+  canCreateOpportunity = false;
+  loading = false;
+  hasLoaded = false;
+  errorMessage = '';
 
   searchText = '';
-
   selectedCategory = '';
+  categories: string[] = [];
+  private searchTimeout?: ReturnType<typeof setTimeout>;
 
- categories: string[] = [];
-
-  ngOnInit(): void {
-    this.load();
+  async ngOnInit(): Promise<void> {
+    await this.load();
   }
 
-  private load(): void {
-  this.opportunities = this.opportunitiesService.getAll();
-  this.filteredOpportunities = [...this.opportunities];
+  private async load(): Promise<void> {
+    this.loading = true;
+    this.errorMessage = '';
+    this.hasLoaded = false;
 
-  this.categories = [
-    ...new Set(this.opportunities.map(o => o.category))
-  ];
-}
+    try {
+      this.userRole = this.opportunitiesService.getUserRole();
+      this.updateCreateOpportunityVisibility();
 
-  
-searchOpportunities(): void {
+      const opportunities = await this.opportunitiesService.getAll();
+      this.opportunities = opportunities;
+      this.filteredOpportunities = [...opportunities];
+      this.categories = [...new Set(opportunities.map((opportunity) => opportunity.category).filter(Boolean))];
+    } catch (error) {
+      console.error('Failed to load opportunities:', error);
+      this.opportunities = [];
+      this.filteredOpportunities = [];
+      this.categories = [];
+      this.errorMessage = error instanceof Error ? error.message : 'Unable to load opportunities.';
+      this.showMessage(this.errorMessage);
+    } finally {
+      this.hasLoaded = true;
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  }
 
-  const search = this.searchText.toLowerCase().trim();
+  updateCreateOpportunityVisibility(): void {
+    this.canCreateOpportunity = this.userRole === 'Admin' || this.userRole === 'NGO';
+  }
 
-  this.filteredOpportunities = this.opportunities.filter(opportunity => {
+  triggerSearch(): void {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      void this.searchOpportunities();
+    }, 250);
+  }
 
-    const matchesSearch =
-      opportunity.title.toLowerCase().includes(search) ||
-      opportunity.location.toLowerCase().includes(search) ||
-      opportunity.category.toLowerCase().includes(search);
+  async searchOpportunities(): Promise<void> {
+    const search = this.searchText.trim().toLowerCase();
 
-    const matchesCategory =
-      !this.selectedCategory ||
-      opportunity.category === this.selectedCategory;
+    try {
+      if (search) {
+        const results = await this.opportunitiesService.search(search);
+        this.filteredOpportunities = this.selectedCategory
+          ? results.filter((opportunity) => opportunity.category === this.selectedCategory)
+          : results;
+      } else if (this.selectedCategory) {
+        const results = await this.opportunitiesService.filter('', '', '', this.selectedCategory);
+        this.filteredOpportunities = results;
+      } else {
+        this.filteredOpportunities = [...this.opportunities];
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      this.filteredOpportunities = [];
+      this.showMessage(error instanceof Error ? error.message : 'Unable to complete action.');
+    } finally {
+      this.cdr.detectChanges();
+    }
+  }
 
-    return matchesSearch && matchesCategory;
-  });
-
-}
+  private showMessage(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3500 });
+  }
 }

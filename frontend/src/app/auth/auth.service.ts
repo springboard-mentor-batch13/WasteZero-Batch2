@@ -123,12 +123,29 @@ export class AuthService {
 
 
   saveToken(token: string): void {
-
     if (typeof localStorage === 'undefined') {
       return;
     }
 
     localStorage.setItem(this.tokenKey, token);
+  }
+
+  saveAuthSession(response: AuthResponse): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    if (response.token) {
+      this.saveToken(response.token);
+    }
+
+    if (response.role) {
+      localStorage.setItem('role', response.role);
+    }
+
+    if (response.user?.role) {
+      localStorage.setItem('role', response.user.role);
+    }
   }
 
 

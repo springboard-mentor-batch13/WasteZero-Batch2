@@ -56,9 +56,7 @@ export class LoginComponent {
         password
       });
 
-      if (response.token) {
-        this.authService.saveToken(response.token);
-      }
+      this.authService.saveAuthSession(response);
 
       await this.redirectIfRouteExists('my-profile');
     } catch (error) {
