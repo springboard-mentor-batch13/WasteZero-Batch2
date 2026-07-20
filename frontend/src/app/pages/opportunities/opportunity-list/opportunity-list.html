@@ -25,9 +25,63 @@
   <div class="opportunity-grid">
     @for (opportunity of filteredOpportunities; track opportunity.id) {
       <mat-card class="opportunity-card">
+<<<<<<< Updated upstream
         <img mat-card-image [src]="opportunity.imageUrl || placeholderImage" [alt]="opportunity.title" (error)="usePlaceholder($event)">
         <mat-card-header><mat-card-title>{{ opportunity.title }}</mat-card-title><mat-card-subtitle>{{ opportunity.category }}</mat-card-subtitle></mat-card-header>
         <mat-card-content><div class="meta"><span><mat-icon>location_on</mat-icon>{{ opportunity.location }}</span><span><mat-icon>event</mat-icon>{{ opportunity.eventDate | date:'mediumDate' }}</span><span><mat-icon>groups</mat-icon>{{ opportunity.requiredVolunteers }} volunteers</span></div></mat-card-content>
+=======
+  <img
+    mat-card-image
+    [src]="opportunity.imagePreviewUrl || opportunity.imageUrl || placeholderImage"
+    [alt]="opportunity.title"
+    (error)="usePlaceholder($event)"
+  >
+
+  <mat-card-header>
+    <mat-card-title>{{ opportunity.title }}</mat-card-title>
+<mat-card-subtitle>
+  {{ opportunity.status }}
+</mat-card-subtitle>  </mat-card-header>
+
+  <mat-card-content>
+    <p class="description">{{ opportunity.description }}</p>
+
+    <div class="meta">
+      <span>
+        <mat-icon>location_on</mat-icon>
+        {{ opportunity.city }}
+      </span>
+
+      <span>
+        <mat-icon>map</mat-icon>
+        {{ opportunity.state }}
+      </span>
+
+      <span>
+        <mat-icon>event</mat-icon>
+        {{opportunity.date | date:'mediumDate' }}
+      </span>
+
+      
+
+      <span>
+        <mat-icon>schedule</mat-icon>
+        {{ opportunity.duration }}
+      </span>
+
+      <span>
+        <mat-icon>handyman</mat-icon>
+        {{
+          opportunity.requiredSkills?.length
+            ? opportunity.requiredSkills.join(', ')
+            : 'No specific skills'
+        }}
+      </span>
+    </div>
+  </mat-card-content>
+
+  
+>>>>>>> Stashed changes
         <mat-card-actions><button mat-flat-button class="details-button" [routerLink]="['/opportunities', opportunity.id]">View Details</button></mat-card-actions>
       </mat-card>
     } @empty {

@@ -5,7 +5,7 @@
     <h2>♻️ WasteZero</h2>
   </div>
 
-  <!-- User -->
+  <!-- Profile -->
   <div class="profile-section">
 
     <div class="avatar">
@@ -19,82 +19,138 @@
 
   </div>
 
-  <!-- Menu -->
-  <ul class="menu">
+  <!-- Main Menu -->
+  <p class="menu-title">MAIN MENU</p>
+
+  <ul>
 
     <!-- Dashboard -->
-    <li>
-      <a
-        routerLink="/dashboard"
+    <li routerLink="/dashboard"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
-        <span>🏠</span>
-        Dashboard
-      </a>
+      <i class="bi bi-grid"></i>
+      Dashboard
     </li>
+
+    <!-- ================= ADMIN ================= -->
 
     @if (isAdmin) {
 
-      <li>
-        <a routerLink="/users" routerLinkActive="active">
-          <span>👥</span>
-          Users
-        </a>
+      <li routerLink="/users" routerLinkActive="active">
+        <i class="bi bi-people"></i>
+        Users
       </li>
 
-      <li>
-        <a routerLink="/opportunities" routerLinkActive="active">
-          <span>♻️</span>
-          Opportunities
-        </a>
+      <li routerLink="/opportunities" routerLinkActive="active">
+        <i class="bi bi-recycle"></i>
+        Opportunities
       </li>
 
-      <li>
-        <a routerLink="/reports" routerLinkActive="active">
-          <span>📊</span>
-          Reports
-        </a>
+      <li routerLink="/applications" routerLinkActive="active">
+        <i class="bi bi-file-earmark-text"></i>
+        Applications
+      </li>
+
+      <li routerLink="/reports" routerLinkActive="active">
+        <i class="bi bi-bar-chart"></i>
+        Reports / Analytics
+      </li>
+
+      <li routerLink="/admin" routerLinkActive="active">
+        <i class="bi bi-shield-lock"></i>
+        Admin Panel
       </li>
 
     }
+
+    <!-- ================= NGO ================= -->
 
     @if (isNGO) {
 
-      <li>
-        <a routerLink="/opportunities" routerLinkActive="active">
-          <span>📢</span>
-          Opportunities
-        </a>
+      <li routerLink="/opportunities" routerLinkActive="active">
+        <i class="bi bi-recycle"></i>
+        Manage Opportunities
       </li>
 
     }
+
+    <!-- ================= VOLUNTEER ================= -->
 
     @if (isVolunteer) {
 
-      <li>
-        <a routerLink="/opportunities" routerLinkActive="active">
-          <span>🌱</span>
-          Opportunities
-        </a>
+      <li routerLink="/opportunities" routerLinkActive="active">
+        <i class="bi bi-recycle"></i>
+        Browse Opportunities
+      </li>
+
+      <li routerLink="/schedule-pickup" routerLinkActive="active">
+        <i class="bi bi-calendar-check"></i>
+        Schedule Pickup
+      </li>
+
+      <li routerLink="/applications" routerLinkActive="active">
+        <i class="bi bi-file-earmark-text"></i>
+        My Applications
+      </li>
+
+      <li routerLink="/impact" routerLinkActive="active">
+        <i class="bi bi-graph-up"></i>
+        My Impact
       </li>
 
     }
 
-    <!-- Common -->
+  </ul>
+
+  <!-- Settings -->
+  <p class="menu-title">SETTINGS</p>
+
+  <ul>
+
+    <li routerLink="/my-profile" routerLinkActive="active">
+      <i class="bi bi-person"></i>
+      My Profile
+    </li>
+
     <li>
-      <a routerLink="/my-profile" routerLinkActive="active">
-        <span>👤</span>
-        My Profile
-      </a>
+      <i class="bi bi-gear"></i>
+      Settings
+    </li>
+
+    <li>
+      <i class="bi bi-question-circle"></i>
+      Help & Support
     </li>
 
   </ul>
 
+  <!-- Dark Mode -->
+  <div class="dark-mode">
+
+    <span>Dark Mode</span>
+
+    <div class="theme-toggle">
+
+      <i class="bi bi-sun"></i>
+
+      <label class="switch">
+        <input type="checkbox">
+        <span class="slider"></span>
+      </label>
+
+      <i class="bi bi-moon"></i>
+
+    </div>
+
+  </div>
+
   <!-- Logout -->
+
   <div class="logout-section">
 
     <button (click)="logout()">
-      🚪 Logout
+      <i class="bi bi-box-arrow-right"></i>
+      Logout
     </button>
 
   </div>
