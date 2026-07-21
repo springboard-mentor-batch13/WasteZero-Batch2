@@ -64,6 +64,8 @@ export class AuthService {
 
   private readonly apiUrl = 'http://localhost:5000/api/auth';
   private readonly tokenKey = 'token';
+  private readonly roleKey = 'role';
+  private readonly opportunityManagerRoles = ['NGO', 'Admin'];
 
 
   async login(payload: LoginRequest): Promise<AuthResponse> {
@@ -122,13 +124,36 @@ export class AuthService {
 
 
 
-  saveToken(token: string): void {
+  saveToken(token: string, role?: string): void {
 
     if (typeof localStorage === 'undefined') {
       return;
     }
 
     localStorage.setItem(this.tokenKey, token);
+
+    const resolvedRole = role || this.getRoleFromToken(token);
+    if (resolvedRole) localStorage.setItem(this.roleKey, resolvedRole);
+  }
+
+  canManageOpportunities(): boolean {
+    return this.opportunityManagerRoles.includes(this.getUserRole());
+  }
+
+  getUserRole(): string {
+    if (typeof localStorage === 'undefined') return '';
+
+    const token = localStorage.getItem(this.tokenKey);
+    if (!token) return '';
+
+    return localStorage.getItem(this.roleKey) || this.getRoleFromToken(token);
+  }
+
+  clearSession(): void {
+    if (typeof localStorage === 'undefined') return;
+
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
   }
 
 
@@ -165,6 +190,17 @@ export class AuthService {
 
     return data as TResponse;
 
+  }
+
+  private getRoleFromToken(token: string): string {
+    try {
+      const payload = token.split('.')[1];
+      if (!payload) return '';
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof decoded.role === 'string' ? decoded.role : '';
+    } catch {
+      return '';
+    }
   }
 
 

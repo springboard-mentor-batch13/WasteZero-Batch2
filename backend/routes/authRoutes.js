@@ -6,6 +6,7 @@ const {
   loginUser,
   sendRegisterOTP,
   verifyRegisterOTP,
+  resendRegisterOTP,
   forgotPassword,
   verifyResetOtp,
   resetPassword
@@ -103,6 +104,17 @@ router.post(
 );
 
 router.post(
+  '/resend-otp',
+  [
+    body('email')
+      .isEmail()
+      .withMessage('Please enter a valid email address'),
+  ],
+  resendRegisterOTP
+);
+
+// Send password reset OTP
+router.post(
   '/forgot-password',
   [
     body('email')
@@ -162,5 +174,6 @@ router.get(
     });
   }
 );
+
 
 module.exports = router;
