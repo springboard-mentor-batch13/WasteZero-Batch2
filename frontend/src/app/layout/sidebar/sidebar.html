@@ -15,79 +15,6 @@
     <div class="user-details">
       <h4>{{ user?.fullName }}</h4>
       <p>{{ user?.role }}</p>
-    <!-- Main Menu -->
-
-    <p class="menu-title">MAIN MENU</p>
-
-    <ul>
-
-        <li routerLink="/dashboard" routerLinkActive="active">
-    <i class="bi bi-grid"></i>
-    Dashboard
-</li>
-
-        <li>
-            <i class="bi bi-calendar-check"></i>
-            Schedule Pickup
-        </li>
-
-        <li routerLink="/opportunities" routerLinkActive="active">
-            <i class="bi bi-recycle"></i>
-                Opportunities
-        </li>
-
-        <li>
-            <i class="bi bi-chat-left-text"></i>
-            Messages
-        </li>
-
-        <li>
-            <i class="bi bi-bar-chart"></i>
-            My Impact
-        </li>
-
-    </ul>
-
-    <!-- Settings -->
-
-    <p class="menu-title">SETTINGS</p>
-
-    <ul>
-        <li routerLink="/my-profile" routerLinkActive="active">
-             <i class="bi bi-person"></i>
-             My Profile
-        </li>
-
-        <li>
-            <i class="bi bi-gear"></i>
-            Settings
-        </li>
-
-        <li>
-            <i class="bi bi-question-circle"></i>
-            Help & Support
-        </li>
-
-        <li>
-            <i class="bi bi-shield-lock"></i>
-            Admin Panel
-        </li>
-
-    </ul>
-
-   <div class="dark-mode">
-
-    <span>Dark Mode</span>
-
-    <div class="theme-toggle">
-        <i class="bi bi-sun"></i>
-
-        <label class="switch">
-            <input type="checkbox">
-            <span class="slider"></span>
-        </label>
-
-        <i class="bi bi-moon"></i>
     </div>
 
   </div>
@@ -98,11 +25,14 @@
   <ul>
 
     <!-- Dashboard -->
-    <li routerLink="/dashboard"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }">
+    <li
+      routerLink="/dashboard"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }">
+
       <i class="bi bi-grid"></i>
       Dashboard
+
     </li>
 
     <!-- ================= ADMIN ================= -->
@@ -218,7 +148,6 @@
   </div>
 
   <!-- Logout -->
-
   <div class="logout-section">
 
     <button (click)="logout()">
