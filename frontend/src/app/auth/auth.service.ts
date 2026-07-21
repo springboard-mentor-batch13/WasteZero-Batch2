@@ -35,11 +35,10 @@ export interface VerifyResetOtpRequest {
 
 export interface ResetPasswordRequest {
   email: string;
-   otp: string;
+  otp: string;
   newPassword: string;
   confirmPassword: string;
 }
-
 
 export interface AuthResponse {
   success: boolean;
@@ -56,7 +55,6 @@ export interface AuthResponse {
     skills?: string[];
   };
 }
-
 
 @Injectable({
   providedIn: 'root'
@@ -86,7 +84,6 @@ export class AuthService {
     return this.post<AuthResponse>('/login', payload);
   }
 
-
   // Registration OTP
   async register(payload: RegisterRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>(
@@ -95,14 +92,12 @@ export class AuthService {
     );
   }
 
-
   async verifyOtp(payload: VerifyOtpRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>(
       '/verify-register-otp',
       payload
     );
   }
-
 
   async resendOtp(payload: ResendOtpRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>(
@@ -111,15 +106,13 @@ export class AuthService {
     );
   }
 
-
-  // Forgot password
+  // Forgot Password
   async forgotPassword(payload: ForgotPasswordRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>(
       '/forgot-password',
       payload
     );
   }
-
 
   async verifyResetOtp(payload: VerifyResetOtpRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>(
@@ -128,17 +121,13 @@ export class AuthService {
     );
   }
 
-
   async resetPassword(payload: ResetPasswordRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>(
       '/reset-password',
       payload
     );
   }
-
-
-
-  saveToken(token: string, role?: string): void {
+    saveToken(token: string, role?: string): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
@@ -146,24 +135,54 @@ export class AuthService {
     localStorage.setItem(this.tokenKey, token);
 
     const resolvedRole = role || this.getRoleFromToken(token);
-    if (resolvedRole) localStorage.setItem(this.roleKey, resolvedRole);
+    if (resolvedRole) {
+      localStorage.setItem(this.roleKey, resolvedRole);
+    }
   }
 
-  canManageOpportunities(): boolean {
-    return this.opportunityManagerRoles.includes(this.getUserRole());
+  saveUser(user: AuthResponse['user']): void {
+    if (typeof localStorage === 'undefined' || !user) {
+      return;
+    }
+
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem(this.roleKey, user.role);
+  }
+
+  getUser(): AuthResponse['user'] | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  }
+
+  getRole(): string | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    return localStorage.getItem(this.roleKey);
   }
 
   getUserRole(): string {
-    if (typeof localStorage === 'undefined') return '';
+    if (typeof localStorage === 'undefined') {
+      return '';
+    }
 
     const token = localStorage.getItem(this.tokenKey);
-    if (!token) return '';
+    if (!token) {
+      return '';
+    }
 
     return localStorage.getItem(this.roleKey) || this.getRoleFromToken(token);
   }
 
-  clearSession(): void {
-    if (typeof localStorage === 'undefined') return;
+  isLoggedIn(): boolean {
+    if (typeof localStorage === 'undefined') {
+      return false;
+    }
 
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);
@@ -171,7 +190,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  saveAuthSession(response: AuthResponse): void {
+    saveAuthSession(response: AuthResponse): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
@@ -181,78 +200,84 @@ export class AuthService {
     }
 
     if (response.role) {
-      localStorage.setItem('role', response.role);
+      localStorage.setItem(this.roleKey, response.role);
     }
 
-    if (response.user?.role) {
-      localStorage.setItem('role', response.user.role);
+    if (response.user) {
+      this.saveUser(response.user);
     }
   }
 
+  logout(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
 
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
+    localStorage.removeItem('user');
+  }
 
-  private async post<TResponse>(
+  clearSession(): void {
+    this.logout();
+  }
+    private async post<TResponse>(
     endpoint: string,
     payload: unknown
   ): Promise<TResponse> {
 
-
     const response = await fetch(`${this.apiUrl}${endpoint}`, {
-
-      method:'POST',
-
-      headers:{
-        'Content-Type':'application/json'
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
       },
-
-      body:JSON.stringify(payload)
-
+      body: JSON.stringify(payload)
     });
 
+    const data = await this.parseJson<AuthResponse>(response);
 
-    const data =
-      await this.parseJson<AuthResponse>(response);
-
-
-    if(!response.ok || data.success===false){
+    if (!response.ok || data.success === false) {
       throw new Error(
         data.message || 'Authentication request failed'
       );
     }
 
-
     return data as TResponse;
-
   }
 
   private getRoleFromToken(token: string): string {
     try {
       const payload = token.split('.')[1];
-      if (!payload) return '';
-      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-      return typeof decoded.role === 'string' ? decoded.role : '';
+
+      if (!payload) {
+        return '';
+      }
+
+      const decoded = JSON.parse(
+        atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+      );
+
+      return typeof decoded.role === 'string'
+        ? decoded.role
+        : '';
+
     } catch {
       return '';
     }
   }
 
-
-
   private async parseJson<TResponse>(
-    response:Response
-  ):Promise<TResponse>{
+    response: Response
+  ): Promise<TResponse> {
 
-    try{
-
+    try {
       return await response.json() as TResponse;
 
-    }catch{
-
+    } catch {
       return {
-        success:false,
-        message:'Unable to read authentication response'
+        success: false,
+        message: 'Unable to read authentication response'
       } as TResponse;
-
     }
   }
   saveUser(user: AuthResponse['user']): void {
