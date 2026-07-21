@@ -82,6 +82,18 @@ export class OpportunityService {
     );
   }
 
+  
+  getDashboardStats(): Observable<DashboardStats> {
+  return this.http
+    .get<ApiResponse<DashboardStats>>(
+      `${this.apiUrl}/dashboard/stats`,
+      { headers: this.headers() }
+    )
+    .pipe(map(response => response.data));
+}
+  
+
+
   create(draft: OpportunityDraft): Observable<Opportunity> {
     return this.http.post<ApiResponse<OpportunityApiModel>>(this.apiUrl, this.toFormData(draft), { headers: this.headers() }).pipe(
       map((response) => this.fromApi(response.data))
@@ -106,19 +118,7 @@ export class OpportunityService {
     );
   }
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    if (!token) return null;
-
-    try {
-      const payload = token.split('.')[1];
-      if (!payload) return null;
-      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-      return decoded.role ?? decoded.user?.role ?? null;
-    } catch {
-      return null;
-    }
-  }
+  
 
   private headers(): HttpHeaders {
     const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');

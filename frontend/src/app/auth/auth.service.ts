@@ -176,7 +176,7 @@ export class AuthService {
     return role === 'Admin' || role === 'NGO';
   }
 
-  saveAuthSession(response: AuthResponse): void {
+    saveAuthSession(response: AuthResponse): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
@@ -186,14 +186,18 @@ export class AuthService {
     }
 
     if (response.role) {
-      localStorage.setItem('role', response.role);
+      localStorage.setItem(this.roleKey, response.role);
     }
 
-    if (response.user?.role) {
-      localStorage.setItem('role', response.user.role);
+    if (response.user) {
+      this.saveUser(response.user);
     }
   }
 
+  logout(): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
 
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);

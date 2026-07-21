@@ -86,12 +86,17 @@ export class OpportunityDetail implements OnInit {
   }
 
   async apply(): Promise<void> {
-    if (!this.opportunity || !this.isVolunteer()) return;
+  if (!this.opportunity || !this.isVolunteer()) {
+    return;
+  }
 
-    const user = this.authService.getUser();
-    const { ApplyOpportunityDialog } = await import('../apply-opportunity-dialog/apply-opportunity-dialog');
+  const user = this.authService.getUser();
+  const { ApplyOpportunityDialog } = await import(
+    '../apply-opportunity-dialog/apply-opportunity-dialog'
+  );
 
-    this.dialog.open(ApplyOpportunityDialog, {
+  this.dialog
+    .open(ApplyOpportunityDialog, {
       data: {
         opportunityTitle: this.opportunity.title,
         fullName: user?.fullName,
@@ -100,21 +105,31 @@ export class OpportunityDetail implements OnInit {
       width: '640px',
       maxWidth: '94vw'
     })
-      .afterClosed()
-      .subscribe((application?: OpportunityApplication) => {
-        if (!application || !this.opportunity) return;
+    .afterClosed()
+    .subscribe((application?: OpportunityApplication) => {
+      if (!application || !this.opportunity) {
+        return;
+      }
 
-        this.opportunities.apply(this.opportunity.id, application).subscribe({
-          next: () => {
-            this.snackBar.open('Application submitted successfully.', 'Close', { duration: 3500 });
-          },
-          error: (error) => {
-            console.error('Failed to submit application:', error);
-            this.snackBar.open(error.error?.message || 'Unable to submit application.', 'Close', { duration: 3500 });
-          }
-        });
+      this.opportunityService.apply(this.opportunity.id, application).subscribe({
+        next: () => {
+          this.snackBar.open(
+            'Application submitted successfully.',
+            'Close',
+            { duration: 3500 }
+          );
+        },
+        error: (error: any) => {
+          console.error('Failed to submit application:', error);
+          this.snackBar.open(
+            error.error?.message || 'Unable to submit application.',
+            'Close',
+            { duration: 3500 }
+          );
+        }
       });
-  }
+    });
+}
 
   usePlaceholder(event: Event): void {
     const image = event.target as HTMLImageElement;
