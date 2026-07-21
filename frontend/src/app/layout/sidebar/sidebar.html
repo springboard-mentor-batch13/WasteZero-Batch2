@@ -20,8 +20,6 @@
   </div>
 
   <!-- Main Menu -->
-  <p class="menu-title">MAIN MENU</p>
-
   <ul>
 
     <!-- Dashboard -->
@@ -34,8 +32,6 @@
       Dashboard
 
     </li>
-
-    <!-- ================= ADMIN ================= -->
 
     @if (isAdmin) {
 
@@ -66,18 +62,29 @@
 
     }
 
-    <!-- ================= NGO ================= -->
-
     @if (isNGO) {
+
+      <li routerLink="/schedule-pickup" routerLinkActive="active">
+        <i class="bi bi-calendar-check"></i>
+        Schedule Pickup
+      </li>
 
       <li routerLink="/opportunities" routerLinkActive="active">
         <i class="bi bi-recycle"></i>
         Manage Opportunities
       </li>
 
-    }
+      <li>
+        <i class="bi bi-chat-left-text"></i>
+        Messages
+      </li>
 
-    <!-- ================= VOLUNTEER ================= -->
+      <li>
+        <i class="bi bi-bar-chart"></i>
+        My Impact
+      </li>
+
+    }
 
     @if (isVolunteer) {
 
@@ -125,6 +132,13 @@
       Help & Support
     </li>
 
+    @if (isAdmin) {
+      <li routerLink="/admin" routerLinkActive="active">
+        <i class="bi bi-shield-lock"></i>
+        Admin Panel
+      </li>
+    }
+
   </ul>
 
   <!-- Dark Mode -->
@@ -137,7 +151,10 @@
       <i class="bi bi-sun"></i>
 
       <label class="switch">
-        <input type="checkbox">
+        <input
+    type="checkbox"
+    [checked]="isDarkMode"
+    (change)="toggleDarkMode()">
         <span class="slider"></span>
       </label>
 
