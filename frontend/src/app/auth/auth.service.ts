@@ -221,4 +221,19 @@ logout(): void {
   localStorage.removeItem('user');
   localStorage.removeItem('role');
 }
+
+isLoggedIn(): boolean {
+  if (typeof localStorage === 'undefined') {
+    return false;
+  }
+
+  return !!localStorage.getItem(this.tokenKey);
+}
+
+canManageOpportunities(): boolean {
+  const role = this.getRole();
+
+  return role === 'Admin' || role === 'NGO';
+}
+
 }
