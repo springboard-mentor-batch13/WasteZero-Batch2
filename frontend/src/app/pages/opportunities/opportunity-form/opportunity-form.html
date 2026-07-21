@@ -52,7 +52,8 @@
                 <img [src]="imagePreviewUrl" alt="Image Preview">
                 <div class="preview-details">
                   <p class="preview-label">Image Preview</p>
-<h3>{{ selectedImageFile?.name || 'Current opportunity image' }}</h3>                  @if (selectedImageFile) { <span>{{ imageFileSize() }}</span> }
+                  <h3>{{ selectedImageFile?.name || 'Current opportunity image' }}</h3>
+                  @if (selectedImageFile) { <span>{{ imageFileSize() }}</span> }
                 </div>
                 <div class="preview-actions">
                   <button mat-stroked-button type="button" (click)="replaceImage()">

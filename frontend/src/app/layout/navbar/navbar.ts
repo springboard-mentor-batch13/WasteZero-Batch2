@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
@@ -10,29 +10,14 @@ import { AuthService } from '../../auth/auth.service';
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
-export class Navbar implements OnInit {
+export class Navbar {
 
   private readonly authService = inject(AuthService);
+  readonly user$ = this.authService.currentUser$;
 
   isDropdownOpen = false;
 
-  fullName = 'User';
-  username = 'U';
-
   constructor(private router: Router) {}
-
-  ngOnInit(): void {
-    const user = this.authService.getUser();
-
-    if (user) {
-      this.fullName = user.fullName || 'User';
-      this.username = user.username || 'U';
-    }
-  }
-
-  get avatar(): string {
-    return this.username.charAt(0).toUpperCase();
-  }
 
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;

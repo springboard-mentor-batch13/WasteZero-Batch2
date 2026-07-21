@@ -1,7 +1,15 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+
 import { AuthService } from '../../auth/auth.service';
+
+interface SidebarMenuItem {
+  label: string;
+  icon: string;
+  route?: string;
+  exact?: boolean;
+}
 
 @Component({
   selector: 'app-sidebar',
@@ -11,54 +19,69 @@ import { AuthService } from '../../auth/auth.service';
   styleUrl: './sidebar.css'
 })
 export class Sidebar implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  user: any = null;
-
+  readonly user$ = this.authService.currentUser$;
   isDarkMode = false;
 
-  constructor(
-    private router: Router,
-    private authService: AuthService
-  ) {}
+  readonly settingsMenu: SidebarMenuItem[] = [
+    { label: 'My Profile', icon: 'bi-person', route: '/my-profile' },
+    { label: 'Settings', icon: 'bi-gear' },
+    { label: 'Help & Support', icon: 'bi-question-circle' },
+  ];
 
   ngOnInit(): void {
+    if (typeof localStorage === 'undefined') return;
 
-    this.user = this.authService.getUser();
-
-    const savedTheme = localStorage.getItem('theme');
-
-    if (savedTheme === 'dark') {
-      this.isDarkMode = true;
-      document.body.classList.add('dark-theme');
-    }
-
-    console.log(this.user);
+    this.isDarkMode = localStorage.getItem('theme') === 'dark';
+    document.body.classList.toggle('dark-theme', this.isDarkMode);
   }
 
-  get isAdmin(): boolean {
-    return this.user?.role === 'Admin';
-  }
+  getMainMenu(role?: string): SidebarMenuItem[] {
+    const dashboard: SidebarMenuItem = {
+      label: 'Dashboard',
+      icon: 'bi-grid',
+      route: '/dashboard',
+      exact: true,
+    };
 
-  get isNGO(): boolean {
-    return this.user?.role === 'NGO';
-  }
+    const menusByRole: Record<string, SidebarMenuItem[]> = {
+      Volunteer: [
+        dashboard,
+        { label: 'Schedule Pickup', icon: 'bi-calendar-check' },
+        { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
+        { label: 'Messages', icon: 'bi-chat-left-text' },
+        { label: 'My Impact', icon: 'bi-bar-chart' },
+      ],
+      NGO: [
+        dashboard,
+        { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
+        { label: 'Applications', icon: 'bi-file-earmark-text' },
+        { label: 'Messages', icon: 'bi-chat-left-text' },
+        { label: 'Reports / Analytics', icon: 'bi-bar-chart' },
+      ],
+      Admin: [
+        dashboard,
+        { label: 'Users', icon: 'bi-people' },
+        { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
+        { label: 'Applications', icon: 'bi-file-earmark-text', route: '/admin/applications' },
+        { label: 'Reports / Analytics', icon: 'bi-bar-chart' },
+        { label: 'Messages', icon: 'bi-chat-left-text' },
+        { label: 'Admin Panel', icon: 'bi-shield-lock' },
+      ],
+    };
 
-  get isVolunteer(): boolean {
-    return this.user?.role === 'Volunteer';
+    return role ? menusByRole[role] ?? [dashboard] : [dashboard];
   }
 
   toggleDarkMode(): void {
-
     this.isDarkMode = !this.isDarkMode;
+    document.body.classList.toggle('dark-theme', this.isDarkMode);
 
-    if (this.isDarkMode) {
-      document.body.classList.add('dark-theme');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.body.classList.remove('dark-theme');
-      localStorage.setItem('theme', 'light');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
     }
-
   }
 
   logout(): void {
@@ -66,4 +89,3 @@ export class Sidebar implements OnInit {
     this.router.navigate(['/login']);
   }
 }
-

@@ -1,0 +1,142 @@
+.applications-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 42px) clamp(16px, 3vw, 32px) 48px;
+}
+
+.applications-page header {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  color: #15965f;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  margin: 0 0 6px;
+}
+
+h1 {
+  color: #123c31;
+  font-size: clamp(1.8rem, 3vw, 2.3rem);
+  font-weight: 750;
+  letter-spacing: 0;
+  line-height: 1.12;
+  margin: 0;
+}
+
+header p:last-child {
+  color: #58736a;
+  margin: 7px 0 0;
+}
+
+.refresh-button {
+  border-color: #8ed2ac;
+  border-radius: 10px;
+  color: #08784c;
+  flex: 0 0 auto;
+}
+
+.filter-row {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px);
+  margin-bottom: 18px;
+}
+
+.table-card,
+.state-card {
+  --mat-card-elevated-container-color: #fff;
+  border: 1px solid #e1f0e7;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(27, 92, 65, .08);
+}
+
+.table-card {
+  overflow: hidden;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  min-width: 940px;
+  width: 100%;
+}
+
+th {
+  color: #173d31;
+  font-weight: 750;
+}
+
+td {
+  color: #365c4e;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.action-row button {
+  border-radius: 9px;
+}
+
+.state-card {
+  align-items: center;
+  color: #58736a;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  min-height: 180px;
+  padding: 28px;
+  text-align: center;
+}
+
+.state-card mat-icon {
+  color: #15965f;
+}
+
+.error-state mat-icon {
+  color: #b93632;
+}
+
+.muted {
+  color: #6b877c;
+}
+
+mat-chip.pending {
+  --mdc-chip-elevated-container-color: #fff8df;
+  --mdc-chip-label-text-color: #8b6400;
+}
+
+mat-chip.approved {
+  --mdc-chip-elevated-container-color: #e9f8ef;
+  --mdc-chip-label-text-color: #16754d;
+}
+
+mat-chip.rejected {
+  --mdc-chip-elevated-container-color: #fdebec;
+  --mdc-chip-label-text-color: #b93632;
+}
+
+@media (max-width: 700px) {
+  .applications-page header,
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .applications-page header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .refresh-button {
+    width: 100%;
+  }
+}

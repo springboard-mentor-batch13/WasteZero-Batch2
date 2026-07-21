@@ -38,13 +38,12 @@ export type OpportunityDraft = Omit<Opportunity, 'id' | 'ngoId' | 'postedBy' | '
   removeImage?: boolean;
 };
 
-export interface OpportunityApplication {
-  fullName: string;
-  email: string;
-  phoneNumber: string;
-  motivation: string;
-  relevantSkills: string;
-  availability: string;
+export interface OpportunityJoinRequest {
+  opportunityId: string;
+  volunteerUserId: string;
+  volunteerFullName: string;
+  volunteerEmail: string;
+  timestamp: string;
 }
 
 export interface StateCityOption {

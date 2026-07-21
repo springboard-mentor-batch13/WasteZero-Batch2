@@ -11,7 +11,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../auth/auth.service';
 import { DeleteOpportunityDialog } from '../delete-opportunity-dialog/delete-opportunity-dialog';
-import { Opportunity, OpportunityApplication } from '../opportunity.model';
+import { Opportunity, OpportunityJoinRequest } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
 
 @Component({
@@ -33,6 +33,9 @@ export class OpportunityDetail implements OnInit {
   opportunity?: Opportunity;
   loading = true;
   errorMessage = '';
+  sendingJoinRequest = false;
+  private readonly recentlySentOpportunityIds = new Set<string>();
+  private readonly joinRequestStorageKey = 'wastezero.joinRequests';
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
   ngOnInit(): void {
@@ -50,6 +53,7 @@ export class OpportunityDetail implements OnInit {
       this.opportunityService.getById(id).subscribe({
         next: (opportunity) => {
           this.opportunity = opportunity;
+          this.sendingJoinRequest = false;
           this.loading = false;
           this.cdr.detectChanges();
         },
@@ -85,6 +89,57 @@ export class OpportunityDetail implements OnInit {
       });
   }
 
+  apply(): void {
+    if (!this.opportunity || !this.isVolunteer()) return;
+    if (this.hasJoinRequest(this.opportunity.id)) {
+      this.snackBar.open('Request Already Sent', 'Close', { duration: 3500 });
+      return;
+    }
+
+    const user = this.authService.getUser();
+    if (!user?.id || !user.fullName || !user.email) {
+      this.snackBar.open('Unable to send join request. Please sign in again.', 'Close', { duration: 3500 });
+      return;
+    }
+
+    const request: OpportunityJoinRequest = {
+      opportunityId: this.opportunity.id,
+      volunteerUserId: user.id,
+      volunteerFullName: user.fullName,
+      volunteerEmail: user.email,
+      timestamp: new Date().toISOString(),
+    };
+
+    this.sendingJoinRequest = true;
+    this.opportunityService.joinOpportunity(request).subscribe({
+      next: () => {
+        this.markJoinRequestSent(request.opportunityId);
+        this.recentlySentOpportunityIds.add(request.opportunityId);
+        this.sendingJoinRequest = false;
+        this.snackBar.open('Join request sent successfully.', 'Close', { duration: 3500 });
+        this.cdr.detectChanges();
+      },
+      error: (error: { error?: { message?: string } }) => {
+        console.error('Failed to send join request:', error);
+        this.sendingJoinRequest = false;
+        this.snackBar.open(error.error?.message || 'Unable to send join request.', 'Close', { duration: 3500 });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  hasJoinRequest(opportunityId: string): boolean {
+    const userId = this.authService.getUser()?.id;
+    if (!userId) return false;
+    return this.readJoinRequests().includes(this.joinRequestKey(opportunityId, userId));
+  }
+
+  joinButtonText(opportunityId: string): string {
+    if (this.sendingJoinRequest) return 'Sending...';
+    if (this.recentlySentOpportunityIds.has(opportunityId)) return 'Request Sent';
+    if (this.hasJoinRequest(opportunityId)) return 'Request Already Sent';
+    return 'Apply / Join Opportunity';
+  }
   async apply(): Promise<void> {
   if (!this.opportunity || !this.isVolunteer()) {
     return;
@@ -150,4 +205,28 @@ export class OpportunityDetail implements OnInit {
   canManageOpportunities(): boolean { return this.authService.canManageOpportunities(); }
 
   isVolunteer(): boolean { return this.authService.getUserRole() === 'Volunteer'; }
+
+  private markJoinRequestSent(opportunityId: string): void {
+    const userId = this.authService.getUser()?.id;
+    if (!userId || typeof localStorage === 'undefined') return;
+
+    const requests = new Set(this.readJoinRequests());
+    requests.add(this.joinRequestKey(opportunityId, userId));
+    localStorage.setItem(this.joinRequestStorageKey, JSON.stringify([...requests]));
+  }
+
+  private readJoinRequests(): string[] {
+    if (typeof localStorage === 'undefined') return [];
+
+    try {
+      const savedRequests = JSON.parse(localStorage.getItem(this.joinRequestStorageKey) || '[]');
+      return Array.isArray(savedRequests) ? savedRequests.filter((request) => typeof request === 'string') : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private joinRequestKey(opportunityId: string, userId: string): string {
+    return `${userId}:${opportunityId}`;
+  }
 }

@@ -23,11 +23,26 @@ app-root{
     min-height:100vh;
 }
 .main-content{
-    margin-left:260px;
-    width:calc(100% - 260px);
+    margin-left:270px;
+    width:calc(100% - 270px);
     background:#f5f7fb;
     min-height:100vh;
 }
 .page-content{
     padding:25px 40px;
+}
+
+@media (max-width: 900px){
+    .app-layout{
+        flex-direction:column;
+    }
+
+    .main-content{
+        margin-left:0;
+        width:100%;
+    }
+
+    .page-content{
+        padding:20px 16px;
+    }
 }

@@ -72,6 +72,7 @@
     align-items:center;
     gap:10px;
     cursor:pointer;
+    position:relative;
 }
 
 .avatar{
@@ -87,13 +88,65 @@
     font-size:18px;
 }
 
-.profile span{
+.profile-copy {
+    display:flex;
+    flex-direction:column;
+    line-height:1.15;
+}
+
+.profile-copy span{
     font-size:16px;
     font-weight:600;
     color:#222;
 }
 
+.profile-copy small{
+    color:#777;
+    font-size:12px;
+    margin-top:3px;
+}
+
 .profile i:last-child{
     font-size:12px;
     color:#777;
+}
+
+.dropdown-menu{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    box-shadow:0 12px 28px rgba(15, 23, 42, .12);
+    min-width:170px;
+    padding:8px;
+    position:absolute;
+    right:0;
+    top:calc(100% + 12px);
+    z-index:200;
+}
+
+.dropdown-item{
+    border-radius:6px;
+    color:#374151;
+    font-size:14px;
+    padding:10px 12px;
+}
+
+.dropdown-item:hover{
+    background:#f3f4f6;
+}
+
+@media (max-width: 820px){
+    .navbar{
+        gap:16px;
+        padding:0 18px;
+    }
+
+    .search-box{
+        max-width:100%;
+        width:100%;
+    }
+
+    .profile-copy{
+        display:none;
+    }
 }

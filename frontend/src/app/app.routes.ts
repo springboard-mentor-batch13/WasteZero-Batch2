@@ -16,6 +16,8 @@ import { OpportunityForm } from './pages/opportunities/opportunity-form/opportun
 import { OpportunityList } from './pages/opportunities/opportunity-list/opportunity-list';
 import { OpportunityDetail } from './pages/opportunities/opportunity-detail/opportunity-detail';
 import { opportunityManagerGuard } from './core/guards/opportunity-manager-guard';
+import { ApplicationsComponent } from './pages/applications/admin-applications';
+import { adminGuard } from './core/guards/admin-guard';
 
 
 export const routes: Routes = [
@@ -99,5 +101,11 @@ export const routes: Routes = [
     path: 'opportunities/:id',
     component: OpportunityDetail,
     title: 'Opportunity Details | WasteZero'
+  },
+  {
+    path: 'admin/applications',
+    component: ApplicationsComponent,
+    canActivate: [adminGuard],
+    title: 'Applications | WasteZero'
   }
 ];

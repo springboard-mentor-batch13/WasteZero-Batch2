@@ -110,6 +110,10 @@
   color: #2e7d32;
 }
 
+.sidebar li.menu-item-static {
+  cursor: default;
+}
+
 .sidebar li.active {
   background: #43a047;
   color: white;
@@ -223,4 +227,25 @@
 
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    border-bottom: 1px solid #e5e7eb;
+    border-right: 0;
+    height: auto;
+    max-height: none;
+    position: static;
+    width: 100%;
+  }
+
+  .sidebar ul {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  }
+
+  .logout-section {
+    margin-top: 20px;
+  }
 }

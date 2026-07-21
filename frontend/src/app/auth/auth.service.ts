@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 export interface LoginRequest {
   username: string;
@@ -63,6 +64,21 @@ export class AuthService {
   private readonly apiUrl = 'http://localhost:5000/api/auth';
   private readonly tokenKey = 'token';
   private readonly roleKey = 'role';
+  private readonly userKey = 'user';
+  private readonly opportunityManagerRoles = ['NGO', 'Admin'];
+  private readonly currentUserSubject = new BehaviorSubject<AuthResponse['user'] | null>(this.readStoredUser());
+  readonly currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (event) => {
+        if (event.key === this.userKey || event.key === this.roleKey || event.key === this.tokenKey) {
+          this.currentUserSubject.next(this.readStoredUser());
+        }
+      });
+    }
+  }
+
 
   async login(payload: LoginRequest): Promise<AuthResponse> {
     return this.post<AuthResponse>('/login', payload);
@@ -168,12 +184,10 @@ export class AuthService {
       return false;
     }
 
-    return !!localStorage.getItem(this.tokenKey);
-  }
-
-  canManageOpportunities(): boolean {
-    const role = this.getRole();
-    return role === 'Admin' || role === 'NGO';
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
+    localStorage.removeItem(this.userKey);
+    this.currentUserSubject.next(null);
   }
 
     saveAuthSession(response: AuthResponse): void {
@@ -266,4 +280,52 @@ export class AuthService {
       } as TResponse;
     }
   }
+  saveUser(user: AuthResponse['user']): void {
+  if (typeof localStorage === 'undefined' || !user) {
+    return;
+  }
+
+  localStorage.setItem(this.userKey, JSON.stringify(user));
+  localStorage.setItem(this.roleKey, user.role);
+  this.currentUserSubject.next(user);
+}
+
+getUser(): AuthResponse['user'] | null {
+  return this.currentUserSubject.value || this.readStoredUser();
+}
+
+getRole(): string | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  return localStorage.getItem('role');
+}
+
+logout(): void {
+  this.clearSession();
+}
+
+private readStoredUser(): AuthResponse['user'] | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  try {
+    const user = localStorage.getItem(this.userKey);
+    return user ? JSON.parse(user) : null;
+  } catch {
+    localStorage.removeItem(this.userKey);
+    return null;
+  }
+}
+
+isLoggedIn(): boolean {
+  if (typeof localStorage === 'undefined') {
+    return false;
+  }
+
+  return !!localStorage.getItem(this.tokenKey);
+}
+
 }
