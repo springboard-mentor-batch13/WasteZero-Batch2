@@ -1,4 +1,5 @@
 export type OpportunityStatus = 'Open' | 'In Progress' | 'Closed';
+export type OpportunityCategory = 'Environment' | 'Healthcare' | 'Education' | 'Animal Welfare' | 'Community Service';
 
 export interface PostedBy {
   _id?: string;
@@ -11,20 +12,28 @@ export interface Opportunity {
   ngoId?: string;
   postedBy?: PostedBy | string;
   title: string;
+  category: OpportunityCategory | string;
   description: string;
   requiredSkills: string[];
+  skillsRequired: string[];
   duration: string;
   city: string;
   state: string;
   date: Date;
+  eventDate: string;
+  location: string;
+  requiredVolunteers: number;
   status: OpportunityStatus;
   imageUrl?: string;
-  createdAt?: string;
-  imageFile?: File;
   imagePreviewUrl?: string;
+  imageFile?: File;
+  createdAt?: string;
 }
 
-export type OpportunityDraft = Omit<Opportunity, 'id' | 'ngoId' | 'postedBy' | 'createdAt' | 'imagePreviewUrl'> & {
+export type OpportunityDraft = Omit<Opportunity, 'id' | 'ngoId' | 'postedBy' | 'createdAt' | 'imagePreviewUrl' | 'skillsRequired' | 'location' | 'eventDate'> & {
+  location?: string;
+  eventDate?: string;
+  skillsRequired?: string[];
   removeImage?: boolean;
 };
 
@@ -32,6 +41,14 @@ export interface StateCityOption {
   state: string;
   cities: string[];
 }
+
+export const OPPORTUNITY_CATEGORIES: OpportunityCategory[] = [
+  'Environment',
+  'Healthcare',
+  'Education',
+  'Animal Welfare',
+  'Community Service'
+];
 
 export const OPPORTUNITY_STATUSES: OpportunityStatus[] = ['Open', 'In Progress', 'Closed'];
 

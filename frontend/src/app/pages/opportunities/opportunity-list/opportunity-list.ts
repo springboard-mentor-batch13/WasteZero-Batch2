@@ -6,33 +6,50 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 
-import { OPPORTUNITY_STATE_CITIES, OPPORTUNITY_STATUSES, Opportunity, OpportunityStatus } from '../opportunity.model';
-import { OpportunityService } from '../opportunity.service';
 import { AuthService } from '../../../auth/auth.service';
+import { OPPORTUNITY_CATEGORIES, OPPORTUNITY_STATE_CITIES, OPPORTUNITY_STATUSES, Opportunity, OpportunityStatus } from '../opportunity.model';
+import { OpportunityService } from '../opportunity.service';
 
 @Component({
   selector: 'app-opportunity-list',
   standalone: true,
-  imports: [DatePipe, FormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, RouterLink],
+  imports: [
+    DatePipe,
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
+    MatSelectModule,
+    RouterLink,
+  ],
   templateUrl: './opportunity-list.html',
   styleUrl: './opportunity-list.css'
 })
 export class OpportunityList implements OnInit {
   private readonly opportunitiesService = inject(OpportunityService);
-  private readonly cdr = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   opportunities: Opportunity[] = [];
   filteredOpportunities: Opportunity[] = [];
   loading = true;
+  errorMessage = '';
   searchText = '';
   selectedStatus: OpportunityStatus | '' = '';
   selectedState = '';
   selectedCity = '';
+  selectedCategory = '';
   readonly statuses = OPPORTUNITY_STATUSES;
+  readonly categories = OPPORTUNITY_CATEGORIES;
   readonly stateCities = OPPORTUNITY_STATE_CITIES;
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
@@ -42,11 +59,9 @@ export class OpportunityList implements OnInit {
 
   private loadOpportunities(): void {
     this.loading = true;
-    const request = this.selectedStatus
-      ? this.opportunitiesService.getByStatus(this.selectedStatus)
-      : this.opportunitiesService.getAll();
+    this.errorMessage = '';
 
-    request.subscribe({
+    this.opportunitiesService.getAll().subscribe({
       next: (opportunities) => {
         this.opportunities = opportunities;
         this.applyFilters();
@@ -57,14 +72,16 @@ export class OpportunityList implements OnInit {
         console.error('Failed to load opportunities:', error);
         this.opportunities = [];
         this.filteredOpportunities = [];
+        this.errorMessage = error.error?.message || 'Unable to load opportunities.';
         this.loading = false;
+        this.showMessage(this.errorMessage);
         this.cdr.detectChanges();
       }
     });
   }
 
   onStatusChange(): void {
-    this.loadOpportunities();
+    this.applyFilters();
   }
 
   onStateChange(): void {
@@ -78,21 +95,19 @@ export class OpportunityList implements OnInit {
       const matchesSearch = !search ||
         opportunity.title.toLowerCase().includes(search) ||
         opportunity.description.toLowerCase().includes(search) ||
+        opportunity.category.toLowerCase().includes(search) ||
+        opportunity.location.toLowerCase().includes(search) ||
         opportunity.city.toLowerCase().includes(search) ||
         opportunity.state.toLowerCase().includes(search) ||
         opportunity.requiredSkills.some((skill) => skill.toLowerCase().includes(search));
       const matchesStatus = !this.selectedStatus || (opportunity.status || 'Open') === this.selectedStatus;
       const matchesState = !this.selectedState || opportunity.state === this.selectedState;
-      return matchesSearch && matchesStatus && matchesState;
+      const matchesCity = !this.selectedCity || opportunity.city === this.selectedCity;
+      const matchesCategory = !this.selectedCategory || opportunity.category === this.selectedCategory;
+      return matchesSearch && matchesStatus && matchesState && matchesCity && matchesCategory;
     });
 
-    if (!this.selectedCity) {
-      this.filteredOpportunities = searchableOpportunities;
-      return;
-    }
-
-    const cityMatches = searchableOpportunities.filter((opportunity) => opportunity.city === this.selectedCity);
-    this.filteredOpportunities = cityMatches.length ? cityMatches : searchableOpportunities;
+    this.filteredOpportunities = searchableOpportunities;
   }
 
   availableStates(): string[] {
@@ -116,5 +131,11 @@ export class OpportunityList implements OnInit {
     if (!image.src.endsWith(this.placeholderImage)) image.src = this.placeholderImage;
   }
 
-  canManageOpportunities(): boolean { return this.authService.canManageOpportunities(); }
+  canManageOpportunities(): boolean {
+    return this.authService.canManageOpportunities();
+  }
+
+  private showMessage(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3500 });
+  }
 }

@@ -1,5 +1,11 @@
 @if (loading) {
-  <section class="detail-page"><p class="muted">Loading opportunity details...</p></section>
+  <section class="detail-page">
+    <a mat-button routerLink="/opportunities"><mat-icon>arrow_back</mat-icon>Back to Opportunities</a>
+    <mat-card style="margin-top: 24px; padding: 24px; text-align: center;">
+      <mat-spinner diameter="36"></mat-spinner>
+      <h2 style="margin-top: 12px;">Loading opportunity...</h2>
+    </mat-card>
+  </section>
 } @else if (opportunity; as item) {
   <section class="detail-page">
     <a mat-button routerLink="/opportunities"><mat-icon>arrow_back</mat-icon>Back to Opportunities</a>
@@ -27,7 +33,11 @@
           <mat-card-content>
             <h2>Required Skills</h2>
             @if (item.requiredSkills.length) {
-              <mat-chip-set>@for (skill of item.requiredSkills; track skill) { <mat-chip>{{ skill }}</mat-chip> }</mat-chip-set>
+              <mat-chip-set>
+                @for (skill of item.requiredSkills; track skill) {
+                  <mat-chip>{{ skill }}</mat-chip>
+                }
+              </mat-chip-set>
             } @else {
               <p class="muted">No specific skills required.</p>
             }
@@ -40,13 +50,19 @@
           <h2>Opportunity Details</h2>
           <div class="details-list">
             <div><mat-icon>event</mat-icon><span><small>Date</small>{{ item.date | date:'mediumDate' }}</span></div>
+            <div><mat-icon>category</mat-icon><span><small>Category</small>{{ item.category }}</span></div>
             <div><mat-icon>schedule</mat-icon><span><small>Duration</small>{{ item.duration || 'Not Specified' }}</span></div>
             <div><mat-icon>location_city</mat-icon><span><small>City</small>{{ item.city }}</span></div>
             <div><mat-icon>map</mat-icon><span><small>State</small>{{ item.state }}</span></div>
+            <div><mat-icon>location_on</mat-icon><span><small>Location</small>{{ item.location }}</span></div>
+            <div><mat-icon>groups</mat-icon><span><small>Volunteers Needed</small>{{ item.requiredVolunteers }}</span></div>
             <div><mat-icon>flag</mat-icon><span><small>Status</small>{{ item.status }}</span></div>
             <div><mat-icon>person</mat-icon><span><small>Posted By</small>{{ postedByName(item.postedBy) }}</span></div>
-            @if (item.createdAt) { <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div> }
+            @if (item.createdAt) {
+              <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div>
+            }
           </div>
+
           @if (canManageOpportunities()) {
             <div class="detail-actions">
               <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
