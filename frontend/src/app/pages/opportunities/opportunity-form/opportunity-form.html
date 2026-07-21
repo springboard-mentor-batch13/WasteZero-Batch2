@@ -14,6 +14,7 @@
       <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="form-grid">
           <mat-form-field appearance="outline"><mat-label>Opportunity Title *</mat-label><input matInput formControlName="title" maxlength="100"><mat-icon matPrefix>volunteer_activism</mat-icon><mat-hint align="end">{{ form.controls.title.value.length }}/100</mat-hint><mat-error>{{ errorMessage('title') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Category *</mat-label><mat-select formControlName="category"><mat-option value="">Select category</mat-option>@for (category of categories; track category) { <mat-option [value]="category">{{ category }}</mat-option> }</mat-select><mat-icon matPrefix>category</mat-icon><mat-error>{{ errorMessage('category') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Status *</mat-label><mat-select formControlName="status"><mat-option value="">Select status</mat-option>@for (status of statuses; track status) { <mat-option [value]="status">{{ status }}</mat-option> }</mat-select><mat-icon matPrefix>flag</mat-icon><mat-error>{{ errorMessage('status') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline" class="full-width"><mat-label>Description *</mat-label><textarea matInput rows="5" formControlName="description" maxlength="1000"></textarea><mat-hint align="end">{{ form.controls.description.value.length }}/1000</mat-hint><mat-error>{{ errorMessage('description') }}</mat-error></mat-form-field>
           <div class="image-upload-section full-width">
@@ -46,7 +47,7 @@
               </div>
             </div>
 
-            @if (selectedImageFile && imagePreviewUrl) {
+            @if (imagePreviewUrl) {
               <div class="image-preview-card">
                 <img [src]="imagePreviewUrl" alt="Image Preview">
                 <div class="preview-details">
@@ -71,6 +72,7 @@
           <mat-form-field appearance="outline"><mat-label>City *</mat-label><mat-select formControlName="city"><mat-option value="">Select city</mat-option>@for (city of citiesForSelectedState(); track city) { <mat-option [value]="city">{{ city }}</mat-option> }</mat-select><mat-icon matPrefix>location_city</mat-icon><mat-error>{{ errorMessage('city') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Date *</mat-label><input matInput [matDatepicker]="picker" [min]="today" formControlName="date"><mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle><mat-datepicker #picker></mat-datepicker><mat-error>{{ errorMessage('date') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Duration *</mat-label><input matInput formControlName="duration" placeholder="e.g. 3 Hours" maxlength="100"><mat-icon matPrefix>schedule</mat-icon><mat-error>{{ errorMessage('duration') }}</mat-error></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Required Volunteers *</mat-label><input matInput type="number" min="1" formControlName="requiredVolunteers"><mat-icon matPrefix>groups</mat-icon><mat-error>{{ errorMessage('requiredVolunteers') }}</mat-error></mat-form-field>
           <mat-form-field appearance="outline"><mat-label>Skills Required (optional)</mat-label><input matInput formControlName="requiredSkills" placeholder="e.g. First aid, Teaching"><mat-icon matPrefix>handyman</mat-icon><mat-hint>Separate skills with commas</mat-hint></mat-form-field>
         </div>
         <div class="actions">

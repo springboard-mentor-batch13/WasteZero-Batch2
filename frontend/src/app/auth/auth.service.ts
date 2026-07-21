@@ -125,7 +125,6 @@ export class AuthService {
 
 
   saveToken(token: string, role?: string): void {
-
     if (typeof localStorage === 'undefined') {
       return;
     }
@@ -154,6 +153,24 @@ export class AuthService {
 
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);
+  }
+
+  saveAuthSession(response: AuthResponse): void {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    if (response.token) {
+      this.saveToken(response.token);
+    }
+
+    if (response.role) {
+      localStorage.setItem('role', response.role);
+    }
+
+    if (response.user?.role) {
+      localStorage.setItem('role', response.user.role);
+    }
   }
 
 
@@ -257,4 +274,19 @@ logout(): void {
   localStorage.removeItem('user');
   localStorage.removeItem('role');
 }
+
+isLoggedIn(): boolean {
+  if (typeof localStorage === 'undefined') {
+    return false;
+  }
+
+  return !!localStorage.getItem(this.tokenKey);
+}
+
+canManageOpportunities(): boolean {
+  const role = this.getRole();
+
+  return role === 'Admin' || role === 'NGO';
+}
+
 }

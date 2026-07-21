@@ -12,23 +12,37 @@ interface ApiResponse<T> {
 
 interface OpportunityApiModel {
   _id: string;
+  id?: string;
   ngoId?: string;
   postedBy?: Opportunity['postedBy'];
   title: string;
+  category?: string;
   description: string;
-  requiredSkills?: string[];
-  duration: string;
+  requiredSkills?: string[] | string;
+  skillsRequired?: string[] | string;
+  duration?: string;
   city?: string;
   state?: string;
   date?: string;
+  eventDate?: string;
+  location?: string;
+  requiredVolunteers?: number | string;
   status?: OpportunityStatus;
   imageUrl?: string | null;
+  imagePreviewUrl?: string | null;
   createdAt?: string;
-  location?: string;
-  eventDate?: string;
 }
 
-@Injectable({ providedIn: 'root' })
+export interface DashboardStats {
+  totalOpportunities: number;
+  openOpportunities: number;
+  closedOpportunities: number;
+  inProgressOpportunities: number;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class OpportunityService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:5000/api/opportunities';
@@ -46,7 +60,23 @@ export class OpportunityService {
   }
 
   getByStatus(status: OpportunityStatus): Observable<Opportunity[]> {
-    const params = new HttpParams().set('status', status);
+    return this.filter('', status);
+  }
+
+  search(keyword: string): Observable<Opportunity[]> {
+    const params = new HttpParams().set('keyword', keyword);
+    return this.http.get<ApiResponse<OpportunityApiModel[]>>(`${this.apiUrl}/search`, { headers: this.headers(), params }).pipe(
+      map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
+    );
+  }
+
+  filter(location = '', status: OpportunityStatus | '' = '', skill = '', category = ''): Observable<Opportunity[]> {
+    let params = new HttpParams();
+    if (location) params = params.set('location', location);
+    if (status) params = params.set('status', status);
+    if (skill) params = params.set('skill', skill);
+    if (category) params = params.set('category', category);
+
     return this.http.get<ApiResponse<OpportunityApiModel[]>>(`${this.apiUrl}/filter`, { headers: this.headers(), params }).pipe(
       map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
     );
@@ -78,43 +108,83 @@ export class OpportunityService {
 
   private headers(): HttpHeaders {
     const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    try {
+      const payload = token.split('.')[1];
+      if (!payload) return null;
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return decoded.role ?? decoded.user?.role ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  private headers(): HttpHeaders {
+    const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
 
   private fromApi(opportunity: OpportunityApiModel): Opportunity {
     const legacyPlace = this.parseLegacyPlace(opportunity.location);
+    const requiredSkills = this.normalizeSkills(opportunity.requiredSkills ?? opportunity.skillsRequired);
+    const date = this.toDate(opportunity.date || opportunity.eventDate || opportunity.createdAt);
+    const city = opportunity.city || legacyPlace.city;
+    const state = opportunity.state || legacyPlace.state;
+    const location = opportunity.location || [city, state].filter(Boolean).join(', ');
+    const imageUrl = opportunity.imageUrl ?? opportunity.imagePreviewUrl ?? undefined;
 
     return {
-      id: opportunity._id,
+      id: opportunity._id || opportunity.id || '',
       ngoId: opportunity.ngoId,
       postedBy: opportunity.postedBy,
       title: opportunity.title,
+      category: opportunity.category || '',
       description: opportunity.description,
-      requiredSkills: opportunity.requiredSkills ?? [],
-      duration: opportunity.duration,
-      city: opportunity.city || legacyPlace.city,
-      state: opportunity.state || legacyPlace.state,
-      date: this.toDate(opportunity.date || opportunity.eventDate || opportunity.createdAt),
+      requiredSkills,
+      skillsRequired: requiredSkills,
+      duration: opportunity.duration || '',
+      city,
+      state,
+      date,
+      eventDate: opportunity.eventDate || this.toIsoDate(date),
+      location,
+      requiredVolunteers: Number(opportunity.requiredVolunteers ?? 1),
       status: opportunity.status ?? 'Open',
-      imageUrl: opportunity.imageUrl ?? undefined,
+      imageUrl,
+      imagePreviewUrl: imageUrl,
       createdAt: opportunity.createdAt,
     };
   }
 
   private toFormData(draft: OpportunityDraft): FormData {
+    const date = draft.date instanceof Date ? draft.date : this.toDate(String(draft.date));
+    const location = draft.location || [draft.city, draft.state].filter(Boolean).join(', ');
+    const requiredSkills = draft.requiredSkills?.length ? draft.requiredSkills : draft.skillsRequired ?? [];
+
     const formData = new FormData();
     formData.append('title', draft.title);
+    formData.append('category', draft.category);
     formData.append('description', draft.description);
-    formData.append('requiredSkills', JSON.stringify(draft.requiredSkills));
+    formData.append('requiredSkills', JSON.stringify(requiredSkills));
     formData.append('duration', draft.duration);
     formData.append('city', draft.city);
     formData.append('state', draft.state);
-    formData.append('date', this.toIsoDate(draft.date));
+    formData.append('date', this.toIsoDate(date));
+    formData.append('location', location);
+    formData.append('eventDate', draft.eventDate || this.toIsoDate(date));
+    formData.append('requiredVolunteers', String(draft.requiredVolunteers));
     formData.append('status', draft.status);
     formData.append('imageUrl', draft.imageUrl ?? '');
     formData.append('removeImage', String(!!draft.removeImage));
     if (draft.imageFile) formData.append('image', draft.imageFile);
     return formData;
+  }
+
+  private normalizeSkills(value: unknown): string[] {
+    if (Array.isArray(value)) return value.map((skill) => String(skill).trim()).filter(Boolean);
+    if (typeof value === 'string') return value.split(',').map((skill) => skill.trim()).filter(Boolean);
+    return [];
   }
 
   private toDate(date?: string): Date {
@@ -131,8 +201,8 @@ export class OpportunityService {
     if (!location?.trim()) return { city: 'Not specified', state: 'Not specified' };
     const parts = location.split(',').map((part) => part.trim()).filter(Boolean);
     return {
-      city: parts.at(-1) || location,
-      state: 'Not specified',
+      city: parts[0] || location,
+      state: parts[1] || 'Not specified',
     };
   }
 }

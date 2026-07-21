@@ -11,7 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { OPPORTUNITY_STATE_CITIES, OPPORTUNITY_STATUSES, Opportunity, OpportunityDraft, OpportunityStatus } from '../opportunity.model';
+import { AuthService } from '../../../auth/auth.service';
+import { OPPORTUNITY_CATEGORIES, OPPORTUNITY_STATE_CITIES, OPPORTUNITY_STATUSES, OpportunityDraft, OpportunityStatus } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
 
 @Component({
@@ -27,11 +28,13 @@ export class OpportunityForm implements OnInit, OnDestroy {
 
   private readonly fb = inject(FormBuilder);
   private readonly opportunities = inject(OpportunityService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly snackBar = inject(MatSnackBar);
 
   readonly statuses = OPPORTUNITY_STATUSES;
+  readonly categories = OPPORTUNITY_CATEGORIES;
   readonly stateCities = OPPORTUNITY_STATE_CITIES;
   readonly states = OPPORTUNITY_STATE_CITIES.map((option) => option.state);
   readonly today = new Date();
@@ -47,27 +50,47 @@ export class OpportunityForm implements OnInit, OnDestroy {
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
-    status: ['' as OpportunityStatus | '', Validators.required],
+    category: ['', Validators.required],
+    status: ['Open' as OpportunityStatus, Validators.required],
     description: ['', [Validators.required, Validators.minLength(30), Validators.maxLength(1000)]],
     state: ['', Validators.required],
     city: ['', Validators.required],
     date: [null as Date | null, Validators.required],
     duration: ['', Validators.required],
+    requiredVolunteers: [1, [Validators.required, Validators.min(1)]],
     requiredSkills: ['']
   });
 
   ngOnInit(): void {
+    if (!this.authService.canManageOpportunities()) {
+      this.showMessage('Only NGO or Admin users can create or edit opportunities.');
+      this.router.navigate(['/opportunities']);
+      return;
+    }
+
     this.mode = this.route.snapshot.data['mode'] === 'edit' ? 'edit' : this.mode;
     if (this.mode !== 'edit') return;
+
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) return;
+    if (!id) {
+      this.showMessage('Unable to complete action.');
+      this.router.navigate(['/opportunities']);
+      return;
+    }
+
     this.opportunities.getById(id).subscribe({
       next: (opportunity) => {
         this.opportunityId = id;
         this.form.patchValue({
-          ...opportunity,
+          title: opportunity.title,
+          category: opportunity.category,
           status: this.toOpportunityStatus(opportunity.status),
+          description: opportunity.description,
+          state: opportunity.state,
+          city: opportunity.city,
           date: opportunity.date,
+          duration: opportunity.duration,
+          requiredVolunteers: opportunity.requiredVolunteers,
           requiredSkills: opportunity.requiredSkills.join(', ')
         });
         this.imagePreviewUrl = opportunity.imageUrl;
@@ -75,7 +98,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Failed to load opportunity:', error);
-        this.showMessage('Unable to load opportunity.');
+        this.showMessage(error.error?.message || 'Unable to load opportunity.');
         this.router.navigate(['/opportunities']);
       }
     });
@@ -91,15 +114,17 @@ export class OpportunityForm implements OnInit, OnDestroy {
       this.showMessage('Invalid form.');
       return;
     }
+
     this.loading = true;
     const draft = this.toDraft();
     const request = this.mode === 'create'
       ? this.opportunities.create(draft)
       : this.opportunities.update(this.opportunityId!, draft);
+
     request.subscribe({
       next: () => {
         this.showMessage(this.mode === 'create' ? 'Opportunity created successfully.' : 'Opportunity updated successfully.');
-        this.form.reset();
+        this.form.reset({ status: 'Open', requiredVolunteers: 1 });
         this.router.navigate(['/opportunities']);
       },
       error: (error) => {
@@ -113,7 +138,9 @@ export class OpportunityForm implements OnInit, OnDestroy {
     });
   }
 
-  cancel(): void { this.router.navigate(['/opportunities']); }
+  cancel(): void {
+    this.router.navigate(['/opportunities']);
+  }
 
   onStateSelectionChange(): void {
     this.form.controls.city.setValue('');
@@ -172,6 +199,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
   errorMessage(controlName: string): string {
     const control = this.form.get(controlName) as AbstractControl;
     if (control.hasError('required')) return 'This field is required.';
+    if (control.hasError('min')) return 'Enter at least 1.';
     if (control.hasError('minlength')) return `Enter at least ${control.getError('minlength').requiredLength} characters.`;
     if (control.hasError('maxlength')) return `Enter no more than ${control.getError('maxlength').requiredLength} characters.`;
     return '';
@@ -184,14 +212,19 @@ export class OpportunityForm implements OnInit, OnDestroy {
 
   private toDraft(): OpportunityDraft {
     const value = this.form.getRawValue();
+    const eventDate = this.toIsoDate(value.date!);
     return {
       title: value.title.trim(),
+      category: value.category,
       status: value.status as OpportunityStatus,
       description: value.description.trim(),
       state: value.state,
       city: value.city,
+      location: [value.city, value.state].filter(Boolean).join(', '),
       date: value.date!,
+      eventDate,
       duration: value.duration.trim(),
+      requiredVolunteers: Number(value.requiredVolunteers),
       requiredSkills: value.requiredSkills.split(',').map((skill) => skill.trim()).filter(Boolean),
       imageFile: this.selectedImageFile,
       imageUrl: this.serviceOwnedPreview ? this.imagePreviewUrl : undefined,
@@ -228,6 +261,15 @@ export class OpportunityForm implements OnInit, OnDestroy {
       : `${Math.max(1, Math.round(bytes / 1024))} KB`;
   }
 
-  private toOpportunityStatus(status: string): OpportunityStatus { return this.statuses.includes(status as OpportunityStatus) ? status as OpportunityStatus : 'Open'; }
-  private showMessage(message: string): void { this.snackBar.open(message, 'Close', { duration: 3500 }); }
+  private toIsoDate(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+
+  private toOpportunityStatus(status: string): OpportunityStatus {
+    return this.statuses.includes(status as OpportunityStatus) ? status as OpportunityStatus : 'Open';
+  }
+
+  private showMessage(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3500 });
+  }
 }

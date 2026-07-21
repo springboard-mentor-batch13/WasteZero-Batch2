@@ -1,17 +1,57 @@
-<!-- Admin Dashboard -->
 <app-admin-dashboard
   *ngIf="isAdmin"
   [userName]="user?.fullName">
 </app-admin-dashboard>
 
-<!-- NGO Dashboard -->
 <app-ngo-dashboard
   *ngIf="isNGO"
   [userName]="user?.fullName">
 </app-ngo-dashboard>
 
-<!-- Volunteer Dashboard -->
 <app-volunteer-dashboard
   *ngIf="isVolunteer"
   [userName]="user?.fullName">
 </app-volunteer-dashboard>
+
+<div class="cards">
+  <div class="card">
+    <h2>120</h2>
+    <p>Total Pickups</p>
+  </div>
+
+  <div class="card">
+    <h2>85%</h2>
+    <p>Recycling Rate</p>
+  </div>
+
+  <div class="card">
+    <h2>42</h2>
+    <p>Active Users</p>
+  </div>
+</div>
+
+@if (opportunityStats) {
+  <br>
+
+  <div class="cards">
+    <div class="card">
+      <h2>{{ opportunityStats.totalOpportunities }}</h2>
+      <p>Total Opportunities</p>
+    </div>
+
+    <div class="card">
+      <h2>{{ opportunityStats.openOpportunities }}</h2>
+      <p>Open Opportunities</p>
+    </div>
+
+    <div class="card">
+      <h2>{{ opportunityStats.closedOpportunities }}</h2>
+      <p>Closed Opportunities</p>
+    </div>
+
+    <div class="card">
+      <h2>{{ opportunityStats.inProgressOpportunities }}</h2>
+      <p>In Progress Opportunities</p>
+    </div>
+  </div>
+}

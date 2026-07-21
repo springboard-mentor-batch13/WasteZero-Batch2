@@ -56,12 +56,7 @@ export class LoginComponent {
         password
       });
 
-     if (response.token) {
-  this.authService.saveToken(
-    response.token,
-    response.role || response.user?.role
-  );
-}
+      this.authService.saveAuthSession(response);
 
 if (response.user) {
   this.authService.saveUser(response.user);

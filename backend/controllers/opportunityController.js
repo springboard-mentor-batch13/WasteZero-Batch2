@@ -23,14 +23,23 @@ const sendServerError = (res, error) => {
   });
 };
 
+const resolveOpportunityPlace = ({ city, state, location }) => {
+  const parts = typeof location === 'string'
+    ? location.split(',').map((part) => part.trim()).filter(Boolean)
+    : [];
 
-/**
- * Create a new opportunity.
- */
+  return {
+    city: city || parts[0] || location,
+    state: state || parts[1] || 'Not specified',
+    location: location || [city, state].filter(Boolean).join(', '),
+  };
+};
+
 const createOpportunity = async (req, res) => {
   try {
     const {
       title,
+      category,
       description,
       requiredSkills,
       duration,
@@ -38,15 +47,14 @@ const createOpportunity = async (req, res) => {
       city,
       state,
       date,
-      status,
-      category,
       eventDate,
       requiredVolunteers,
+      status,
     } = req.body;
-    const skills = parseRequiredSkills(requiredSkills);
+
+    const skills = parseRequiredSkills(requiredSkills) || [];
     const opportunityDate = date || eventDate;
-    const opportunityCity = city || location;
-    const opportunityState = state || 'Not specified';
+    const place = resolveOpportunityPlace({ city, state, location });
 
     if (!title?.trim()) {
       return res.status(400).json({ success: false, message: 'Title is required' });
@@ -60,7 +68,7 @@ const createOpportunity = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Duration is required' });
     }
 
-    if (!opportunityCity?.trim()) {
+    if (!place.city?.trim()) {
       return res.status(400).json({ success: false, message: 'City or location is required' });
     }
 
@@ -68,27 +76,35 @@ const createOpportunity = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Date is required' });
     }
 
-    const opportunityData = {
+    if (!category?.trim()) {
+      return res.status(400).json({ success: false, message: 'Category is required' });
+    }
+
+    const volunteerCount = Number(requiredVolunteers);
+    if (!Number.isFinite(volunteerCount) || volunteerCount < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Required volunteers must be at least 1',
+      });
+    }
+
+    const opportunity = await Opportunity.create({
       ngoId: req.user._id,
       postedBy: req.user._id,
       title,
-      description,
-      duration,
-      city: opportunityCity,
-      state: opportunityState,
-      date: opportunityDate,
-      location,
       category,
-      eventDate,
-      requiredVolunteers,
+      description,
+      requiredSkills: skills,
+      duration,
+      city: place.city,
+      state: place.state,
+      date: opportunityDate,
+      location: place.location,
+      eventDate: eventDate || opportunityDate,
+      requiredVolunteers: volunteerCount,
+      status: status || 'Open',
       imageUrl: req.file?.path || '',
-    };
-
-    if (skills !== undefined) opportunityData.requiredSkills = skills;
-
-    if (status) opportunityData.status = status;
-
-    const opportunity = await Opportunity.create(opportunityData);
+    });
 
     res.status(201).json({
       success: true,
@@ -100,10 +116,7 @@ const createOpportunity = async (req, res) => {
   }
 };
 
-/**
- * Get all opportunities.
- */
-const getAllOpportunities = async (req, res) => {
+const getAllOpportunities = async (_req, res) => {
   try {
     const opportunities = await Opportunity.find().sort({ createdAt: -1 });
 
@@ -116,9 +129,6 @@ const getAllOpportunities = async (req, res) => {
   }
 };
 
-/**
- * Search opportunities by title or description.
- */
 const searchOpportunities = async (req, res) => {
   try {
     const { keyword } = req.query;
@@ -134,6 +144,11 @@ const searchOpportunities = async (req, res) => {
       $or: [
         { title: { $regex: keyword, $options: 'i' } },
         { description: { $regex: keyword, $options: 'i' } },
+        { location: { $regex: keyword, $options: 'i' } },
+        { city: { $regex: keyword, $options: 'i' } },
+        { state: { $regex: keyword, $options: 'i' } },
+        { category: { $regex: keyword, $options: 'i' } },
+        { requiredSkills: { $in: [new RegExp(keyword, 'i')] } },
       ],
     })
       .sort({ createdAt: -1 })
@@ -149,12 +164,9 @@ const searchOpportunities = async (req, res) => {
   }
 };
 
-/**
- * Filter opportunities by location, status, and required skills.
- */
 const filterOpportunities = async (req, res) => {
   try {
-    const { location, status, skill } = req.query;
+    const { location, status, skill, category } = req.query;
     const filter = {};
 
     if (location) {
@@ -165,13 +177,9 @@ const filterOpportunities = async (req, res) => {
       ];
     }
 
-    if (status) {
-      filter.status = status;
-    }
-
-    if (skill) {
-      filter.requiredSkills = { $in: [new RegExp(skill, 'i')] };
-    }
+    if (status) filter.status = status;
+    if (category) filter.category = category;
+    if (skill) filter.requiredSkills = { $in: [new RegExp(skill, 'i')] };
 
     const opportunities = await Opportunity.find(filter)
       .sort({ createdAt: -1 })
@@ -187,10 +195,7 @@ const filterOpportunities = async (req, res) => {
   }
 };
 
-/**
- * Get dashboard statistics.
- */
-const getDashboardStatistics = async (req, res) => {
+const getDashboardStatistics = async (_req, res) => {
   try {
     const totalOpportunities = await Opportunity.countDocuments();
     const openOpportunities = await Opportunity.countDocuments({ status: 'Open' });
@@ -211,9 +216,6 @@ const getDashboardStatistics = async (req, res) => {
   }
 };
 
-/**
- * Get a single opportunity by its ID.
- */
 const getOpportunityById = async (req, res) => {
   try {
     const opportunity = await Opportunity.findById(req.params.id)
@@ -229,11 +231,10 @@ const getOpportunityById = async (req, res) => {
     const creator = isPopulatedUser(data.postedBy) ? data.postedBy : data.ngoId;
     const postedBy = isPopulatedUser(creator)
       ? {
-        _id: creator._id,
-        name: creator.fullName,
-        email: creator.email,
-        role: creator.role,
-      }
+          _id: creator._id,
+          name: creator.fullName,
+          email: creator.email,
+        }
       : creator;
 
     res.status(200).json({
@@ -245,13 +246,11 @@ const getOpportunityById = async (req, res) => {
   }
 };
 
-/**
- * Update an existing opportunity by ID.
- */
 const updateOpportunity = async (req, res) => {
   try {
     const {
       title,
+      category,
       description,
       requiredSkills,
       duration,
@@ -259,30 +258,32 @@ const updateOpportunity = async (req, res) => {
       city,
       state,
       date,
-      status,
-      category,
       eventDate,
       requiredVolunteers,
+      status,
       removeImage,
     } = req.body;
-    const skills = parseRequiredSkills(requiredSkills);
 
+    const skills = parseRequiredSkills(requiredSkills);
     const updateFields = {};
-    if (title) updateFields.title = title;
-    if (description) updateFields.description = description;
-    if (skills !== undefined) updateFields.requiredSkills = skills;
-    if (duration) updateFields.duration = duration;
-    if (location) updateFields.location = location;
-    if (city) updateFields.city = city;
-    if (state) updateFields.state = state;
-    if (date) updateFields.date = date;
+    const place = resolveOpportunityPlace({ city, state, location });
+
+    if (title !== undefined) updateFields.title = title;
     if (category !== undefined) updateFields.category = category;
+    if (description !== undefined) updateFields.description = description;
+    if (skills !== undefined) updateFields.requiredSkills = skills;
+    if (duration !== undefined) updateFields.duration = duration;
+    if (location !== undefined || city !== undefined || state !== undefined) {
+      if (place.location !== undefined) updateFields.location = place.location;
+      if (place.city !== undefined) updateFields.city = place.city;
+      if (place.state !== undefined) updateFields.state = place.state;
+    }
+    if (date !== undefined) updateFields.date = date;
     if (eventDate !== undefined) updateFields.eventDate = eventDate;
-    if (requiredVolunteers !== undefined) updateFields.requiredVolunteers = requiredVolunteers;
-    if (status) updateFields.status = status;
+    if (requiredVolunteers !== undefined) updateFields.requiredVolunteers = Number(requiredVolunteers);
+    if (status !== undefined) updateFields.status = status;
     if (req.file) updateFields.imageUrl = req.file.path;
     else if (removeImage === 'true') updateFields.imageUrl = '';
-
 
     const opportunity = await Opportunity.findByIdAndUpdate(
       req.params.id,
@@ -291,7 +292,10 @@ const updateOpportunity = async (req, res) => {
     );
 
     if (!opportunity) {
-      return res.status(404).json({ success: false, message: 'Opportunity not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Opportunity not found',
+      });
     }
 
     res.status(200).json({
@@ -304,9 +308,6 @@ const updateOpportunity = async (req, res) => {
   }
 };
 
-/**
- * Delete an opportunity by ID.
- */
 const deleteOpportunity = async (req, res) => {
   try {
     const opportunity = await Opportunity.findByIdAndDelete(req.params.id);
@@ -328,8 +329,7 @@ module.exports = {
   createOpportunity,
   getAllOpportunities,
   searchOpportunities,
-  filterOpportunities, 
-
+  filterOpportunities,
   getDashboardStatistics,
   getOpportunityById,
   updateOpportunity,
