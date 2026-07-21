@@ -1,54 +1,83 @@
 const Opportunity = require('../models/Opportunity');
 
-const normalizeSkills = (requiredSkills) => {
-  if (!requiredSkills) return [];
-  return Array.isArray(requiredSkills)
-    ? requiredSkills
-    : requiredSkills.split(',').map((skill) => skill.trim()).filter(Boolean);
+const parseRequiredSkills = (requiredSkills) => {
+  if (Array.isArray(requiredSkills)) return requiredSkills;
+  if (typeof requiredSkills !== 'string') return undefined;
+
+  try {
+    const parsed = JSON.parse(requiredSkills);
+    return Array.isArray(parsed) ? parsed : undefined;
+  } catch {
+    return requiredSkills
+      .split(',')
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+  }
 };
 
-/**
- * Create a new opportunity.
- */
+const sendServerError = (res, error) => {
+  res.status(500).json({
+    success: false,
+    message: 'Server Error',
+    error: error.message,
+  });
+};
+
+const resolveOpportunityPlace = ({ city, state, location }) => {
+  const parts = typeof location === 'string'
+    ? location.split(',').map((part) => part.trim()).filter(Boolean)
+    : [];
+
+  return {
+    city: city || parts[0] || location,
+    state: state || parts[1] || 'Not specified',
+    location: location || [city, state].filter(Boolean).join(', '),
+  };
+};
+
 const createOpportunity = async (req, res) => {
   try {
-    const imageUrl = req.file ? req.file.path : "";
-    const { title, category, description, requiredSkills, duration, location, requiredVolunteers, status } = req.body;
+    const {
+      title,
+      category,
+      description,
+      requiredSkills,
+      duration,
+      location,
+      city,
+      state,
+      date,
+      eventDate,
+      requiredVolunteers,
+      status,
+    } = req.body;
 
-    // Validate required fields
+    const skills = parseRequiredSkills(requiredSkills) || [];
+    const opportunityDate = date || eventDate;
+    const place = resolveOpportunityPlace({ city, state, location });
+
     if (!title?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title is required',
-      });
+      return res.status(400).json({ success: false, message: 'Title is required' });
     }
 
     if (!description?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Description is required',
-      });
+      return res.status(400).json({ success: false, message: 'Description is required' });
     }
 
     if (!duration?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Duration is required',
-      });
+      return res.status(400).json({ success: false, message: 'Duration is required' });
     }
 
-    if (!location?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Location is required',
-      });
+    if (!place.city?.trim()) {
+      return res.status(400).json({ success: false, message: 'City or location is required' });
+    }
+
+    if (!opportunityDate) {
+      return res.status(400).json({ success: false, message: 'Date is required' });
     }
 
     if (!category?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Category is required',
-      });
+      return res.status(400).json({ success: false, message: 'Category is required' });
     }
 
     const volunteerCount = Number(requiredVolunteers);
@@ -59,20 +88,23 @@ const createOpportunity = async (req, res) => {
       });
     }
 
-    const opportunityData = {
+    const opportunity = await Opportunity.create({
       ngoId: req.user._id,
+      postedBy: req.user._id,
       title,
       category,
       description,
-      imageUrl,
+      requiredSkills: skills,
       duration,
-      location,
+      city: place.city,
+      state: place.state,
+      date: opportunityDate,
+      location: place.location,
+      eventDate: eventDate || opportunityDate,
       requiredVolunteers: volunteerCount,
-      requiredSkills: normalizeSkills(requiredSkills),
-    };
-    if (status) opportunityData.status = status;
-
-    const opportunity = await Opportunity.create(opportunityData);
+      status: status || 'Open',
+      imageUrl: req.file?.path || '',
+    });
 
     res.status(201).json({
       success: true,
@@ -80,16 +112,12 @@ const createOpportunity = async (req, res) => {
       data: opportunity,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    sendServerError(res, error);
   }
 };
 
-/**
- * Get all opportunities.
- */
-const getAllOpportunities = async (req, res) => {
+const getAllOpportunities = async (_req, res) => {
   try {
-    // Find all opportunities and sort by newest first
     const opportunities = await Opportunity.find().sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -97,13 +125,10 @@ const getAllOpportunities = async (req, res) => {
       data: opportunities,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    sendServerError(res, error);
   }
 };
 
-/**
- * Search opportunities by title or description.
- */
 const searchOpportunities = async (req, res) => {
   try {
     const { keyword } = req.query;
@@ -117,30 +142,13 @@ const searchOpportunities = async (req, res) => {
 
     const opportunities = await Opportunity.find({
       $or: [
-        {
-          title: {
-            $regex: keyword,
-            $options: 'i',
-          },
-        },
-        {
-          description: {
-            $regex: keyword,
-            $options: 'i',
-          },
-        },
-        {
-          location: {
-            $regex: keyword,
-            $options: 'i',
-          },
-        },
-        {
-          category: {
-            $regex: keyword,
-            $options: 'i',
-          },
-        },
+        { title: { $regex: keyword, $options: 'i' } },
+        { description: { $regex: keyword, $options: 'i' } },
+        { location: { $regex: keyword, $options: 'i' } },
+        { city: { $regex: keyword, $options: 'i' } },
+        { state: { $regex: keyword, $options: 'i' } },
+        { category: { $regex: keyword, $options: 'i' } },
+        { requiredSkills: { $in: [new RegExp(keyword, 'i')] } },
       ],
     })
       .sort({ createdAt: -1 })
@@ -152,45 +160,26 @@ const searchOpportunities = async (req, res) => {
       data: opportunities,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message,
-    });
+    sendServerError(res, error);
   }
 };
-/**
- * Filter opportunities by location, status, and required skills.
- */
+
 const filterOpportunities = async (req, res) => {
   try {
     const { location, status, skill, category } = req.query;
-
     const filter = {};
 
-    // Filter by location
     if (location) {
-      filter.location = {
-        $regex: location,
-        $options: 'i',
-      };
+      filter.$or = [
+        { location: { $regex: location, $options: 'i' } },
+        { city: { $regex: location, $options: 'i' } },
+        { state: { $regex: location, $options: 'i' } },
+      ];
     }
 
-    // Filter by status
-    if (status) {
-      filter.status = status;
-    }
-
-    if (category) {
-      filter.category = category;
-    }
-
-    // Filter by required skill
-    if (skill) {
-      filter.requiredSkills = {
-        $in: [new RegExp(skill, 'i')],
-      };
-    }
+    if (status) filter.status = status;
+    if (category) filter.category = category;
+    if (skill) filter.requiredSkills = { $in: [new RegExp(skill, 'i')] };
 
     const opportunities = await Opportunity.find(filter)
       .sort({ createdAt: -1 })
@@ -202,31 +191,16 @@ const filterOpportunities = async (req, res) => {
       data: opportunities,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message,
-    });
+    sendServerError(res, error);
   }
 };
-/**
- * Get dashboard statistics.
- */
-const getDashboardStatistics = async (req, res) => {
+
+const getDashboardStatistics = async (_req, res) => {
   try {
     const totalOpportunities = await Opportunity.countDocuments();
-
-    const openOpportunities = await Opportunity.countDocuments({
-      status: 'Open',
-    });
-
-    const closedOpportunities = await Opportunity.countDocuments({
-      status: 'Closed',
-    });
-
-    const inProgressOpportunities = await Opportunity.countDocuments({
-      status: 'In Progress',
-    });
+    const openOpportunities = await Opportunity.countDocuments({ status: 'Open' });
+    const closedOpportunities = await Opportunity.countDocuments({ status: 'Closed' });
+    const inProgressOpportunities = await Opportunity.countDocuments({ status: 'In Progress' });
 
     res.status(200).json({
       success: true,
@@ -238,41 +212,42 @@ const getDashboardStatistics = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message,
-    });
+    sendServerError(res, error);
   }
 };
 
-/**
- * Get a single opportunity by its ID.
- */
 const getOpportunityById = async (req, res) => {
   try {
-    const opportunity = await Opportunity.findById(req.params.id);
+    const opportunity = await Opportunity.findById(req.params.id)
+      .populate('postedBy', 'fullName email role')
+      .populate('ngoId', 'fullName email role');
 
-    // Return 404 if not found
     if (!opportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });
     }
 
+    const data = opportunity.toObject();
+    const isPopulatedUser = (user) => user && typeof user === 'object' && (user.fullName || user.email);
+    const creator = isPopulatedUser(data.postedBy) ? data.postedBy : data.ngoId;
+    const postedBy = isPopulatedUser(creator)
+      ? {
+          _id: creator._id,
+          name: creator.fullName,
+          email: creator.email,
+        }
+      : creator;
+
     res.status(200).json({
       success: true,
-      data: opportunity,
+      data: { ...data, postedBy },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    sendServerError(res, error);
   }
 };
 
-/**
- * Update an existing opportunity by ID.
- */
 const updateOpportunity = async (req, res) => {
   try {
-
     const {
       title,
       category,
@@ -280,68 +255,63 @@ const updateOpportunity = async (req, res) => {
       requiredSkills,
       duration,
       location,
+      city,
+      state,
+      date,
+      eventDate,
       requiredVolunteers,
       status,
+      removeImage,
     } = req.body;
 
+    const skills = parseRequiredSkills(requiredSkills);
     const updateFields = {};
+    const place = resolveOpportunityPlace({ city, state, location });
 
-    if (title) updateFields.title = title;
-    if (category) updateFields.category = category;
-    if (description) updateFields.description = description;
-    if (duration) updateFields.duration = duration;
-    if (location) updateFields.location = location;
-    if (status) updateFields.status = status;
-    if (requiredVolunteers) updateFields.requiredVolunteers = Number(requiredVolunteers);
-
-    if (requiredSkills) {
-      updateFields.requiredSkills = normalizeSkills(requiredSkills);
+    if (title !== undefined) updateFields.title = title;
+    if (category !== undefined) updateFields.category = category;
+    if (description !== undefined) updateFields.description = description;
+    if (skills !== undefined) updateFields.requiredSkills = skills;
+    if (duration !== undefined) updateFields.duration = duration;
+    if (location !== undefined || city !== undefined || state !== undefined) {
+      if (place.location !== undefined) updateFields.location = place.location;
+      if (place.city !== undefined) updateFields.city = place.city;
+      if (place.state !== undefined) updateFields.state = place.state;
     }
-
-    if (req.file) {
-      updateFields.imageUrl = req.file.path;
-    }
+    if (date !== undefined) updateFields.date = date;
+    if (eventDate !== undefined) updateFields.eventDate = eventDate;
+    if (requiredVolunteers !== undefined) updateFields.requiredVolunteers = Number(requiredVolunteers);
+    if (status !== undefined) updateFields.status = status;
+    if (req.file) updateFields.imageUrl = req.file.path;
+    else if (removeImage === 'true') updateFields.imageUrl = '';
 
     const opportunity = await Opportunity.findByIdAndUpdate(
       req.params.id,
       { $set: updateFields },
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     );
 
     if (!opportunity) {
       return res.status(404).json({
         success: false,
-        message: "Opportunity not found",
+        message: 'Opportunity not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Opportunity updated successfully",
+      message: 'Opportunity updated successfully',
       data: opportunity,
     });
-
   } catch (error) {
-
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-      error: error.message,
-    });
-
+    sendServerError(res, error);
   }
 };
-/**
- * Delete an opportunity by ID.
- */
+
 const deleteOpportunity = async (req, res) => {
   try {
     const opportunity = await Opportunity.findByIdAndDelete(req.params.id);
 
-    // Return 404 if not found
     if (!opportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });
     }
@@ -351,7 +321,7 @@ const deleteOpportunity = async (req, res) => {
       message: 'Opportunity deleted successfully',
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    sendServerError(res, error);
   }
 };
 
@@ -360,7 +330,7 @@ module.exports = {
   getAllOpportunities,
   searchOpportunities,
   filterOpportunities,
-getDashboardStatistics,
+  getDashboardStatistics,
   getOpportunityById,
   updateOpportunity,
   deleteOpportunity,

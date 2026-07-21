@@ -64,6 +64,8 @@ export class AuthService {
 
   private readonly apiUrl = 'http://localhost:5000/api/auth';
   private readonly tokenKey = 'token';
+  private readonly roleKey = 'role';
+  private readonly opportunityManagerRoles = ['NGO', 'Admin'];
 
 
   async login(payload: LoginRequest): Promise<AuthResponse> {
@@ -122,12 +124,35 @@ export class AuthService {
 
 
 
-  saveToken(token: string): void {
+  saveToken(token: string, role?: string): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
 
     localStorage.setItem(this.tokenKey, token);
+
+    const resolvedRole = role || this.getRoleFromToken(token);
+    if (resolvedRole) localStorage.setItem(this.roleKey, resolvedRole);
+  }
+
+  canManageOpportunities(): boolean {
+    return this.opportunityManagerRoles.includes(this.getUserRole());
+  }
+
+  getUserRole(): string {
+    if (typeof localStorage === 'undefined') return '';
+
+    const token = localStorage.getItem(this.tokenKey);
+    if (!token) return '';
+
+    return localStorage.getItem(this.roleKey) || this.getRoleFromToken(token);
+  }
+
+  clearSession(): void {
+    if (typeof localStorage === 'undefined') return;
+
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
   }
 
   saveAuthSession(response: AuthResponse): void {
@@ -184,6 +209,17 @@ export class AuthService {
 
   }
 
+  private getRoleFromToken(token: string): string {
+    try {
+      const payload = token.split('.')[1];
+      if (!payload) return '';
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof decoded.role === 'string' ? decoded.role : '';
+    } catch {
+      return '';
+    }
+  }
+
 
 
   private async parseJson<TResponse>(
@@ -203,4 +239,39 @@ export class AuthService {
 
     }
   }
+  saveUser(user: AuthResponse['user']): void {
+  if (typeof localStorage === 'undefined' || !user) {
+    return;
+  }
+
+  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('role', user.role);
+}
+
+getUser(): AuthResponse['user'] | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  const user = localStorage.getItem('user');
+  return user ? JSON.parse(user) : null;
+}
+
+getRole(): string | null {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+
+  return localStorage.getItem('role');
+}
+
+logout(): void {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+
+  localStorage.removeItem(this.tokenKey);
+  localStorage.removeItem('user');
+  localStorage.removeItem('role');
+}
 }

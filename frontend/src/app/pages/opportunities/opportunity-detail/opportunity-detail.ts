@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
+import { AuthService } from '../../../auth/auth.service';
 import { DeleteOpportunityDialog } from '../delete-opportunity-dialog/delete-opportunity-dialog';
 import { Opportunity } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
@@ -24,67 +25,77 @@ export class OpportunityDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly opportunityService = inject(OpportunityService);
+  private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly cdr = inject(ChangeDetectorRef);
 
   opportunity?: Opportunity;
-  loading = false;
-  canManageOpportunity = false;
+  loading = true;
+  errorMessage = '';
+  readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
-  async ngOnInit(): Promise<void> {
-    
-    this.loading = true;
-    this.canManageOpportunity = ['Admin', 'NGO'].includes(this.opportunityService.getUserRole() ?? '');
-
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      await this.router.navigate(['/opportunities']);
-      return;
-    }
-
-    try {
-      const opportunity = await this.opportunityService.getById(id);
-      this.opportunity = opportunity;
-
-      if (!opportunity) {
-        this.snackBar.open('Opportunity not found.', 'Close', { duration: 3500 });
-        await this.router.navigate(['/opportunities']);
+  ngOnInit(): void {
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (!id) {
+        this.loading = false;
+        this.errorMessage = 'Unable to load opportunity details.';
+        this.router.navigate(['/opportunities']);
         return;
       }
-    } catch (error) {
-      console.error('Opportunity detail load failed:', error);
-      this.snackBar.open(
-        error instanceof Error ? error.message : 'Unable to complete action.',
-        'Close',
-        { duration: 3500 }
-      );
 
-      await this.router.navigate(['/opportunities']);
-    } finally {
-      this.loading = false;
-      this.cdr.detectChanges();
-    }
+      this.loading = true;
+      this.errorMessage = '';
+      this.opportunityService.getById(id).subscribe({
+        next: (opportunity) => {
+          this.opportunity = opportunity;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to load opportunity:', error);
+          this.loading = false;
+          this.errorMessage = error.error?.message || 'Unable to load opportunity details.';
+          this.snackBar.open(this.errorMessage, 'Close', { duration: 3500 });
+          this.cdr.detectChanges();
+        }
+      });
+    });
   }
+
   delete(): void {
-    if (!this.opportunity) return;
+    if (!this.opportunity || !this.canManageOpportunities()) return;
 
     this.dialog.open(DeleteOpportunityDialog, { data: { title: this.opportunity.title }, width: '420px' })
       .afterClosed()
-      .subscribe(async (confirmed) => {
+      .subscribe((confirmed) => {
         if (!confirmed) return;
 
-        try {
-          const deleted = await this.opportunityService.delete(this.opportunity!.id);
-          if (deleted) {
+        this.opportunityService.delete(this.opportunity!.id).subscribe({
+          next: () => {
             this.snackBar.open('Opportunity deleted successfully.', 'Close', { duration: 3500 });
-            await this.router.navigate(['/opportunities']);
-          } else {
-            this.snackBar.open('Unable to complete action.', 'Close', { duration: 3500 });
+            this.router.navigate(['/opportunities']);
+          },
+          error: (error) => {
+            console.error('Failed to delete opportunity:', error);
+            this.snackBar.open(error.error?.message || 'Unable to complete action.', 'Close', { duration: 3500 });
           }
-        } catch {
-          this.snackBar.open('Unable to complete action.', 'Close', { duration: 3500 });
-        }
+        });
       });
+  }
+
+  usePlaceholder(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    if (!image.src.endsWith(this.placeholderImage)) image.src = this.placeholderImage;
+  }
+
+  postedByName(postedBy?: Opportunity['postedBy']): string {
+    if (typeof postedBy === 'string') return postedBy;
+    return postedBy?.name || postedBy?.email || 'Unknown User';
+  }
+
+  canManageOpportunities(): boolean {
+    return this.authService.canManageOpportunities();
   }
 }

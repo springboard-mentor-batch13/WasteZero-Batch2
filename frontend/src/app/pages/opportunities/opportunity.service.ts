@@ -1,10 +1,36 @@
-import { Injectable } from '@angular/core';
-import { Opportunity, OpportunityDraft } from './opportunity.model';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+
+import { Opportunity, OpportunityDraft, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data: T;
+}
+
+interface OpportunityApiModel {
+  _id: string;
+  id?: string;
+  ngoId?: string;
+  postedBy?: Opportunity['postedBy'];
+  title: string;
+  category?: string;
+  description: string;
+  requiredSkills?: string[] | string;
+  skillsRequired?: string[] | string;
+  duration?: string;
+  city?: string;
+  state?: string;
+  date?: string;
+  eventDate?: string;
+  location?: string;
+  requiredVolunteers?: number | string;
+  status?: OpportunityStatus;
+  imageUrl?: string | null;
+  imagePreviewUrl?: string | null;
+  createdAt?: string;
 }
 
 export interface DashboardStats {
@@ -18,218 +44,167 @@ export interface DashboardStats {
   providedIn: 'root'
 })
 export class OpportunityService {
-
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:5000/api/opportunities';
 
-  private getToken(): string {
-    if (typeof localStorage === 'undefined') {
-      return '';
-    }
-
-    return localStorage.getItem('token') || '';
+  getAll(): Observable<Opportunity[]> {
+    return this.http.get<ApiResponse<OpportunityApiModel[]>>(this.apiUrl, { headers: this.headers() }).pipe(
+      map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
+    );
   }
 
-  private parseJwtPayload(): any {
-    const token = this.getToken();
+  getById(id: string): Observable<Opportunity> {
+    return this.http.get<ApiResponse<OpportunityApiModel>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(
+      map((response) => this.fromApi(response.data))
+    );
+  }
+
+  getByStatus(status: OpportunityStatus): Observable<Opportunity[]> {
+    return this.filter('', status);
+  }
+
+  search(keyword: string): Observable<Opportunity[]> {
+    const params = new HttpParams().set('keyword', keyword);
+    return this.http.get<ApiResponse<OpportunityApiModel[]>>(`${this.apiUrl}/search`, { headers: this.headers(), params }).pipe(
+      map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
+    );
+  }
+
+  filter(location = '', status: OpportunityStatus | '' = '', skill = '', category = ''): Observable<Opportunity[]> {
+    let params = new HttpParams();
+    if (location) params = params.set('location', location);
+    if (status) params = params.set('status', status);
+    if (skill) params = params.set('skill', skill);
+    if (category) params = params.set('category', category);
+
+    return this.http.get<ApiResponse<OpportunityApiModel[]>>(`${this.apiUrl}/filter`, { headers: this.headers(), params }).pipe(
+      map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
+    );
+  }
+
+  create(draft: OpportunityDraft): Observable<Opportunity> {
+    return this.http.post<ApiResponse<OpportunityApiModel>>(this.apiUrl, this.toFormData(draft), { headers: this.headers() }).pipe(
+      map((response) => this.fromApi(response.data))
+    );
+  }
+
+  update(id: string, draft: OpportunityDraft): Observable<Opportunity> {
+    return this.http.put<ApiResponse<OpportunityApiModel>>(`${this.apiUrl}/${id}`, this.toFormData(draft), { headers: this.headers() }).pipe(
+      map((response) => this.fromApi(response.data))
+    );
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(map(() => undefined));
+  }
+
+  getDashboardStats(): Observable<DashboardStats> {
+    return this.http.get<ApiResponse<DashboardStats>>(`${this.apiUrl}/dashboard/stats`, { headers: this.headers() }).pipe(
+      map((response) => response.data)
+    );
+  }
+
+  getUserRole(): string | null {
+    if (typeof localStorage === 'undefined') return null;
+    const storedRole = localStorage.getItem('role');
+    if (storedRole) return storedRole;
+
+    const token = localStorage.getItem('token');
     if (!token) return null;
 
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-
     try {
-      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-      const decoded = JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(payload), (c: string) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`).join('')));
-      return decoded;
+      const payload = token.split('.')[1];
+      if (!payload) return null;
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return decoded.role ?? decoded.user?.role ?? null;
     } catch {
       return null;
     }
   }
 
-  getUserRole(): string | null {
-    if (typeof localStorage !== 'undefined') {
-      const storedRole = localStorage.getItem('role');
-      if (storedRole) {
-        return storedRole;
-      }
-    }
-
-    const payload = this.parseJwtPayload();
-    if (!payload) return null;
-    return payload.role ?? payload.user?.role ?? null;
+  private headers(): HttpHeaders {
+    const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');
+    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
 
-  private getHeaders(): HeadersInit {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error('Authentication required. Please log in.');
-    }
+  private fromApi(opportunity: OpportunityApiModel): Opportunity {
+    const legacyPlace = this.parseLegacyPlace(opportunity.location);
+    const requiredSkills = this.normalizeSkills(opportunity.requiredSkills ?? opportunity.skillsRequired);
+    const date = this.toDate(opportunity.date || opportunity.eventDate || opportunity.createdAt);
+    const city = opportunity.city || legacyPlace.city;
+    const state = opportunity.state || legacyPlace.state;
+    const location = opportunity.location || [city, state].filter(Boolean).join(', ');
+    const imageUrl = opportunity.imageUrl ?? opportunity.imagePreviewUrl ?? undefined;
 
     return {
-      Authorization: `Bearer ${token}`
+      id: opportunity._id || opportunity.id || '',
+      ngoId: opportunity.ngoId,
+      postedBy: opportunity.postedBy,
+      title: opportunity.title,
+      category: opportunity.category || '',
+      description: opportunity.description,
+      requiredSkills,
+      skillsRequired: requiredSkills,
+      duration: opportunity.duration || '',
+      city,
+      state,
+      date,
+      eventDate: opportunity.eventDate || this.toIsoDate(date),
+      location,
+      requiredVolunteers: Number(opportunity.requiredVolunteers ?? 1),
+      status: opportunity.status ?? 'Open',
+      imageUrl,
+      imagePreviewUrl: imageUrl,
+      createdAt: opportunity.createdAt,
     };
   }
 
-  private mapBackendToFrontend(data: any): Opportunity {
-    const id = data?._id?.toString?.() ?? data?.id?.toString?.() ?? '';
+  private toFormData(draft: OpportunityDraft): FormData {
+    const date = draft.date instanceof Date ? draft.date : this.toDate(String(draft.date));
+    const location = draft.location || [draft.city, draft.state].filter(Boolean).join(', ');
+    const requiredSkills = draft.requiredSkills?.length ? draft.requiredSkills : draft.skillsRequired ?? [];
 
-    return {
-      id,
-      title: data?.title ?? '',
-      category: data?.category ?? '',
-      description: data?.description ?? '',
-      location: data?.location ?? '',
-      eventDate: data?.eventDate ?? data?.duration ?? '',
-      requiredVolunteers: Number(data?.requiredVolunteers ?? 0),
-      skillsRequired: this.normalizeSkills(data?.requiredSkills ?? data?.skillsRequired),
-      imagePreviewUrl: data?.imagePreviewUrl ?? data?.imageUrl,
-      imageFile: undefined
-    };
-  }
-
-  private createFormData(draft: OpportunityDraft): FormData {
     const formData = new FormData();
-
     formData.append('title', draft.title);
     formData.append('category', draft.category);
     formData.append('description', draft.description);
-    formData.append('duration', draft.eventDate);
-    formData.append('location', draft.location);
+    formData.append('requiredSkills', JSON.stringify(requiredSkills));
+    formData.append('duration', draft.duration);
+    formData.append('city', draft.city);
+    formData.append('state', draft.state);
+    formData.append('date', this.toIsoDate(date));
+    formData.append('location', location);
+    formData.append('eventDate', draft.eventDate || this.toIsoDate(date));
     formData.append('requiredVolunteers', String(draft.requiredVolunteers));
-    formData.append('requiredSkills', draft.skillsRequired.join(','));
-    formData.append('status', 'Open');
-
-    if (draft.imageFile) {
-      formData.append('image', draft.imageFile);
-    }
-
+    formData.append('status', draft.status);
+    formData.append('imageUrl', draft.imageUrl ?? '');
+    formData.append('removeImage', String(!!draft.removeImage));
+    if (draft.imageFile) formData.append('image', draft.imageFile);
     return formData;
   }
 
-  private async handleResponse<T>(response: Response): Promise<T> {
-    const contentType = response.headers.get('content-type') || '';
-    const isJson = contentType.includes('application/json');
-    const result = isJson
-      ? await response.json() as ApiResponse<T>
-      : { success: response.ok, message: await response.text() } as ApiResponse<T>;
-
-    if (!response.ok || result.success === false) {
-      throw new Error(result.message || this.getErrorMessage(response.status));
-    }
-
-    return (result as any).data ?? (result as unknown as T);
-  }
-
-  private getErrorMessage(status: number): string {
-    switch (status) {
-      case 401:
-        return 'Please log in again.';
-      case 403:
-        return 'You are not authorized to perform this action.';
-      case 404:
-        return 'Opportunity not found.';
-      case 500:
-      default:
-        return 'Unable to complete action.';
-    }
-  }
-
   private normalizeSkills(value: unknown): string[] {
-    if (Array.isArray(value)) {
-      return value.map((skill) => String(skill)).filter(Boolean);
-    }
-
-    if (typeof value === 'string') {
-      return value.split(',').map((skill) => skill.trim()).filter(Boolean);
-    }
-
+    if (Array.isArray(value)) return value.map((skill) => String(skill).trim()).filter(Boolean);
+    if (typeof value === 'string') return value.split(',').map((skill) => skill.trim()).filter(Boolean);
     return [];
   }
 
-  async getAll(): Promise<Opportunity[]> {
-    const response = await fetch(this.apiUrl, {
-      method: 'GET',
-      headers: this.getHeaders()
-    });
-
-    const data = await this.handleResponse<any[]>(response);
-    return (data ?? []).map((item) => this.mapBackendToFrontend(item));
+  private toDate(date?: string): Date {
+    if (!date) return new Date();
+    const [year, month, day] = date.split('T')[0].split('-').map(Number);
+    return new Date(year, month - 1, day);
   }
 
-  async getById(id: string): Promise<Opportunity | undefined> {
-    const response = await fetch(`${this.apiUrl}/${encodeURIComponent(id)}`, {
-      method: 'GET',
-      headers: this.getHeaders()
-    });
-
-    const data = await this.handleResponse<any>(response);
-    return this.mapBackendToFrontend(data);
+  private toIsoDate(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 
-  async create(draft: OpportunityDraft): Promise<Opportunity> {
-    const response = await fetch(this.apiUrl, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: this.createFormData(draft)
-    });
-
-    const data = await this.handleResponse<any>(response);
-    return this.mapBackendToFrontend(data);
-  }
-
-  async update(id: string, draft: OpportunityDraft): Promise<Opportunity | undefined> {
-    const response = await fetch(`${this.apiUrl}/${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: this.getHeaders(),
-      body: this.createFormData(draft)
-    });
-
-    const data = await this.handleResponse<any>(response);
-    return this.mapBackendToFrontend(data);
-  }
-
-  async delete(id: string): Promise<boolean> {
-    const response = await fetch(`${this.apiUrl}/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-      headers: this.getHeaders()
-    });
-
-    await this.handleResponse<unknown>(response);
-    return true;
-  }
-
-  async search(keyword: string): Promise<Opportunity[]> {
-    const response = await fetch(`${this.apiUrl}/search?keyword=${encodeURIComponent(keyword)}`, {
-      method: 'GET',
-      headers: this.getHeaders()
-    });
-
-    const data = await this.handleResponse<any[]>(response);
-    return (data ?? []).map((item) => this.mapBackendToFrontend(item));
-  }
-
-  async filter(location = '', status = '', skill = '', category = ''): Promise<Opportunity[]> {
-    const params = new URLSearchParams();
-    if (location) params.set('location', location);
-    if (status) params.set('status', status);
-    if (skill) params.set('skill', skill);
-    if (category) params.set('category', category);
-
-    const query = params.toString();
-    const response = await fetch(`${this.apiUrl}/filter${query ? `?${query}` : ''}`, {
-      method: 'GET',
-      headers: this.getHeaders()
-    });
-
-    const data = await this.handleResponse<any[]>(response);
-    return (data ?? []).map((item) => this.mapBackendToFrontend(item));
-  }
-
-  async getDashboardStats(): Promise<DashboardStats> {
-    const response = await fetch(`${this.apiUrl}/dashboard/stats`, {
-      method: 'GET',
-      headers: this.getHeaders()
-    });
-
-    return this.handleResponse<DashboardStats>(response);
+  private parseLegacyPlace(location?: string): { city: string; state: string } {
+    if (!location?.trim()) return { city: 'Not specified', state: 'Not specified' };
+    const parts = location.split(',').map((part) => part.trim()).filter(Boolean);
+    return {
+      city: parts[0] || location,
+      state: parts[1] || 'Not specified',
+    };
   }
 }

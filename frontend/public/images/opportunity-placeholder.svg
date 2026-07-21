@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Opportunity placeholder">
+  <rect width="800" height="450" fill="#e7f5ec"/>
+  <path d="M0 345 180 180l120 115 120-140 220 190z" fill="#a9ddbc"/>
+  <circle cx="610" cy="125" r="48" fill="#f1c96f"/>
+  <text x="400" y="390" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" fill="#246144">Volunteer opportunity</text>
+</svg>
