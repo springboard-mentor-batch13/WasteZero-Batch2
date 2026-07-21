@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, delay, map, of } from 'rxjs';
 
-import { Opportunity, OpportunityApplication, OpportunityDraft, OpportunityStatus } from './opportunity.model';
+import { Opportunity, OpportunityDraft, OpportunityJoinRequest, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -98,26 +98,23 @@ export class OpportunityService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(map(() => undefined));
   }
 
-  apply(id: string, application: OpportunityApplication): Observable<void> {
-    // TODO: Replace this mock submission with the backend Apply API when the endpoint is available.
-    return of({ opportunityId: id, application }).pipe(
+  getDashboardStats(): Observable<DashboardStats> {
+    return this.http.get<ApiResponse<DashboardStats>>(`${this.apiUrl}/dashboard/stats`, { headers: this.headers() }).pipe(
+      map((response) => response.data)
+    );
+  }
+
+  joinOpportunity(request: OpportunityJoinRequest): Observable<void> {
+    // TODO: Replace with POST /api/opportunities/:id/join (or /apply) when backend is available.
+    return of(request).pipe(
       delay(450),
       map(() => undefined)
     );
   }
 
-  private headers(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    if (!token) return null;
-
-    try {
-      const payload = token.split('.')[1];
-      if (!payload) return null;
-      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-      return decoded.role ?? decoded.user?.role ?? null;
-    } catch {
-      return null;
-    }
+  getJoinRequests(): Observable<OpportunityJoinRequest[]> {
+    // TODO: Replace with GET /api/opportunities/join-requests when backend is available for Admin review.
+    return of([]);
   }
 
   private headers(): HttpHeaders {

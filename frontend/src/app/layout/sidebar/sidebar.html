@@ -1,181 +1,82 @@
-<div class="sidebar">
-
-  <!-- Logo -->
-  <div class="logo">
-    <h2>♻️ WasteZero</h2>
-  </div>
-
-  <!-- Profile -->
-  <div class="profile-section">
-
-    <div class="avatar">
-      {{ user?.fullName?.charAt(0) || 'U' }}
+<aside class="sidebar">
+  @if (user$ | async; as user) {
+    <div class="logo">
+      <h2>WasteZero</h2>
     </div>
 
-    <div class="user-details">
-      <h4>{{ user?.fullName }}</h4>
-      <p>{{ user?.role }}</p>
+    <section class="profile-section" aria-label="Signed in user">
+      <div class="avatar">
+        {{ user.fullName.charAt(0).toUpperCase() || 'U' }}
+      </div>
+
+      <div class="user-details">
+        <h4>{{ user.fullName || user.email }}</h4>
+        <p>{{ user.role }}</p>
+      </div>
+    </section>
+
+    <p class="menu-title">MAIN MENU</p>
+
+    <ul>
+      @for (item of getMainMenu(user.role); track item.label) {
+        @if (item.route) {
+          <li
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.exact || false }">
+            <i class="bi" [ngClass]="item.icon"></i>
+            {{ item.label }}
+          </li>
+        } @else {
+          <li class="menu-item-static">
+            <i class="bi" [ngClass]="item.icon"></i>
+            {{ item.label }}
+          </li>
+        }
+      }
+    </ul>
+
+    <p class="menu-title">SETTINGS</p>
+
+    <ul>
+      @for (item of settingsMenu; track item.label) {
+        @if (item.route) {
+          <li [routerLink]="item.route" routerLinkActive="active">
+            <i class="bi" [ngClass]="item.icon"></i>
+            {{ item.label }}
+          </li>
+        } @else {
+          <li class="menu-item-static">
+            <i class="bi" [ngClass]="item.icon"></i>
+            {{ item.label }}
+          </li>
+        }
+      }
+    </ul>
+
+    <div class="dark-mode">
+      <span>Dark Mode</span>
+
+      <div class="theme-toggle">
+        <i class="bi bi-sun"></i>
+
+        <label class="switch">
+          <input
+            type="checkbox"
+            [checked]="isDarkMode"
+            (change)="toggleDarkMode()">
+          <span class="slider"></span>
+        </label>
+
+        <i class="bi bi-moon"></i>
+      </div>
     </div>
 
-  </div>
-
-<<<<<<< Updated upstream
-  <!-- Main Menu -->
-  <ul>
-
-    <!-- Dashboard -->
-    <li
-      routerLink="/dashboard"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }">
-
-      <i class="bi bi-grid"></i>
-      Dashboard
-
-    </li>
-
-    @if (isAdmin) {
-
-      <li routerLink="/users" routerLinkActive="active">
-        <i class="bi bi-people"></i>
-        Users
-      </li>
-
-      <li routerLink="/opportunities" routerLinkActive="active">
-        <i class="bi bi-recycle"></i>
-        Opportunities
-      </li>
-
-      <li routerLink="/applications" routerLinkActive="active">
-        <i class="bi bi-file-earmark-text"></i>
-        Applications
-      </li>
-
-      <li routerLink="/reports" routerLinkActive="active">
-        <i class="bi bi-bar-chart"></i>
-        Reports / Analytics
-      </li>
-
-      <li routerLink="/admin" routerLinkActive="active">
-        <i class="bi bi-shield-lock"></i>
-        Admin Panel
-      </li>
-
-    }
-
-    @if (isNGO) {
-
-      <li routerLink="/schedule-pickup" routerLinkActive="active">
-        <i class="bi bi-calendar-check"></i>
-        Schedule Pickup
-      </li>
-
-      <li routerLink="/opportunities" routerLinkActive="active">
-        <i class="bi bi-recycle"></i>
-        Manage Opportunities
-      </li>
-
-      <li>
-        <i class="bi bi-chat-left-text"></i>
-        Messages
-      </li>
-
-      <li>
-        <i class="bi bi-bar-chart"></i>
-        My Impact
-      </li>
-
-    }
-
-    @if (isVolunteer) {
-
-      <li routerLink="/opportunities" routerLinkActive="active">
-        <i class="bi bi-recycle"></i>
-        Browse Opportunities
-      </li>
-
-      <li routerLink="/schedule-pickup" routerLinkActive="active">
-        <i class="bi bi-calendar-check"></i>
-        Schedule Pickup
-      </li>
-
-      <li routerLink="/applications" routerLinkActive="active">
-        <i class="bi bi-file-earmark-text"></i>
-        My Applications
-      </li>
-
-      <li routerLink="/impact" routerLinkActive="active">
-        <i class="bi bi-graph-up"></i>
-        My Impact
-      </li>
-
-    }
-
-  </ul>
-
-  <!-- Settings -->
-  <p class="menu-title">SETTINGS</p>
-
-  <ul>
-
-    <li routerLink="/my-profile" routerLinkActive="active">
-      <i class="bi bi-person"></i>
-      My Profile
-    </li>
-
-    <li>
-      <i class="bi bi-gear"></i>
-      Settings
-    </li>
-
-    <li>
-      <i class="bi bi-question-circle"></i>
-      Help & Support
-    </li>
-
-    @if (isAdmin) {
-      <li routerLink="/admin" routerLinkActive="active">
-        <i class="bi bi-shield-lock"></i>
-        Admin Panel
-      </li>
-    }
-
-  </ul>
-
-  <!-- Dark Mode -->
-  <div class="dark-mode">
-
-    <span>Dark Mode</span>
-
-    <div class="theme-toggle">
-
-      <i class="bi bi-sun"></i>
-
-      <label class="switch">
-        <input
-    type="checkbox"
-    [checked]="isDarkMode"
-    (change)="toggleDarkMode()">
-        <span class="slider"></span>
-      </label>
-
-      <i class="bi bi-moon"></i>
-
+    <div class="logout-section">
+      <button type="button" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i>
+        Logout
+      </button>
     </div>
-
-  </div>
-
-  <!-- Logout -->
-  <div class="logout-section">
-
-    <button (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i>
-      Logout
-    </button>
-
-  </div>
-
-</div>
-=======
-  
->>>>>>> Stashed changes
+  }
+</aside>

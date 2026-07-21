@@ -74,7 +74,18 @@
             </div>
           } @else if (isVolunteer()) {
             <div class="detail-actions volunteer-actions">
-              <button mat-flat-button color="primary" (click)="apply()"><mat-icon>volunteer_activism</mat-icon>Apply / Join Opportunity</button>
+              <button
+                mat-flat-button
+                color="primary"
+                (click)="apply()"
+                [disabled]="sendingJoinRequest || hasJoinRequest(item.id)">
+                @if (sendingJoinRequest) {
+                  <mat-spinner diameter="18"></mat-spinner>
+                } @else {
+                  <mat-icon>volunteer_activism</mat-icon>
+                }
+                {{ joinButtonText(item.id) }}
+              </button>
             </div>
           }
         </mat-card-content>
