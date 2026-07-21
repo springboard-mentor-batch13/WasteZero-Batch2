@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, delay, map, of } from 'rxjs';
 
-import { Opportunity, OpportunityDraft, OpportunityStatus } from './opportunity.model';
+import { Opportunity, OpportunityApplication, OpportunityDraft, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -98,17 +98,15 @@ export class OpportunityService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(map(() => undefined));
   }
 
-  getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<ApiResponse<DashboardStats>>(`${this.apiUrl}/dashboard/stats`, { headers: this.headers() }).pipe(
-      map((response) => response.data)
+  apply(id: string, application: OpportunityApplication): Observable<void> {
+    // TODO: Replace this mock submission with the backend Apply API when the endpoint is available.
+    return of({ opportunityId: id, application }).pipe(
+      delay(450),
+      map(() => undefined)
     );
   }
 
-  getUserRole(): string | null {
-    if (typeof localStorage === 'undefined') return null;
-    const storedRole = localStorage.getItem('role');
-    if (storedRole) return storedRole;
-
+  private headers(): HttpHeaders {
     const token = localStorage.getItem('token');
     if (!token) return null;
 

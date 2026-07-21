@@ -57,16 +57,24 @@
             <div><mat-icon>location_on</mat-icon><span><small>Location</small>{{ item.location }}</span></div>
             <div><mat-icon>groups</mat-icon><span><small>Volunteers Needed</small>{{ item.requiredVolunteers }}</span></div>
             <div><mat-icon>flag</mat-icon><span><small>Status</small>{{ item.status }}</span></div>
-            <div><mat-icon>person</mat-icon><span><small>Posted By</small>{{ postedByName(item.postedBy) }}</span></div>
-            @if (item.createdAt) {
-              <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div>
-            }
+            <div>
+              <mat-icon>person</mat-icon>
+              <span>
+                <small>Posted By</small>
+                <strong>{{ postedByRole(item.postedBy) }} - {{ postedByName(item.postedBy) }}</strong>
+              </span>
+            </div>
+            @if (item.createdAt) { <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div> }
           </div>
 
           @if (canManageOpportunities()) {
             <div class="detail-actions">
               <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
               <button mat-flat-button class="delete-button" (click)="delete()"><mat-icon>delete</mat-icon>Delete</button>
+            </div>
+          } @else if (isVolunteer()) {
+            <div class="detail-actions volunteer-actions">
+              <button mat-flat-button color="primary" (click)="apply()"><mat-icon>volunteer_activism</mat-icon>Apply / Join Opportunity</button>
             </div>
           }
         </mat-card-content>
