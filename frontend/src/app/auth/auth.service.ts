@@ -176,10 +176,24 @@ export class AuthService {
     return role === 'Admin' || role === 'NGO';
   }
 
-  logout(): void {
+  saveAuthSession(response: AuthResponse): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
+
+    if (response.token) {
+      this.saveToken(response.token);
+    }
+
+    if (response.role) {
+      localStorage.setItem('role', response.role);
+    }
+
+    if (response.user?.role) {
+      localStorage.setItem('role', response.user.role);
+    }
+  }
+
 
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);
