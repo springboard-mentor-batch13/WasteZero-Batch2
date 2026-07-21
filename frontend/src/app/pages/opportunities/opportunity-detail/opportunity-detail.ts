@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { DeleteOpportunityDialog } from '../delete-opportunity-dialog/delete-opportunity-dialog';
-import { Opportunity } from '../opportunity.model';
+import { Opportunity, OpportunityApplication } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
 import { AuthService } from '../../../auth/auth.service';
 
@@ -81,6 +81,37 @@ export class OpportunityDetail implements OnInit {
       });
   }
 
+  async apply(): Promise<void> {
+    if (!this.opportunity || !this.isVolunteer()) return;
+
+    const user = this.authService.getUser();
+    const { ApplyOpportunityDialog } = await import('../apply-opportunity-dialog/apply-opportunity-dialog');
+
+    this.dialog.open(ApplyOpportunityDialog, {
+      data: {
+        opportunityTitle: this.opportunity.title,
+        fullName: user?.fullName,
+        email: user?.email
+      },
+      width: '640px',
+      maxWidth: '94vw'
+    })
+      .afterClosed()
+      .subscribe((application?: OpportunityApplication) => {
+        if (!application || !this.opportunity) return;
+
+        this.opportunities.apply(this.opportunity.id, application).subscribe({
+          next: () => {
+            this.snackBar.open('Application submitted successfully.', 'Close', { duration: 3500 });
+          },
+          error: (error) => {
+            console.error('Failed to submit application:', error);
+            this.snackBar.open(error.error?.message || 'Unable to submit application.', 'Close', { duration: 3500 });
+          }
+        });
+      });
+  }
+
   usePlaceholder(event: Event): void {
     const image = event.target as HTMLImageElement;
     if (!image.src.endsWith(this.placeholderImage)) image.src = this.placeholderImage;
@@ -91,5 +122,13 @@ export class OpportunityDetail implements OnInit {
     return postedBy?.name || postedBy?.email || 'Unknown User';
   }
 
+  postedByRole(postedBy?: Opportunity['postedBy']): string {
+    if (typeof postedBy === 'object' && postedBy?.role) return postedBy.role;
+    // TODO: Backend should include postedBy.role so the creator can be labeled as NGO or Admin.
+    return 'Role unavailable';
+  }
+
   canManageOpportunities(): boolean { return this.authService.canManageOpportunities(); }
+
+  isVolunteer(): boolean { return this.authService.getUserRole() === 'Volunteer'; }
 }

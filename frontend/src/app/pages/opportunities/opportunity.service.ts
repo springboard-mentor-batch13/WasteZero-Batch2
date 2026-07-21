@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, delay, map, of } from 'rxjs';
 
-import { Opportunity, OpportunityDraft, OpportunityStatus } from './opportunity.model';
+import { Opportunity, OpportunityApplication, OpportunityDraft, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -66,6 +66,14 @@ export class OpportunityService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(map(() => undefined));
+  }
+
+  apply(id: string, application: OpportunityApplication): Observable<void> {
+    // TODO: Replace this mock submission with the backend Apply API when the endpoint is available.
+    return of({ opportunityId: id, application }).pipe(
+      delay(450),
+      map(() => undefined)
+    );
   }
 
   private headers(): HttpHeaders {

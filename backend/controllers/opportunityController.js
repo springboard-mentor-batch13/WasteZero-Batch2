@@ -232,6 +232,7 @@ const getOpportunityById = async (req, res) => {
         _id: creator._id,
         name: creator.fullName,
         email: creator.email,
+        role: creator.role,
       }
       : creator;
 

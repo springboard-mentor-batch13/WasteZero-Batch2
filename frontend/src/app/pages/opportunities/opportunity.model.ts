@@ -4,6 +4,7 @@ export interface PostedBy {
   _id?: string;
   name?: string;
   email?: string;
+  role?: 'Volunteer' | 'NGO' | 'Admin' | string;
 }
 
 export interface Opportunity {
@@ -27,6 +28,15 @@ export interface Opportunity {
 export type OpportunityDraft = Omit<Opportunity, 'id' | 'ngoId' | 'postedBy' | 'createdAt' | 'imagePreviewUrl'> & {
   removeImage?: boolean;
 };
+
+export interface OpportunityApplication {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  motivation: string;
+  relevantSkills: string;
+  availability: string;
+}
 
 export interface StateCityOption {
   state: string;
