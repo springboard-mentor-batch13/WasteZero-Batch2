@@ -1,83 +1,269 @@
 <section class="opportunity-list-page">
+
   <header>
-    <div><p class="eyebrow">NGO OPPORTUNITIES</p><h1>Volunteer opportunities</h1><p>Connect people with local causes that need a helping hand.</p></div>
-    <button mat-flat-button class="create-button" routerLink="/opportunities/create"><mat-icon>add</mat-icon>Create Opportunity</button>
+
+    <div>
+
+      <p class="eyebrow">NGO OPPORTUNITIES</p>
+
+      <h1>Volunteer opportunities</h1>
+
+      <p>
+        Connect people with local causes that need a helping hand.
+      </p>
+
+    </div>
+
+    @if (canManageOpportunities()) {
+
+      <button
+        mat-flat-button
+        class="create-button"
+        routerLink="/opportunities/create">
+
+        <mat-icon>add</mat-icon>
+
+        Create Opportunity
+
+      </button>
+
+    }
+
   </header>
 
   <div class="filter-row">
+
     <mat-form-field appearance="outline" class="search-field">
+
       <mat-label>Search Opportunities</mat-label>
-      <input matInput type="text" placeholder="Search by title, category or location" [(ngModel)]="searchText" (input)="applyFilters()">
+
+      <input
+        matInput
+        type="text"
+        placeholder="Search by title, city, state or skill"
+        [(ngModel)]="searchText"
+        (input)="applyFilters()">
+
       <mat-icon matSuffix>search</mat-icon>
+
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="category-field">
-      <mat-label>Category</mat-label>
-      <mat-select [(ngModel)]="selectedCategory" (selectionChange)="applyFilters()">
-        <mat-option value="">All Categories</mat-option>
-        @for (category of categories; track category) {
-          <mat-option [value]="category">{{ category }}</mat-option>
+    <mat-form-field appearance="outline" class="filter-field">
+
+      <mat-label>Status</mat-label>
+
+      <mat-select
+        [(ngModel)]="selectedStatus"
+        (selectionChange)="onStatusChange()">
+
+        <mat-option value="">All Statuses</mat-option>
+
+        @for (status of statuses; track status) {
+
+          <mat-option [value]="status">
+
+            {{ status }}
+
+          </mat-option>
+
         }
+
       </mat-select>
+
     </mat-form-field>
-  </div>
 
-  <div class="opportunity-grid">
-    @for (opportunity of filteredOpportunities; track opportunity.id) {
-      <mat-card class="opportunity-card">
-        <img mat-card-image [src]="opportunity.imageUrl || placeholderImage" [alt]="opportunity.title" (error)="usePlaceholder($event)">
- <div class="filter-row">
+    <mat-form-field appearance="outline" class="filter-field">
 
-  <mat-form-field appearance="outline" class="search-field">
-    <mat-label>Search Opportunities</mat-label>
+      <mat-label>State</mat-label>
 
-    <input
-      matInput
-      type="text"
-      placeholder="Search by title, category or location"
-      [(ngModel)]="searchText"
-      (input)="searchOpportunities()">
+      <mat-select
+        [(ngModel)]="selectedState"
+        (selectionChange)="onStateChange()">
 
-    <mat-icon matSuffix>search</mat-icon>
-  </mat-form-field>
+        <mat-option value="">All States</mat-option>
 
-  <mat-form-field appearance="outline" class="category-field">
-    <mat-label>Category</mat-label>
+        @for (state of availableStates(); track state) {
 
-    <mat-select
-      [(value)]="selectedCategory"
-      (selectionChange)="searchOpportunities()">
+          <mat-option [value]="state">
 
-      <mat-option value="">All Categories</mat-option>
+            {{ state }}
 
-      @for(category of categories; track category) {
-        <mat-option [value]="category">
-          {{ category }}
-        </mat-option>
-      }
+          </mat-option>
 
-    </mat-select>
-  </mat-form-field>
-
-</div>
-
-  <div class="opportunity-grid">
-   @for (opportunity of filteredOpportunities; track opportunity.id)  {
-      <mat-card class="opportunity-card">
-        @if (opportunity.imagePreviewUrl) {
-          <img mat-card-image [src]="opportunity.imagePreviewUrl" [alt]="opportunity.title">
         }
-        <mat-card-header><mat-card-title>{{ opportunity.title }}</mat-card-title><mat-card-subtitle>{{ opportunity.category }}</mat-card-subtitle></mat-card-header>
-        <mat-card-content><div class="meta"><span><mat-icon>location_on</mat-icon>{{ opportunity.location }}</span><span><mat-icon>event</mat-icon>{{ opportunity.eventDate | date:'mediumDate' }}</span><span><mat-icon>groups</mat-icon>{{ opportunity.requiredVolunteers }} volunteers</span></div></mat-card-content>
-        <mat-card-actions><button mat-flat-button class="details-button" [routerLink]="['/opportunities', opportunity.id]">View Details</button></mat-card-actions>
-      </mat-card>
-    } @empty {
-      @if (loading) {
-        <mat-card class="empty-card"><p>Loading opportunities...</p></mat-card>
-      } @else {
-        <mat-card class="empty-card"><mat-icon>volunteer_activism</mat-icon><h2>No opportunities yet</h2><p>Create the first opportunity for your community.</p></mat-card>
-      }
-    }
-    } @empty { <mat-card class="empty-card"><mat-icon>volunteer_activism</mat-icon><h2>No opportunities yet</h2><p>Create the first opportunity for your community.</p></mat-card> }
+
+      </mat-select>
+
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+
+      <mat-label>City</mat-label>
+
+      <mat-select
+        [(ngModel)]="selectedCity"
+        (selectionChange)="applyFilters()"
+        [disabled]="!selectedState">
+
+        <mat-option value="">All Cities</mat-option>
+
+        @for (city of availableCities(); track city) {
+
+          <mat-option [value]="city">
+
+            {{ city }}
+
+          </mat-option>
+
+        }
+
+      </mat-select>
+
+    </mat-form-field>
+
   </div>
+
+  <div class="opportunity-grid">
+
+    @for (opportunity of filteredOpportunities; track opportunity.id) {
+
+      <mat-card class="opportunity-card">
+
+        <img
+          mat-card-image
+          [src]="opportunity.imagePreviewUrl || opportunity.imageUrl || placeholderImage"
+          [alt]="opportunity.title"
+          (error)="usePlaceholder($event)">
+
+        <mat-card-header>
+
+          <mat-card-title>
+
+            {{ opportunity.title }}
+
+          </mat-card-title>
+
+          <mat-card-subtitle>
+
+            {{ opportunity.status }}
+
+          </mat-card-subtitle>
+
+        </mat-card-header>
+
+        <mat-card-content>
+
+          <p class="description">
+
+            {{ opportunity.description }}
+
+          </p>
+
+          <div class="meta">
+
+            <span>
+
+              <mat-icon>location_on</mat-icon>
+
+              {{ opportunity.city }}
+
+            </span>
+
+            <span>
+
+              <mat-icon>map</mat-icon>
+
+              {{ opportunity.state }}
+
+            </span>
+
+            <span>
+
+              <mat-icon>event</mat-icon>
+
+              {{ opportunity.date | date:'mediumDate' }}
+
+            </span>
+
+            <span>
+
+              <mat-icon>schedule</mat-icon>
+
+              {{ opportunity.duration }}
+
+            </span>
+
+            <span>
+
+              <mat-icon>handyman</mat-icon>
+
+              {{
+                opportunity.requiredSkills.length
+                  ? opportunity.requiredSkills.join(', ')
+                  : 'No specific skills'
+              }}
+
+            </span>
+
+          </div>
+
+        </mat-card-content>
+
+        <mat-card-actions>
+
+          <button
+            mat-flat-button
+            class="details-button"
+            [routerLink]="['/opportunities', opportunity.id]">
+
+            View Details
+
+          </button>
+
+        </mat-card-actions>
+
+      </mat-card>
+
+    } @empty {
+
+      @if (loading) {
+
+        <mat-card class="empty-card">
+
+          <p>Loading opportunities...</p>
+
+        </mat-card>
+
+      } @else {
+
+        <mat-card class="empty-card">
+
+          <div class="empty-illustration">
+
+            <mat-icon>volunteer_activism</mat-icon>
+
+            <mat-icon>eco</mat-icon>
+
+          </div>
+
+          <h2>
+
+            No opportunities available at the moment.
+
+          </h2>
+
+          <p>
+
+            Please check back soon for new ways to support your community.
+
+          </p>
+
+        </mat-card>
+
+      }
+
+    }
+
+  </div>
+
 </section>
