@@ -48,13 +48,30 @@ const updateProfile = async (req, res) => {
       profileImage,
     } = req.body;
 
-    if (fullName) user.fullName = fullName;
-    if (location) user.location = location;
-    if (skills) user.skills = skills;
-    if (bio) user.bio = bio;
-    if (profileImage) user.profileImage = profileImage;
+
+
+
+    user.fullName = fullName ?? user.fullName;
+
+    user.location = location ?? user.location;
+
+    user.skills = skills ?? user.skills;
+
+    user.bio = bio ?? user.bio;
+
+    user.profileImage = profileImage ?? user.profileImage;
+
+
+
+
+
 
     const updatedUser = await user.save();
+
+
+
+
+
 
     const userObj = updatedUser.toObject();
     delete userObj.password;

@@ -25,7 +25,8 @@ Stores application user information including Volunteers, NGOs, and Admin users.
 - email : String (unique)
 - password : String (hashed)
 - role : String (Volunteer | NGO | Admin)
-- location : String
+- city : String
+- state : String
 - skills : Array
 - bio : String
 - profileImage : String

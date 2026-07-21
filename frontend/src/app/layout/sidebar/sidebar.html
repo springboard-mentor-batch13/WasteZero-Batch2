@@ -22,12 +22,15 @@
   <!-- Main Menu -->
   <ul>
 
+    <!-- Dashboard -->
     <li
       routerLink="/dashboard"
       routerLinkActive="active"
       [routerLinkActiveOptions]="{ exact: true }">
+
       <i class="bi bi-grid"></i>
       Dashboard
+
     </li>
 
     @if (isAdmin) {
