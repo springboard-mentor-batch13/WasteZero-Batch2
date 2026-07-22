@@ -82,18 +82,6 @@ export class OpportunityService {
     );
   }
 
-  
-  getDashboardStats(): Observable<DashboardStats> {
-  return this.http
-    .get<ApiResponse<DashboardStats>>(
-      `${this.apiUrl}/dashboard/stats`,
-      { headers: this.headers() }
-    )
-    .pipe(map(response => response.data));
-}
-  
-
-
   create(draft: OpportunityDraft): Observable<Opportunity> {
     return this.http.post<ApiResponse<OpportunityApiModel>>(this.apiUrl, this.toFormData(draft), { headers: this.headers() }).pipe(
       map((response) => this.fromApi(response.data))

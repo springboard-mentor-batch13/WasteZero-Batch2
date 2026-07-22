@@ -154,6 +154,10 @@ export class AuthService {
 
     return localStorage.getItem(this.roleKey) || this.getRoleFromToken(token);
   }
+  canManageOpportunities(): boolean {
+    const role = this.getUserRole();
+    return role === 'Admin' || role === 'NGO';
+  }
 
   isLoggedIn(): boolean {
     if (typeof localStorage === 'undefined') {
