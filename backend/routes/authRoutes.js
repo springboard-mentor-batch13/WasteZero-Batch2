@@ -1,6 +1,5 @@
 const express = require('express');
 const { body } = require('express-validator');
-
 const {
   registerUser,
   loginUser,
@@ -8,7 +7,7 @@ const {
   verifyRegisterOTP,
   resendRegisterOTP,
   forgotPassword,
-  verifyResetOtp,
+  verifyResetOTP,
   resetPassword
 } = require('../controllers/authController');
 
@@ -136,7 +135,7 @@ router.post(
       .notEmpty()
       .withMessage('OTP is required'),
   ],
-  verifyResetOtp
+  verifyResetOTP
 );
 
 router.post(

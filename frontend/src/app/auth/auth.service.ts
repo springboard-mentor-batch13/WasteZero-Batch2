@@ -61,7 +61,7 @@ export interface AuthResponse {
 })
 export class AuthService {
 
-  private readonly apiUrl = 'http://localhost:5000/api/auth';
+  private readonly apiUrl = 'http://localhost:5001/api/auth';
   private readonly tokenKey = 'token';
   private readonly roleKey = 'role';
   private readonly userKey = 'user';
@@ -127,7 +127,7 @@ export class AuthService {
       payload
     );
   }
-    saveToken(token: string, role?: string): void {
+  saveToken(token: string, role?: string): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
@@ -140,31 +140,7 @@ export class AuthService {
     }
   }
 
-  saveUser(user: AuthResponse['user']): void {
-    if (typeof localStorage === 'undefined' || !user) {
-      return;
-    }
 
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem(this.roleKey, user.role);
-  }
-
-  getUser(): AuthResponse['user'] | null {
-    if (typeof localStorage === 'undefined') {
-      return null;
-    }
-
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  }
-
-  getRole(): string | null {
-    if (typeof localStorage === 'undefined') {
-      return null;
-    }
-
-    return localStorage.getItem(this.roleKey);
-  }
 
   getUserRole(): string {
     if (typeof localStorage === 'undefined') {
@@ -184,13 +160,10 @@ export class AuthService {
       return false;
     }
 
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.roleKey);
-    localStorage.removeItem(this.userKey);
-    this.currentUserSubject.next(null);
+    return !!localStorage.getItem(this.tokenKey);
   }
 
-    saveAuthSession(response: AuthResponse): void {
+  saveAuthSession(response: AuthResponse): void {
     if (typeof localStorage === 'undefined') {
       return;
     }
@@ -215,13 +188,13 @@ export class AuthService {
 
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.roleKey);
-    localStorage.removeItem('user');
+    localStorage.removeItem(this.userKey);
+    this.currentUserSubject.next(null);
   }
-
   clearSession(): void {
     this.logout();
   }
-    private async post<TResponse>(
+  private async post<TResponse>(
     endpoint: string,
     payload: unknown
   ): Promise<TResponse> {
@@ -281,51 +254,39 @@ export class AuthService {
     }
   }
   saveUser(user: AuthResponse['user']): void {
-  if (typeof localStorage === 'undefined' || !user) {
-    return;
+    if (typeof localStorage === 'undefined' || !user) {
+      return;
+    }
+
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    localStorage.setItem(this.roleKey, user.role);
+    this.currentUserSubject.next(user);
   }
 
-  localStorage.setItem(this.userKey, JSON.stringify(user));
-  localStorage.setItem(this.roleKey, user.role);
-  this.currentUserSubject.next(user);
-}
-
-getUser(): AuthResponse['user'] | null {
-  return this.currentUserSubject.value || this.readStoredUser();
-}
-
-getRole(): string | null {
-  if (typeof localStorage === 'undefined') {
-    return null;
+  getUser(): AuthResponse['user'] | null {
+    return this.currentUserSubject.value || this.readStoredUser();
   }
 
-  return localStorage.getItem('role');
-}
+  getRole(): string | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
 
-logout(): void {
-  this.clearSession();
-}
-
-private readStoredUser(): AuthResponse['user'] | null {
-  if (typeof localStorage === 'undefined') {
-    return null;
+    return localStorage.getItem(this.roleKey);
   }
 
-  try {
-    const user = localStorage.getItem(this.userKey);
-    return user ? JSON.parse(user) : null;
-  } catch {
-    localStorage.removeItem(this.userKey);
-    return null;
+
+  private readStoredUser(): AuthResponse['user'] | null {
+    if (typeof localStorage === 'undefined') {
+      return null;
+    }
+
+    try {
+      const user = localStorage.getItem(this.userKey);
+      return user ? JSON.parse(user) : null;
+    } catch {
+      localStorage.removeItem(this.userKey);
+      return null;
+    }
   }
-}
-
-isLoggedIn(): boolean {
-  if (typeof localStorage === 'undefined') {
-    return false;
-  }
-
-  return !!localStorage.getItem(this.tokenKey);
-}
-
 }
