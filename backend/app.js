@@ -12,6 +12,7 @@ const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const pickupRoutes = require('./routes/pickupRoutes');
 const opportunityRoutes = require('./routes/opportunityRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -36,7 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/pickups', pickupRoutes);
 app.use('/api/opportunities', opportunityRoutes);
-
+app.use('/api/application', applicationRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

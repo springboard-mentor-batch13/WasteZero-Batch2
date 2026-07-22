@@ -390,40 +390,63 @@ const forgotPassword = async (req, res, next) => {
 /**
  * Verify reset password OTP.
  */
-const verifyResetOtp = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ success: false, message: 'Validation failed', errors: errors.array() });
+const verifyResetOTP = async (req, res, next) => {
+  try {
+
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and OTP are required'
+      });
+    }
+
+    const otpRecord = await PasswordResetOTP.findOne({
+      email: email.toLowerCase()
+    });
+
+    if (!otpRecord) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP not found'
+      });
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      await PasswordResetOTP.deleteOne({ _id: otpRecord._id });
+
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired'
+      });
+    }
+
+    if (otpRecord.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'OTP verified successfully',
+    });
+
+  } catch (error) {
+    next(error);
   }
-
-  const { email, otp } = req.body;
-
-  if (!email || !otp) {
-    return res.status(400).json({ success: false, message: 'Email and OTP are required' });
-  }
-
-  const otpRecord = await PasswordResetOTP.findOne({ email: email.toLowerCase() });
-
-  if (!otpRecord) {
-    return res.status(400).json({ success: false, message: 'OTP not found' });
-  }
-
-  if (otpRecord.expiresAt < new Date()) {
-    await PasswordResetOTP.deleteOne({ _id: otpRecord._id });
-    return res.status(400).json({ success: false, message: 'OTP has expired' });
-  }
-
-  if (otpRecord.otp !== otp) {
-    return res.status(400).json({ success: false, message: 'Invalid OTP' });
-  }
-
-  res.status(200).json({
-    success: true,
-    message: 'OTP verified successfully',
-  });
-} catch (error) {
-  next(error);
-}
 };
 
 /**
@@ -494,9 +517,8 @@ module.exports = {
   loginUser,
   sendRegisterOTP,
   verifyRegisterOTP,
-
   resendRegisterOTP,
   forgotPassword,
-  verifyResetOtp,
+  verifyResetOTP,
   resetPassword,
 };
