@@ -1,0 +1,118 @@
+<div class="messages-container">
+
+  <!-- Left Side -->
+  <div class="chat-list">
+
+    <!-- Search -->
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search Role or Member"
+        [(ngModel)]="searchText">
+    </div>
+
+    <!-- Roles -->
+    @for (role of getFilteredRoles(); track role.role) {
+
+      <h3
+        class="role-title"
+        (click)="toggleRole(role.role)">
+        {{ role.role }}
+      </h3>
+
+      @if (expandedRole === role.role || searchText.trim()) {
+
+        @for (member of role.members; track member.name) {
+
+          <div
+            class="member"
+            [class.active]="selectedMember === member"
+            (click)="selectMember(member)">
+
+            <i class="bi bi-person-circle member-icon"></i>
+
+            <span class="member-name">
+              {{ member.name }}
+            </span>
+
+          </div>
+
+        }
+
+      }
+
+    }
+
+  </div>
+
+  <!-- Right Side -->
+  <div class="chat-window">
+
+    <!-- Header -->
+    <div class="chat-header">
+
+      @if (selectedMember) {
+
+        <div class="chat-user">
+
+          <div class="profile-icon">
+            <i class="bi bi-person-circle"></i>
+          </div>
+
+          <div class="user-info">
+            <h2>{{ selectedMember.name }}</h2>
+          </div>
+
+        </div>
+
+      } @else {
+
+        <h2>Select a member</h2>
+
+      }
+
+    </div>
+
+    <!-- Chat Body -->
+    <div class="chat-body">
+
+      @if (selectedMember) {
+
+        @for (message of selectedMember.messages; track $index) {
+
+          <div
+            class="message"
+            [class.me]="message.sender == 'You'">
+
+            <strong>{{ message.sender }}</strong>
+            <p>{{ message.text }}</p>
+
+          </div>
+
+        }
+
+      } @else {
+
+        <p>Select a member to start chatting.</p>
+
+      }
+
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input">
+
+      <input
+        type="text"
+        placeholder="Type a message..."
+        [(ngModel)]="newMessage">
+
+      <button (click)="sendMessage()">
+        Send
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
