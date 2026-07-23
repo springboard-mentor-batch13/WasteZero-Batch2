@@ -38,6 +38,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/pickups', pickupRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/application', applicationRoutes);
+app.use('/api/applications', applicationRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

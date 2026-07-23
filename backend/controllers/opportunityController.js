@@ -23,6 +23,12 @@ const sendServerError = (res, error) => {
   });
 };
 
+const canManageOpportunity = (user, opportunity) => (
+  user.role === 'Admin' ||
+  String(opportunity.ngoId) === String(user._id) ||
+  String(opportunity.postedBy) === String(user._id)
+);
+
 const resolveOpportunityPlace = ({ city, state, location }) => {
   const parts = typeof location === 'string'
     ? location.split(',').map((part) => part.trim()).filter(Boolean)
@@ -219,8 +225,8 @@ const getDashboardStatistics = async (_req, res) => {
 const getOpportunityById = async (req, res) => {
   try {
     const opportunity = await Opportunity.findById(req.params.id)
-      .populate('postedBy', 'fullName email role')
-      .populate('ngoId', 'fullName email role');
+      .populate('postedBy', 'fullName username email role')
+      .populate('ngoId', 'fullName username email role');
 
     if (!opportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });
@@ -232,8 +238,11 @@ const getOpportunityById = async (req, res) => {
     const postedBy = isPopulatedUser(creator)
       ? {
           _id: creator._id,
-          name: creator.fullName,
+          name: creator.username || creator.fullName,
+          fullName: creator.fullName,
+          username: creator.username,
           email: creator.email,
+          role: creator.role,
         }
       : creator;
 
@@ -248,6 +257,22 @@ const getOpportunityById = async (req, res) => {
 
 const updateOpportunity = async (req, res) => {
   try {
+    const existingOpportunity = await Opportunity.findById(req.params.id);
+
+    if (!existingOpportunity) {
+      return res.status(404).json({
+        success: false,
+        message: 'Opportunity not found',
+      });
+    }
+
+    if (!canManageOpportunity(req.user, existingOpportunity)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only edit opportunities you created',
+      });
+    }
+
     const {
       title,
       category,
@@ -291,13 +316,6 @@ const updateOpportunity = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    if (!opportunity) {
-      return res.status(404).json({
-        success: false,
-        message: 'Opportunity not found',
-      });
-    }
-
     res.status(200).json({
       success: true,
       message: 'Opportunity updated successfully',
@@ -310,11 +328,20 @@ const updateOpportunity = async (req, res) => {
 
 const deleteOpportunity = async (req, res) => {
   try {
-    const opportunity = await Opportunity.findByIdAndDelete(req.params.id);
+    const existingOpportunity = await Opportunity.findById(req.params.id);
 
-    if (!opportunity) {
+    if (!existingOpportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });
     }
+
+    if (!canManageOpportunity(req.user, existingOpportunity)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete opportunities you created',
+      });
+    }
+
+    await existingOpportunity.deleteOne();
 
     res.status(200).json({
       success: true,

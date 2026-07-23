@@ -67,7 +67,7 @@
             @if (item.createdAt) { <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div> }
           </div>
 
-          @if (canManageOpportunities()) {
+          @if (canManageSelectedOpportunity()) {
             <div class="detail-actions">
               <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
               <button mat-flat-button class="delete-button" (click)="delete()"><mat-icon>delete</mat-icon>Delete</button>

@@ -1,8 +1,8 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, delay, map, of } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
-import { Opportunity, OpportunityDraft, OpportunityJoinRequest, OpportunityStatus } from './opportunity.model';
+import { Opportunity, OpportunityDraft, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -13,7 +13,7 @@ interface ApiResponse<T> {
 interface OpportunityApiModel {
   _id: string;
   id?: string;
-  ngoId?: string;
+  ngoId?: string | { _id?: string };
   postedBy?: Opportunity['postedBy'];
   title: string;
   category?: string;
@@ -82,18 +82,6 @@ export class OpportunityService {
     );
   }
 
-  
-  getDashboardStats(): Observable<DashboardStats> {
-  return this.http
-    .get<ApiResponse<DashboardStats>>(
-      `${this.apiUrl}/dashboard/stats`,
-      { headers: this.headers() }
-    )
-    .pipe(map(response => response.data));
-}
-  
-
-
   create(draft: OpportunityDraft): Observable<Opportunity> {
     return this.http.post<ApiResponse<OpportunityApiModel>>(this.apiUrl, this.toFormData(draft), { headers: this.headers() }).pipe(
       map((response) => this.fromApi(response.data))
@@ -116,19 +104,6 @@ export class OpportunityService {
     );
   }
 
-  joinOpportunity(request: OpportunityJoinRequest): Observable<void> {
-    // TODO: Replace with POST /api/opportunities/:id/join (or /apply) when backend is available.
-    return of(request).pipe(
-      delay(450),
-      map(() => undefined)
-    );
-  }
-
-  getJoinRequests(): Observable<OpportunityJoinRequest[]> {
-    // TODO: Replace with GET /api/opportunities/join-requests when backend is available for Admin review.
-    return of([]);
-  }
-
   private headers(): HttpHeaders {
     const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
@@ -145,7 +120,7 @@ export class OpportunityService {
 
     return {
       id: opportunity._id || opportunity.id || '',
-      ngoId: opportunity.ngoId,
+      ngoId: this.toId(opportunity.ngoId),
       postedBy: opportunity.postedBy,
       title: opportunity.title,
       category: opportunity.category || '',
@@ -194,6 +169,11 @@ export class OpportunityService {
     if (Array.isArray(value)) return value.map((skill) => String(skill).trim()).filter(Boolean);
     if (typeof value === 'string') return value.split(',').map((skill) => skill.trim()).filter(Boolean);
     return [];
+  }
+
+  private toId(value?: string | { _id?: string }): string | undefined {
+    if (!value) return undefined;
+    return typeof value === 'string' ? value : value._id;
   }
 
   private toDate(date?: string): Date {

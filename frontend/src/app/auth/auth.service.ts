@@ -61,7 +61,7 @@ export interface AuthResponse {
 })
 export class AuthService {
 
-  private readonly apiUrl = 'http://localhost:5001/api/auth';
+  private readonly apiUrl = 'http://localhost:5000/api/auth';
   private readonly tokenKey = 'token';
   private readonly roleKey = 'role';
   private readonly userKey = 'user';
@@ -161,6 +161,11 @@ export class AuthService {
     }
 
     return !!localStorage.getItem(this.tokenKey);
+  }
+
+  canManageOpportunities(): boolean {
+    const role = this.getUserRole();
+    return this.opportunityManagerRoles.includes(role);
   }
 
   saveAuthSession(response: AuthResponse): void {

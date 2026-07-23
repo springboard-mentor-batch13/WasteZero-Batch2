@@ -53,24 +53,19 @@
     <mat-card class="table-card">
       <div class="table-wrap">
         <table mat-table [dataSource]="filteredApplications">
-          <ng-container matColumnDef="volunteerName">
+          <ng-container matColumnDef="fullName">
             <th mat-header-cell *matHeaderCellDef>Volunteer Name</th>
-            <td mat-cell *matCellDef="let application">{{ application.volunteerName }}</td>
+            <td mat-cell *matCellDef="let application">{{ application.fullName }}</td>
           </ng-container>
 
-          <ng-container matColumnDef="volunteerEmail">
-            <th mat-header-cell *matHeaderCellDef>Volunteer Email</th>
-            <td mat-cell *matCellDef="let application">{{ application.volunteerEmail }}</td>
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let application">{{ application.email }}</td>
           </ng-container>
 
           <ng-container matColumnDef="opportunityTitle">
-            <th mat-header-cell *matHeaderCellDef>Opportunity</th>
+            <th mat-header-cell *matHeaderCellDef>Opportunity Title</th>
             <td mat-cell *matCellDef="let application">{{ application.opportunityTitle }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="postedByName">
-            <th mat-header-cell *matHeaderCellDef>NGO/Admin</th>
-            <td mat-cell *matCellDef="let application">{{ application.postedByName }}</td>
           </ng-container>
 
           <ng-container matColumnDef="appliedDate">
@@ -93,9 +88,9 @@
                   <button
                     mat-stroked-button
                     color="primary"
-                    (click)="updateStatus(application, 'Approved')"
+                    (click)="updateStatus(application, 'Accepted')"
                     [disabled]="updatingApplicationId === application.id">
-                    Approve
+                    Accept
                   </button>
                   <button
                     mat-stroked-button

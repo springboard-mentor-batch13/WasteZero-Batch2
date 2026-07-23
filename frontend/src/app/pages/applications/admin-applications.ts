@@ -45,8 +45,8 @@ export class ApplicationsComponent implements OnInit {
   searchText = '';
   selectedStatus: ApplicationStatus | '' = '';
   updatingApplicationId = '';
-  readonly statuses: ApplicationStatus[] = ['Pending', 'Approved', 'Rejected'];
-  readonly displayedColumns = ['volunteerName', 'volunteerEmail', 'opportunityTitle', 'postedByName', 'appliedDate', 'status', 'actions'];
+  readonly statuses: ApplicationStatus[] = ['Pending', 'Accepted', 'Rejected'];
+  readonly displayedColumns = ['fullName', 'email', 'opportunityTitle', 'appliedDate', 'status', 'actions'];
 
   ngOnInit(): void {
     this.loadApplications();
@@ -58,10 +58,9 @@ export class ApplicationsComponent implements OnInit {
     return this.applications.filter((application) => {
       const matchesStatus = !this.selectedStatus || application.status === this.selectedStatus;
       const matchesSearch = !search ||
-        application.volunteerName.toLowerCase().includes(search) ||
-        application.volunteerEmail.toLowerCase().includes(search) ||
-        application.opportunityTitle.toLowerCase().includes(search) ||
-        application.postedByName.toLowerCase().includes(search);
+        application.fullName.toLowerCase().includes(search) ||
+        application.email.toLowerCase().includes(search) ||
+        application.opportunityTitle.toLowerCase().includes(search);
 
       return matchesStatus && matchesSearch;
     });
