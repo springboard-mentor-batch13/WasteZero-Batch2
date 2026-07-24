@@ -1,9 +1,10 @@
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -11,7 +12,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../auth/auth.service';
 import { ApplicationService } from '../../applications/application.service';
-import { VolunteerApplicationRequest } from '../../applications/application.model';
+import { ApplicationStatus, VolunteerApplicationRequest } from '../../applications/application.model';
 import { DeleteOpportunityDialog } from '../delete-opportunity-dialog/delete-opportunity-dialog';
 import { Opportunity } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
@@ -19,7 +20,7 @@ import { OpportunityService } from '../opportunity.service';
 @Component({
   selector: 'app-opportunity-detail',
   standalone: true,
-  imports: [DatePipe, MatButtonModule, MatCardModule, MatChipsModule, MatIconModule, MatProgressSpinnerModule, RouterLink],
+  imports: [DatePipe, MatButtonModule, MatCardModule, MatChipsModule, MatDialogModule, MatIconModule, MatProgressSpinnerModule, RouterLink],
   templateUrl: './opportunity-detail.html',
   styleUrl: './opportunity-detail.css'
 })
@@ -37,7 +38,9 @@ export class OpportunityDetail implements OnInit {
   loading = true;
   errorMessage = '';
   sendingJoinRequest = false;
-  appliedOpportunityIds = new Set<string>();
+  applicationStatus?: ApplicationStatus;
+  applicationStatusLoading = false;
+  applicationStatusError = '';
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
   ngOnInit(): void {
@@ -52,6 +55,7 @@ export class OpportunityDetail implements OnInit {
 
       this.loading = true;
       this.errorMessage = '';
+      this.resetApplicationState();
       this.opportunityService.getById(id).subscribe({
         next: (opportunity) => {
           this.opportunity = opportunity;
@@ -95,13 +99,14 @@ export class OpportunityDetail implements OnInit {
   apply(): void {
     if (!this.opportunity || !this.isVolunteer()) return;
     if (this.hasJoinRequest(this.opportunity.id)) {
-      this.snackBar.open('Already Applied', 'Close', { duration: 3500 });
+      this.snackBar.open(`Application Status: ${this.applicationStatus}`, 'Close', { duration: 3500 });
       return;
     }
 
     const user = this.authService.getUser();
     if (!user?.id) {
-      this.snackBar.open('Unable to submit application. Please sign in again.', 'Close', { duration: 3500 });
+      this.snackBar.open('Please login as Volunteer.', 'Close', { duration: 3500 });
+      this.router.navigate(['/login']);
       return;
     }
 
@@ -111,31 +116,43 @@ export class OpportunityDetail implements OnInit {
 
     this.sendingJoinRequest = true;
     this.applicationService.apply(request).subscribe({
-      next: () => {
-        this.appliedOpportunityIds.add(request.opportunityId);
+      next: (application) => {
+        this.applicationStatus = application.status;
+        this.applicationStatusError = '';
         this.sendingJoinRequest = false;
         this.snackBar.open('Application submitted successfully.', 'Close', { duration: 3500 });
         this.cdr.detectChanges();
       },
-      error: (error: { error?: { message?: string } }) => {
+      error: (error: HttpErrorResponse) => {
         console.error('Failed to submit application:', error);
-        if (error.error?.message?.toLowerCase().includes('already applied')) {
-          this.appliedOpportunityIds.add(request.opportunityId);
+        const message = error.error?.message || '';
+
+        if (error.status === 401) {
+          this.sendingJoinRequest = false;
+          this.snackBar.open('Please login as Volunteer.', 'Close', { duration: 3500 });
+          this.router.navigate(['/login']);
+          this.cdr.detectChanges();
+          return;
         }
+
+        if (message.toLowerCase().includes('already applied') || error.status === 409) {
+          this.loadApplicationState(request.opportunityId);
+        }
+
         this.sendingJoinRequest = false;
-        this.snackBar.open(error.error?.message || 'Unable to submit application.', 'Close', { duration: 3500 });
+        this.snackBar.open(message || 'Unable to submit application.', 'Close', { duration: 3500 });
         this.cdr.detectChanges();
       }
     });
   }
 
   hasJoinRequest(opportunityId: string): boolean {
-    return this.appliedOpportunityIds.has(opportunityId);
+    return this.opportunity?.id === opportunityId && !!this.applicationStatus;
   }
 
   joinButtonText(opportunityId: string): string {
     if (this.sendingJoinRequest) return 'Sending...';
-    if (this.hasJoinRequest(opportunityId)) return 'Already Applied';
+    if (this.hasJoinRequest(opportunityId)) return `Application Status: ${this.applicationStatus}`;
     return 'Apply / Join Opportunity';
   }
 
@@ -159,22 +176,41 @@ export class OpportunityDetail implements OnInit {
   canManageSelectedOpportunity(): boolean {
     if (!this.opportunity || !this.canManageOpportunities()) return false;
     if (this.authService.getUserRole() === 'Admin') return true;
+
     const userId = this.authService.getUser()?.id;
-    return !!userId && this.opportunity.ngoId === userId;
+    if (!userId) return false;
+
+    const postedById = typeof this.opportunity.postedBy === 'string'
+      ? this.opportunity.postedBy
+      : this.opportunity.postedBy?._id;
+
+    return postedById === userId || this.opportunity.ngoId === userId;
   }
 
   isVolunteer(): boolean { return this.authService.getUserRole() === 'Volunteer'; }
 
   private loadApplicationState(opportunityId: string): void {
+    this.applicationStatusLoading = true;
+    this.applicationStatusError = '';
+    this.applicationStatus = undefined;
     this.applicationService.hasApplication(opportunityId).subscribe({
       next: (result) => {
-        if (result.applied) this.appliedOpportunityIds.add(opportunityId);
-        else this.appliedOpportunityIds.delete(opportunityId);
+        this.applicationStatus = result.applied ? result.application?.status || 'Pending' : undefined;
+        this.applicationStatusLoading = false;
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to check application status:', error);
+        this.applicationStatusLoading = false;
+        this.applicationStatusError = 'Unable to fetch application status.';
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  private resetApplicationState(): void {
+    this.applicationStatus = undefined;
+    this.applicationStatusLoading = false;
+    this.applicationStatusError = '';
   }
 }
