@@ -146,6 +146,7 @@ appliedOpportunityIds = new Set<string>();
     if (this.hasJoinRequest(opportunityId)) return 'Already Applied';
     return 'Apply / Join Opportunity';
   }
+
   usePlaceholder(event: Event): void {
     const image = event.target as HTMLImageElement;
     if (!image.src.endsWith(this.placeholderImage)) image.src = this.placeholderImage;

@@ -136,25 +136,6 @@ export class OpportunityService {
 
  getDashboardStats(forceRefresh = false): Observable<DashboardStats> {
 
-  if (!this.dashboardStatsCache$ || forceRefresh) {
-
-    this.dashboardStatsCache$ = this.http
-      .get<ApiResponse<DashboardStats>>(
-        `${this.apiUrl}/dashboard/stats`,
-        { headers: this.headers() }
-      )
-      .pipe(
-        map((response) => {
-          this.dashboardStatsCache = response.data;
-          return response.data;
-        }),
-        shareReplay(1)
-      );
-  }
-
-  return this.dashboardStatsCache$;
-}
-
   private headers(): HttpHeaders {
     const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
