@@ -2,17 +2,225 @@
 @import "tailwindcss";
 
 /* ===========================================================
-   WASTEZERO GLOBAL THEME
+   WASTEZERO GLOBAL DESIGN SYSTEM
+=========================================================== */
+
+:root {
+
+  /* =========================================================
+     BRAND
+  ========================================================= */
+
+  --wz-primary: #16803d;
+  --wz-primary-hover: #126b33;
+  --wz-primary-soft: #e3f2e7;
+  --wz-accent: #22a653;
+
+
+  /* =========================================================
+     HEADER / NAVBAR - LIGHT THEME
+  ========================================================= */
+
+  --wz-header-bg: #e4f3e8;
+  --wz-header-bg-hover: #d8ecde;
+
+  --wz-header-text: #17211b;
+  --wz-header-muted: #66736b;
+
+
+  /* =========================================================
+     LOGO AREA - LIGHT THEME
+  ========================================================= */
+
+  --wz-logo-bg: #dcefe2;
+  --wz-logo-text: #126b33;
+
+
+  /* =========================================================
+     BACKGROUNDS - LIGHT THEME
+  ========================================================= */
+
+  --wz-page-bg: #f1f8f3;
+
+  --wz-surface: #ffffff;
+  --wz-surface-soft: #edf7f0;
+  --wz-surface-hover: #e3f2e7;
+
+
+  /* =========================================================
+     TEXT - LIGHT THEME
+  ========================================================= */
+
+  --wz-text-primary: #17211b;
+  --wz-text-secondary: #5f6f65;
+  --wz-text-muted: #89968e;
+  --wz-text-on-primary: #ffffff;
+
+
+  /* =========================================================
+     BORDERS
+  ========================================================= */
+
+  --wz-border: #dfe9e2;
+  --wz-border-strong: #cbdacf;
+
+
+  /* =========================================================
+     SEMANTIC COLORS
+  ========================================================= */
+
+  --wz-success: #16803d;
+  --wz-warning: #e59a18;
+  --wz-danger: #dc4545;
+
+
+  /* =========================================================
+     SHADOWS
+  ========================================================= */
+
+  --wz-shadow-sm:
+    0 2px 8px rgba(20, 55, 32, 0.05);
+
+  --wz-shadow-md:
+    0 8px 24px rgba(20, 55, 32, 0.08);
+
+
+  /* =========================================================
+     BORDER RADIUS
+  ========================================================= */
+
+  --wz-radius-sm: 8px;
+  --wz-radius-md: 12px;
+  --wz-radius-lg: 16px;
+}
+
+
+/* ===========================================================
+   WASTEZERO DARK THEME
+=========================================================== */
+
+body.dark-theme {
+
+  /* =========================================================
+     BRAND
+  ========================================================= */
+
+  --wz-primary: #35b866;
+  --wz-primary-hover: #46c976;
+  --wz-primary-soft: #173d29;
+  --wz-accent: #45c875;
+
+
+  /* =========================================================
+     HEADER / NAVBAR - DARK THEME
+  ========================================================= */
+
+  --wz-header-bg: #13251d;
+  --wz-header-bg-hover: #193126;
+
+  --wz-header-text: #f1f6f3;
+  --wz-header-muted: #a9bbb2;
+
+
+  /* =========================================================
+     LOGO AREA - DARK THEME
+  ========================================================= */
+
+  --wz-logo-bg: #0d1f1a;
+  --wz-logo-text: #f1f6f3;
+
+
+  /* =========================================================
+     BACKGROUNDS - DARK THEME
+  ========================================================= */
+
+  --wz-page-bg: #101814;
+
+  --wz-surface: #18231d;
+  --wz-surface-soft: #1d2b23;
+  --wz-surface-hover: #23372a;
+
+
+  /* =========================================================
+     TEXT - DARK THEME
+  ========================================================= */
+
+  --wz-text-primary: #f1f6f3;
+  --wz-text-secondary: #b3c0b8;
+  --wz-text-muted: #85948b;
+  --wz-text-on-primary: #ffffff;
+
+
+  /* =========================================================
+     BORDERS
+  ========================================================= */
+
+  --wz-border: #2b3a31;
+  --wz-border-strong: #35483b;
+
+
+  /* =========================================================
+     SEMANTIC COLORS
+  ========================================================= */
+
+  --wz-success: #45c875;
+  --wz-warning: #f0aa32;
+  --wz-danger: #ef5b5b;
+
+
+  /* =========================================================
+     SHADOWS
+  ========================================================= */
+
+  --wz-shadow-sm:
+    0 2px 8px rgba(0, 0, 0, 0.18);
+
+  --wz-shadow-md:
+    0 8px 24px rgba(0, 0, 0, 0.24);
+}
+
+
+/* ===========================================================
+   GLOBAL PAGE
 =========================================================== */
 
 html,
 body {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
-  font-family: Inter, sans-serif;
-  background: #f6fff9;
-  color: #1f2937;
+
+  font-family:
+    Inter,
+    Arial,
+    sans-serif;
+
+  background-color: var(--wz-page-bg);
+  color: var(--wz-text-primary);
 }
+
+
+/* Angular application root */
+
+app-root {
+  display: block;
+
+  min-height: 100vh;
+
+  background-color: var(--wz-page-bg);
+  color: var(--wz-text-primary);
+}
+
+
+/* ===========================================================
+   GLOBAL BOX SIZING
+=========================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 
 /* ===========================================================
    AUTHENTICATION PAGES
@@ -20,6 +228,7 @@ body {
 
 .auth-page {
   min-height: 100vh;
+
   background-image: url("/images/auth-bg.jpg");
   background-size: cover;
   background-position: center;
@@ -28,105 +237,194 @@ body {
 
 .auth-overlay {
   min-height: 100vh;
+
   background: rgba(0, 0, 0, 0.35);
 }
 
 .auth-card {
   background: rgba(255, 255, 255, 0.14);
+
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  border:
+    1px solid rgba(255, 255, 255, 0.2);
+
   border-radius: 28px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
+
 /* ===========================================================
-   APP LAYOUT
+   APPLICATION LAYOUT
+=========================================================== */
+
+.app-content,
+main {
+  min-height: 100vh;
+
+  background-color: var(--wz-page-bg);
+  color: var(--wz-text-primary);
+}
+
+
+/* ===========================================================
+   NAVBAR
 =========================================================== */
 
 .app-navbar {
-  background: #173b3f;
-  color: white;
+  background-color: var(--wz-header-bg);
+  color: var(--wz-header-text);
+
+  border-bottom:
+    1px solid var(--wz-border);
 }
+
+
+/* ===========================================================
+   SIDEBAR
+=========================================================== */
 
 .app-sidebar {
-  background: white;
-  border-right: 1px solid #e5e7eb;
-  box-shadow: 0 5px 18px rgba(0,0,0,.05);
+  background-color: var(--wz-surface);
+
+  color: var(--wz-text-primary);
+
+  border-right:
+    1px solid var(--wz-border);
+
+  box-shadow: var(--wz-shadow-sm);
 }
 
-.app-content {
-  min-height: 100vh;
-  background: linear-gradient(
-      180deg,
-      #f8fffb 0%,
-      #ecfdf5 100%
-  );
-}
 
 /* ===========================================================
    CARDS
 =========================================================== */
 
 .app-card {
-  background: white;
-  border-radius: 24px;
-  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+  background-color: var(--wz-surface);
+  color: var(--wz-text-primary);
+
+  border:
+    1px solid var(--wz-border);
+
+  border-radius:
+    var(--wz-radius-lg);
+
+  box-shadow:
+    var(--wz-shadow-md);
 }
+
 
 /* ===========================================================
    INPUTS
 =========================================================== */
 
 .app-input {
-  border: 1px solid #d1d5db;
-  border-radius: 12px;
-  transition: .3s;
+  background-color: var(--wz-surface);
+
+  color: var(--wz-text-primary);
+
+  border:
+    1px solid var(--wz-border);
+
+  border-radius:
+    var(--wz-radius-md);
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.app-input::placeholder {
+  color: var(--wz-text-muted);
 }
 
 .app-input:focus {
-  border-color: #10b981;
+  border-color: var(--wz-primary);
+
   outline: none;
-  box-shadow: 0 0 0 4px rgba(16,185,129,.15);
+
+  box-shadow:
+    0 0 0 3px rgba(22, 128, 61, 0.12);
 }
 
+body.dark-theme .app-input:focus {
+  box-shadow:
+    0 0 0 3px rgba(53, 184, 102, 0.12);
+}
+
+
 /* ===========================================================
-   BUTTONS
+   PRIMARY BUTTON
 =========================================================== */
 
 .btn-primary {
-  background: #10b981;
-  color: white;
-  border-radius: 12px;
-  transition: .3s;
+  background-color: var(--wz-primary);
+  color: var(--wz-text-on-primary);
+
+  border: none;
+
+  border-radius:
+    var(--wz-radius-md);
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: #059669;
+  background-color:
+    var(--wz-primary-hover);
 }
 
+
+/* ===========================================================
+   SECONDARY BUTTON
+=========================================================== */
+
 .btn-secondary {
-  background: white;
-  color: #10b981;
-  border: 1px solid #10b981;
-  border-radius: 12px;
+  background-color:
+    var(--wz-surface);
+
+  color:
+    var(--wz-primary);
+
+  border:
+    1px solid var(--wz-primary);
+
+  border-radius:
+    var(--wz-radius-md);
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background: #ecfdf5;
+  background-color:
+    var(--wz-primary-soft);
 }
+
 
 /* ===========================================================
    PAGE TITLES
 =========================================================== */
 
 .page-title {
-  color: #065f46;
+  color:
+    var(--wz-primary);
+
   font-weight: 700;
 }
 
 .page-subtitle {
-  color: #6b7280;
+  color:
+    var(--wz-text-secondary);
 }
+
 
 /* ===========================================================
    PROFILE IMAGE
@@ -135,16 +433,285 @@ body {
 .profile-avatar {
   width: 120px;
   height: 120px;
+
   border-radius: 9999px;
-  border: 4px solid #10b981;
+
+  border:
+    4px solid var(--wz-primary);
+
   object-fit: cover;
 }
 
+
 /* ===========================================================
-   TRANSITIONS
+   LINKS
 =========================================================== */
 
-* {
-  transition: .25s ease;
+a {
+  color: inherit;
 }
 
+
+/* ===========================================================
+   SCROLLBAR
+=========================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background:
+    var(--wz-page-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background:
+    var(--wz-border-strong);
+
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background:
+    var(--wz-text-muted);
+}
+
+
+/* ===========================================================
+   THEME TRANSITIONS
+
+   Keep transitions only on major visual properties.
+   Do NOT use "* { transition: ... }" because it causes
+   unnecessary animation on every element.
+=========================================================== */
+
+body,
+app-root,
+main,
+.app-content,
+.app-navbar,
+.app-sidebar,
+.app-card {
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+/* ==========================================================
+   GLOBAL DARK MODE - ANGULAR MATERIAL SELECT DROPDOWNS
+   Applies to Category, Status, State, City dropdown overlays
+========================================================== */
+
+/* Dropdown panel */
+body.dark-theme .cdk-overlay-container .mat-mdc-select-panel {
+  background: #16231c !important;
+  border: 1px solid #40574b !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Every dropdown option */
+body.dark-theme .cdk-overlay-container .mat-mdc-option {
+  background: #16231c !important;
+  color: #e8f2ec !important;
+}
+
+/* Actual option text */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option
+.mdc-list-item__primary-text {
+  color: #e8f2ec !important;
+  opacity: 1 !important;
+  font-weight: 500 !important;
+}
+
+/* Hover */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option:hover {
+  background: #20382a !important;
+}
+
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option:hover
+.mdc-list-item__primary-text {
+  color: #ffffff !important;
+}
+
+/* Selected option */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option.mdc-list-item--selected {
+  background: #17452d !important;
+}
+
+/* Selected option text */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option.mdc-list-item--selected
+.mdc-list-item__primary-text {
+  color: #65e495 !important;
+  font-weight: 700 !important;
+}
+
+/* Active/focused option */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option.mat-mdc-option-active {
+  background: #20382a !important;
+}
+
+/* Checkmark */
+body.dark-theme
+.cdk-overlay-container
+.mat-pseudo-checkbox {
+  color: #45d47d !important;
+}
+
+/* Ripple */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option
+.mat-ripple-element {
+  background-color: rgba(69, 212, 125, 0.15) !important;
+}
+/* ==========================================================
+   FORCE FIX - ANGULAR MATERIAL DROPDOWNS IN DARK MODE
+========================================================== */
+
+body.dark-theme .cdk-overlay-container,
+body.dark-theme .cdk-overlay-pane {
+  color: #ffffff !important;
+}
+
+/* Select popup itself */
+body.dark-theme .mat-mdc-select-panel,
+body.dark-theme div[role="listbox"] {
+  background-color: #182a21 !important;
+  color: #ffffff !important;
+}
+
+/* Every option */
+body.dark-theme .mat-mdc-option,
+body.dark-theme mat-option,
+body.dark-theme [role="option"] {
+  background-color: #182a21 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Option text - FORCE WHITE */
+body.dark-theme .mat-mdc-option *,
+body.dark-theme mat-option *,
+body.dark-theme [role="option"] * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Angular Material internal text */
+body.dark-theme .mdc-list-item__primary-text {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Hover */
+body.dark-theme .mat-mdc-option:hover,
+body.dark-theme [role="option"]:hover {
+  background-color: #254535 !important;
+  color: #ffffff !important;
+}
+
+/* Selected option */
+body.dark-theme .mat-mdc-option.mdc-list-item--selected,
+body.dark-theme [role="option"][aria-selected="true"] {
+  background-color: #1d5134 !important;
+}
+
+/* Selected text */
+body.dark-theme
+.mat-mdc-option.mdc-list-item--selected
+.mdc-list-item__primary-text,
+body.dark-theme
+[role="option"][aria-selected="true"] * {
+  color: #5ee58d !important;
+  font-weight: 700 !important;
+}
+
+/* Focused / active option */
+body.dark-theme .mat-mdc-option.mat-mdc-option-active {
+  background-color: #254535 !important;
+}
+
+/* Checkmark */
+body.dark-theme .mat-pseudo-checkbox,
+body.dark-theme .mat-mdc-option-pseudo-checkbox {
+  color: #5ee58d !important;
+}
+
+/* ==========================================================
+   LIGHT MODE - DON'T BREAK IT
+========================================================== */
+
+body:not(.dark-theme) .mat-mdc-select-panel {
+  background-color: #ffffff !important;
+}
+
+body:not(.dark-theme) .mat-mdc-option,
+body:not(.dark-theme) .mat-mdc-option .mdc-list-item__primary-text {
+  color: #17211b !important;
+}
+/* ==========================================================
+   FINAL FIX - DARK MODE DROPDOWN TEXT PURE WHITE
+========================================================== */
+
+/* All dropdown option text */
+body.dark-theme .cdk-overlay-container .mat-mdc-option,
+body.dark-theme .cdk-overlay-container .mat-mdc-option *,
+body.dark-theme .cdk-overlay-container .mdc-list-item__primary-text,
+body.dark-theme .cdk-overlay-container [role="option"],
+body.dark-theme .cdk-overlay-container [role="option"] * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Selected option text ALSO white */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option.mdc-list-item--selected
+.mdc-list-item__primary-text {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 700 !important;
+}
+
+/* Hover option text */
+body.dark-theme
+.cdk-overlay-container
+.mat-mdc-option:hover
+.mdc-list-item__primary-text {
+  color: #ffffff !important;
+}
+
+/* Currently selected value inside the closed dropdown */
+body.dark-theme .mat-mdc-select-value,
+body.dark-theme .mat-mdc-select-value-text,
+body.dark-theme .mat-mdc-select-min-line {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Dropdown field labels */
+body.dark-theme .mat-mdc-form-field .mdc-floating-label {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Dropdown arrow */
+body.dark-theme .mat-mdc-select-arrow {
+  color: #ffffff !important;
+}

@@ -1,6 +1,7 @@
 .admin-dashboard {
   padding: 30px;
-  background: #f5f9f6;
+  background: var(--wz-page-bg);
+  color: var(--wz-text-primary);
   min-height: 100vh;
 }
 
@@ -15,31 +16,40 @@
   padding: 30px;
   margin-bottom: 30px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #2e7d32, #43a047);
-  color: white;
-  box-shadow: 0 10px 25px rgba(46, 125, 50, 0.2);
+
+  background: linear-gradient(
+    135deg,
+    var(--wz-primary-hover),
+    var(--wz-primary)
+  );
+
+  color: var(--wz-text-on-primary);
+  box-shadow: var(--wz-shadow-md);
 }
 
 .dashboard-header h2 {
   margin: 0;
   font-size: 2rem;
-  color: white;
+  color: var(--wz-text-on-primary);
 }
 
 .dashboard-header p {
   margin-top: 8px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 15px;
 }
 
 .role-badge {
-  background: rgba(255, 255, 255, 0.18);
-  color: white;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+
   padding: 10px 24px;
   border-radius: 30px;
+
   font-weight: 600;
   letter-spacing: 1px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  border: 1px solid rgba(255, 255, 255, 0.28);
   backdrop-filter: blur(6px);
 }
 
@@ -55,23 +65,35 @@
 }
 
 .stat-card {
-  background: #ffffff;
+  background: var(--wz-surface);
+  color: var(--wz-text-primary);
+
   border-radius: 18px;
   padding: 24px;
-  border-left: 6px solid #43a047;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+
+  border: 1px solid var(--wz-border);
+  border-left: 5px solid var(--wz-primary);
+
+  box-shadow: var(--wz-shadow-sm);
+
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+
   cursor: pointer;
 }
 
 .stat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 28px rgba(67, 160, 71, 0.2);
+  transform: translateY(-5px);
+  background: var(--wz-surface-hover);
+  box-shadow: var(--wz-shadow-md);
 }
 
 .stat-card h3 {
   margin: 0;
-  color: #666;
+  color: var(--wz-text-secondary);
   font-size: 15px;
   font-weight: 600;
 }
@@ -79,9 +101,11 @@
 .stat-card span {
   display: block;
   margin-top: 15px;
+
   font-size: 2.2rem;
   font-weight: 700;
-  color: #2e7d32;
+
+  color: var(--wz-primary);
 }
 
 /* ===========================
@@ -96,16 +120,28 @@
 }
 
 .dashboard-card {
-  background: white;
+  background: var(--wz-surface);
+  color: var(--wz-text-primary);
+
+  border: 1px solid var(--wz-border);
   border-radius: 18px;
+
   padding: 25px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+
+  box-shadow: var(--wz-shadow-sm);
+
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .dashboard-card h3 {
   margin-top: 0;
   margin-bottom: 18px;
-  color: #2e7d32;
+
+  color: var(--wz-primary);
+
   font-size: 20px;
 }
 
@@ -115,21 +151,29 @@
 
 .dashboard-card button {
   width: 100%;
+
   margin-bottom: 12px;
   padding: 14px;
+
   border: none;
   border-radius: 12px;
-  background: #43a047;
-  color: white;
+
+  background: var(--wz-primary);
+  color: var(--wz-text-on-primary);
+
   font-size: 15px;
   font-weight: 500;
+
   cursor: pointer;
-  transition: all 0.3s ease;
+
+  transition:
+    background-color 0.25s ease,
+    transform 0.25s ease;
 }
 
 .dashboard-card button:hover {
-  background: #2e7d32;
-  transform: translateX(5px);
+  background: var(--wz-primary-hover);
+  transform: translateX(4px);
 }
 
 /* ===========================
@@ -144,8 +188,10 @@
 
 .dashboard-card li {
   padding: 12px 0;
-  border-bottom: 1px solid #eeeeee;
-  color: #555;
+
+  border-bottom: 1px solid var(--wz-border);
+
+  color: var(--wz-text-secondary);
 }
 
 .dashboard-card li:last-child {
@@ -153,7 +199,7 @@
 }
 
 /* ===========================
-   Analytics Section
+   Analytics / Platform Overview
 =========================== */
 
 .analytics-card {
@@ -161,8 +207,12 @@
 }
 
 .analytics-card p {
-  color: #666;
+  color: var(--wz-text-secondary);
   line-height: 1.7;
+}
+
+.analytics-card strong {
+  color: var(--wz-text-primary);
 }
 
 /* ===========================

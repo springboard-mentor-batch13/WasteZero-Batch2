@@ -1,48 +1,85 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-html,
-body{
-    width:100%;
-    height:100%;
-    background:#f5f7fb;
-    font-family:Arial, Helvetica, sans-serif;
+
+/* ===========================================================
+   AUTHENTICATED APPLICATION LAYOUT
+
+   This entire layout exists only after login because app.html
+   renders it inside the @else block.
+=========================================================== */
+
+.app-layout {
+    display: flex;
+
+    width: 100%;
+    min-height: 100vh;
+
+    background-color: var(--wz-page-bg);
+    color: var(--wz-text-primary);
+
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
 }
 
-app-root{
-    display:block;
-    width:100%;
-    height:100%;
+
+/* ===========================================================
+   MAIN CONTENT
+=========================================================== */
+
+.main-content {
+    margin-left: 270px;
+
+    width: calc(100% - 270px);
+    min-height: 100vh;
+
+    background-color: var(--wz-page-bg);
+    color: var(--wz-text-primary);
+
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
 }
 
-.app-layout{
-    display:flex;
-    min-height:100vh;
-}
-.main-content{
-    margin-left:270px;
-    width:calc(100% - 270px);
-    background:#f5f7fb;
-    min-height:100vh;
-}
-.page-content{
-    padding:25px 40px;
+
+/* ===========================================================
+   PAGE CONTENT
+=========================================================== */
+
+.page-content {
+    min-height: calc(100vh - 72px);
+
+    padding: 25px 40px;
+
+    background-color: var(--wz-page-bg);
+    color: var(--wz-text-primary);
+
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease;
 }
 
-@media (max-width: 900px){
-    .app-layout{
-        flex-direction:column;
+
+/* ===========================================================
+   RESPONSIVE
+=========================================================== */
+
+@media (max-width: 900px) {
+
+    .app-layout {
+        flex-direction: column;
     }
 
-    .main-content{
-        margin-left:0;
-        width:100%;
+    .main-content {
+        margin-left: 0;
+        width: 100%;
     }
 
-    .page-content{
-        padding:20px 16px;
+    .page-content {
+        padding: 20px 16px;
     }
 }
