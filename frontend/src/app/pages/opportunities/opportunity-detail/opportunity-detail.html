@@ -67,25 +67,39 @@
             @if (item.createdAt) { <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div> }
           </div>
 
-          @if (canManageOpportunities()) {
+          @if (canManageSelectedOpportunity()) {
             <div class="detail-actions">
               <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
               <button mat-flat-button class="delete-button" (click)="delete()"><mat-icon>delete</mat-icon>Delete</button>
             </div>
           } @else if (isVolunteer()) {
             <div class="detail-actions volunteer-actions">
-              <button
-                mat-flat-button
-                color="primary"
-                (click)="apply()"
-                [disabled]="sendingJoinRequest || hasJoinRequest(item.id)">
-                @if (sendingJoinRequest) {
-                  <mat-spinner diameter="18"></mat-spinner>
-                } @else {
-                  <mat-icon>volunteer_activism</mat-icon>
-                }
-                {{ joinButtonText(item.id) }}
-              </button>
+              @if (applicationStatusLoading) {
+                <p class="application-status-message">Loading application status...</p>
+              } @else if (applicationStatusError) {
+                <p class="application-status-message application-status-error">{{ applicationStatusError }}</p>
+              } @else if (applicationStatus) {
+                <div
+                  class="application-status-badge"
+                  [class.application-status-pending]="applicationStatus === 'Pending'"
+                  [class.application-status-accepted]="applicationStatus === 'Accepted'"
+                  [class.application-status-rejected]="applicationStatus === 'Rejected'">
+                  Application Status: {{ applicationStatus }}
+                </div>
+              } @else {
+                <button
+                  mat-flat-button
+                  color="primary"
+                  (click)="apply()"
+                  [disabled]="sendingJoinRequest">
+                  @if (sendingJoinRequest) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <mat-icon>volunteer_activism</mat-icon>
+                  }
+                  {{ joinButtonText(item.id) }}
+                </button>
+              }
             </div>
           }
         </mat-card-content>

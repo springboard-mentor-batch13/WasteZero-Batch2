@@ -80,6 +80,12 @@ export class OpportunityForm implements OnInit, OnDestroy {
 
     this.opportunities.getById(id).subscribe({
       next: (opportunity) => {
+        if (!this.canEditOpportunity(opportunity.ngoId)) {
+          this.showMessage('You can only edit opportunities you created.');
+          this.router.navigate(['/opportunities', id]);
+          return;
+        }
+
         this.opportunityId = id;
         this.form.patchValue({
           title: opportunity.title,
@@ -271,5 +277,10 @@ export class OpportunityForm implements OnInit, OnDestroy {
 
   private showMessage(message: string): void {
     this.snackBar.open(message, 'Close', { duration: 3500 });
+  }
+
+  private canEditOpportunity(ngoId?: string): boolean {
+    if (this.authService.getUserRole() === 'Admin') return true;
+    return !!ngoId && this.authService.getUser()?.id === ngoId;
   }
 }

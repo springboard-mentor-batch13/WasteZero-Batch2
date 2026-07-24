@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
+
 const {
   createOpportunity,
   getAllOpportunities,
   searchOpportunities,
   filterOpportunities,
   getDashboardStatistics,
+  getAdminDashboardStatistics,
   getOpportunityById,
   updateOpportunity,
   deleteOpportunity,
@@ -27,8 +29,25 @@ router.post(
 router.get('/', protect, getAllOpportunities);
 router.get('/search', protect, searchOpportunities);
 router.get('/filter', protect, filterOpportunities);
-router.get('/dashboard/stats', protect, getDashboardStatistics);
+
+// NGO/shared dashboard statistics
+router.get(
+  '/dashboard/stats',
+  protect,
+  getDashboardStatistics
+);
+
+// Admin dashboard statistics
+router.get(
+  '/dashboard/admin-stats',
+  protect,
+  authorizeRoles('Admin'),
+  getAdminDashboardStatistics
+);
+
+// Keep this after all specific routes
 router.get('/:id', protect, getOpportunityById);
+
 
 router.put(
   '/:id',

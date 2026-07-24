@@ -1,59 +1,155 @@
+/* ==========================================================
+   APPLICATIONS PAGE
+========================================================== */
+
 .applications-page {
   max-width: 1180px;
   margin: 0 auto;
-  padding: clamp(18px, 3vw, 42px) clamp(16px, 3vw, 32px) 48px;
+
+  padding:
+    clamp(18px, 3vw, 42px)
+    clamp(16px, 3vw, 32px)
+    48px;
+
+  background: transparent;
+  color: var(--wz-text-primary);
 }
 
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
 .applications-page header {
-  align-items: center;
   display: flex;
-  gap: 18px;
+  align-items: center;
   justify-content: space-between;
+
+  gap: 18px;
   margin-bottom: 22px;
 }
 
 .eyebrow {
-  color: #15965f;
-  font-size: .78rem;
+  color: var(--wz-primary);
+
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
+
   margin: 0 0 6px;
 }
 
 h1 {
-  color: #123c31;
+  color: var(--wz-text-primary);
+
   font-size: clamp(1.8rem, 3vw, 2.3rem);
   font-weight: 750;
-  letter-spacing: 0;
+
   line-height: 1.12;
+  letter-spacing: 0;
+
   margin: 0;
 }
 
 header p:last-child {
-  color: #58736a;
+  color: var(--wz-text-secondary);
   margin: 7px 0 0;
 }
 
+
+/* ==========================================================
+   REFRESH BUTTON
+========================================================== */
+
 .refresh-button {
-  border-color: #8ed2ac;
+  border-color: var(--wz-primary) !important;
+  color: var(--wz-primary) !important;
+
   border-radius: 10px;
-  color: #08784c;
+
   flex: 0 0 auto;
 }
 
+.refresh-button:hover {
+  background: var(--wz-primary-soft) !important;
+}
+
+
+/* ==========================================================
+   FILTER ROW
+========================================================== */
+
 .filter-row {
   display: grid;
+
+  grid-template-columns:
+    minmax(220px, 1fr)
+    minmax(180px, 240px);
+
   gap: 14px;
-  grid-template-columns: minmax(220px, 1fr) minmax(180px, 240px);
+
   margin-bottom: 18px;
 }
 
+
+/* ==========================================================
+   MATERIAL FORM FIELDS
+========================================================== */
+
+.filter-row mat-form-field {
+  --mdc-outlined-text-field-container-color:
+    var(--wz-surface);
+
+  --mdc-outlined-text-field-input-text-color:
+    var(--wz-text-primary);
+
+  --mdc-outlined-text-field-label-text-color:
+    var(--wz-text-secondary);
+
+  --mdc-outlined-text-field-outline-color:
+    var(--wz-border-strong);
+
+  --mdc-outlined-text-field-hover-outline-color:
+    var(--wz-primary);
+
+  --mdc-outlined-text-field-focus-outline-color:
+    var(--wz-primary);
+
+  --mdc-outlined-text-field-focus-label-text-color:
+    var(--wz-primary);
+
+  --mdc-outlined-text-field-input-text-placeholder-color:
+    var(--wz-text-muted);
+}
+
+
+/* ==========================================================
+   TABLE / STATE CARDS
+========================================================== */
+
 .table-card,
 .state-card {
-  --mat-card-elevated-container-color: #fff;
-  border: 1px solid #e1f0e7;
+  --mat-card-elevated-container-color:
+    var(--wz-surface);
+
+  background:
+    var(--wz-surface);
+
+  color:
+    var(--wz-text-primary);
+
+  border:
+    1px solid var(--wz-border);
+
   border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(27, 92, 65, .08);
+
+  box-shadow:
+    var(--wz-shadow-md);
+
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
 }
 
 .table-card {
@@ -62,81 +158,813 @@ header p:last-child {
 
 .table-wrap {
   overflow-x: auto;
+
+  background:
+    var(--wz-surface);
 }
+
+
+/* ==========================================================
+   TABLE
+========================================================== */
 
 table {
   min-width: 940px;
   width: 100%;
+
+  background:
+    var(--wz-surface) !important;
+
+  color:
+    var(--wz-text-primary);
 }
 
-th {
-  color: #173d31;
+.mat-mdc-table {
+  background:
+    var(--wz-surface) !important;
+}
+
+
+/* ==========================================================
+   TABLE HEADER
+========================================================== */
+
+th,
+.mat-mdc-header-cell {
+  background:
+    var(--wz-surface-soft) !important;
+
+  color:
+    var(--wz-text-primary) !important;
+
   font-weight: 750;
+
+  border-bottom-color:
+    var(--wz-border) !important;
 }
 
-td {
-  color: #365c4e;
+
+/* ==========================================================
+   TABLE CELLS
+========================================================== */
+
+td,
+.mat-mdc-cell {
+  background:
+    var(--wz-surface) !important;
+
+  color:
+    var(--wz-text-secondary) !important;
+
+  border-bottom-color:
+    var(--wz-border) !important;
 }
+
+
+/* ==========================================================
+   TABLE ROWS
+========================================================== */
+
+.mat-mdc-row {
+  background:
+    var(--wz-surface) !important;
+
+  transition:
+    background-color 0.2s ease;
+}
+
+.mat-mdc-row:hover td {
+  background:
+    var(--wz-surface-hover) !important;
+}
+
+
+/* ==========================================================
+   ACTION COLUMN
+   Keep action buttons neutral.
+   Status colours are handled ONLY by status chips below.
+========================================================== */
 
 .action-row {
   display: flex;
+  align-items: center;
+
   gap: 8px;
 }
 
 .action-row button {
-  border-radius: 9px;
+  min-width: 78px;
+
+  min-height: 34px;
+
+  border-radius: 9px !important;
+
+  font-weight: 600 !important;
+
+  background: transparent !important;
 }
 
+
+/* Accept action button */
+
+.action-row button[color="primary"] {
+  color:
+    var(--wz-primary) !important;
+}
+
+
+/* Reject action button */
+
+.action-row button[color="warn"] {
+  color:
+    var(--wz-danger) !important;
+}
+
+
+/* ==========================================================
+   STATE CARD
+========================================================== */
+
 .state-card {
-  align-items: center;
-  color: #58736a;
   display: flex;
-  gap: 12px;
+
+  align-items: center;
   justify-content: center;
+
+  gap: 12px;
+
   min-height: 180px;
+
   padding: 28px;
+
   text-align: center;
+
+  color:
+    var(--wz-text-secondary);
 }
 
 .state-card mat-icon {
-  color: #15965f;
+  color:
+    var(--wz-primary);
 }
 
 .error-state mat-icon {
-  color: #b93632;
+  color:
+    var(--wz-danger);
 }
 
 .muted {
-  color: #6b877c;
+  color:
+    var(--wz-text-muted);
 }
 
+
+/* ==========================================================
+   STATUS CHIPS
+   IMPORTANT:
+   These colours apply ONLY to the Status column.
+========================================================== */
+
+mat-chip.accepted,
+mat-chip.rejected,
 mat-chip.pending {
-  --mdc-chip-elevated-container-color: #fff8df;
-  --mdc-chip-label-text-color: #8b6400;
+  min-width: 92px !important;
+  min-height: 34px !important;
+
+  display: inline-flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 9px !important;
+
+  font-size: 13px !important;
+  font-weight: 800 !important;
 }
 
-mat-chip.approved {
-  --mdc-chip-elevated-container-color: #e9f8ef;
-  --mdc-chip-label-text-color: #16754d;
+
+/* ==========================================================
+   LIGHT THEME - ACCEPTED
+========================================================== */
+
+mat-chip.accepted {
+  background:
+    #dff5e7 !important;
+
+  --mdc-chip-elevated-container-color:
+    #dff5e7;
+
+  --mdc-chip-label-text-color:
+    #087a38;
+
+  border:
+    2px solid #22a653 !important;
 }
+
+mat-chip.accepted
+.mdc-evolution-chip__text-label {
+  color:
+    #087a38 !important;
+
+  -webkit-text-fill-color:
+    #087a38 !important;
+
+  font-weight:
+    800 !important;
+
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   LIGHT THEME - REJECTED
+========================================================== */
 
 mat-chip.rejected {
-  --mdc-chip-elevated-container-color: #fdebec;
-  --mdc-chip-label-text-color: #b93632;
+  background:
+    #fde5e5 !important;
+
+  --mdc-chip-elevated-container-color:
+    #fde5e5;
+
+  --mdc-chip-label-text-color:
+    #c62828;
+
+  border:
+    2px solid #dc4545 !important;
 }
 
+mat-chip.rejected
+.mdc-evolution-chip__text-label {
+  color:
+    #c62828 !important;
+
+  -webkit-text-fill-color:
+    #c62828 !important;
+
+  font-weight:
+    800 !important;
+
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   LIGHT THEME - PENDING
+========================================================== */
+
+mat-chip.pending {
+  background:
+    #fff1cc !important;
+
+  --mdc-chip-elevated-container-color:
+    #fff1cc;
+
+  --mdc-chip-label-text-color:
+    #8a5b00;
+
+  border:
+    2px solid #e59a18 !important;
+}
+
+mat-chip.pending
+.mdc-evolution-chip__text-label {
+  color:
+    #8a5b00 !important;
+
+  -webkit-text-fill-color:
+    #8a5b00 !important;
+
+  font-weight:
+    800 !important;
+
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - ACCEPTED STATUS
+========================================================== */
+
+:host-context(body.dark-theme)
+mat-chip.accepted {
+  background:
+    #155c36 !important;
+
+  --mdc-chip-elevated-container-color:
+    #155c36;
+
+  --mdc-chip-label-text-color:
+    #9affbd;
+
+  border:
+    2px solid #35c46a !important;
+
+  box-shadow:
+    0 0 8px rgba(53, 196, 106, 0.18);
+}
+
+:host-context(body.dark-theme)
+mat-chip.accepted
+.mdc-evolution-chip__text-label {
+  color:
+    #9affbd !important;
+
+  -webkit-text-fill-color:
+    #9affbd !important;
+
+  font-weight:
+    800 !important;
+
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - REJECTED STATUS
+========================================================== */
+
+:host-context(body.dark-theme)
+mat-chip.rejected {
+  background:
+    #652525 !important;
+
+  --mdc-chip-elevated-container-color:
+    #652525;
+
+  --mdc-chip-label-text-color:
+    #ffb0b0;
+
+  border:
+    2px solid #ff5c5c !important;
+
+  box-shadow:
+    0 0 8px rgba(255, 92, 92, 0.18);
+}
+
+:host-context(body.dark-theme)
+mat-chip.rejected
+.mdc-evolution-chip__text-label {
+  color:
+    #ffb0b0 !important;
+
+  -webkit-text-fill-color:
+    #ffb0b0 !important;
+
+  font-weight:
+    800 !important;
+
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - PENDING STATUS
+========================================================== */
+
+:host-context(body.dark-theme)
+mat-chip.pending {
+  background:
+    #665019 !important;
+
+  --mdc-chip-elevated-container-color:
+    #665019;
+
+  --mdc-chip-label-text-color:
+    #ffe28a;
+
+  border:
+    2px solid #e6a817 !important;
+
+  box-shadow:
+    0 0 8px rgba(230, 168, 23, 0.18);
+}
+
+:host-context(body.dark-theme)
+mat-chip.pending
+.mdc-evolution-chip__text-label {
+  color:
+    #ffe28a !important;
+
+  -webkit-text-fill-color:
+    #ffe28a !important;
+
+  font-weight:
+    800 !important;
+
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   ANGULAR MATERIAL CHIP INTERNAL FIX
+========================================================== */
+
+mat-chip
+.mdc-evolution-chip__cell,
+
+mat-chip
+.mdc-evolution-chip__action,
+
+mat-chip
+.mat-mdc-chip-action-label {
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - ACTION BUTTONS
+   Neutral appearance.
+   DO NOT use status-style filled colours here.
+========================================================== */
+
+:host-context(body.dark-theme)
+.action-row button {
+  background:
+    transparent !important;
+
+  border-color:
+    #66776d !important;
+}
+
+
+/* Accept */
+
+:host-context(body.dark-theme)
+.action-row button[color="primary"] {
+  color:
+    #70dfa0 !important;
+}
+
+
+/* Reject */
+
+:host-context(body.dark-theme)
+.action-row button[color="warn"] {
+  color:
+    #ff8585 !important;
+}
+
+
+/* Subtle hover only */
+
+:host-context(body.dark-theme)
+.action-row button:hover {
+  background:
+    var(--wz-surface-hover) !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - FILTERS
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row mat-form-field {
+  /* Input text */
+
+  --mdc-outlined-text-field-input-text-color:
+    #f1f6f3;
+
+  --mdc-outlined-text-field-input-text-placeholder-color:
+    #b3c0b8;
+
+
+  /* Labels */
+
+  --mdc-outlined-text-field-label-text-color:
+    #b3c0b8;
+
+  --mdc-outlined-text-field-focus-label-text-color:
+    #45c875;
+
+  --mdc-outlined-text-field-hover-label-text-color:
+    #d7e2dc;
+
+
+  /* Borders */
+
+  --mdc-outlined-text-field-outline-color:
+    #52645a;
+
+  --mdc-outlined-text-field-hover-outline-color:
+    #85948b;
+
+  --mdc-outlined-text-field-focus-outline-color:
+    #35b866;
+
+
+  /* Select */
+
+  --mat-select-enabled-trigger-text-color:
+    #f1f6f3;
+
+  --mat-select-enabled-arrow-color:
+    #b3c0b8;
+
+  --mat-select-focused-arrow-color:
+    #35b866;
+}
+
+
+/* ==========================================================
+   DARK THEME - SEARCH INPUT
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row input.mat-mdc-input-element {
+  color:
+    #f1f6f3 !important;
+
+  -webkit-text-fill-color:
+    #f1f6f3 !important;
+
+  caret-color:
+    #35b866 !important;
+}
+
+
+/* Search placeholder */
+
+:host-context(body.dark-theme)
+.filter-row
+input.mat-mdc-input-element::placeholder {
+  color:
+    #b3c0b8 !important;
+
+  -webkit-text-fill-color:
+    #b3c0b8 !important;
+
+  opacity:
+    1 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - STATUS SELECT
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-select-value,
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-select-value-text,
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-select-min-line {
+  color:
+    #f1f6f3 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - FLOATING LABEL
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row mat-label,
+
+:host-context(body.dark-theme)
+.filter-row .mdc-floating-label,
+
+:host-context(body.dark-theme)
+.filter-row .mat-mdc-floating-label {
+  color:
+    #b3c0b8 !important;
+}
+
+
+/* Focused label */
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-focused
+.mdc-floating-label {
+  color:
+    #45c875 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - SELECT ARROW
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-select-arrow {
+  color:
+    #b3c0b8 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - SEARCH ICON
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row mat-icon {
+  color:
+    #b3c0b8 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - FIELD BACKGROUND
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-text-field-wrapper {
+  background:
+    #18231d !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - OUTLINE
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row
+.mdc-notched-outline__leading,
+
+:host-context(body.dark-theme)
+.filter-row
+.mdc-notched-outline__notch,
+
+:host-context(body.dark-theme)
+.filter-row
+.mdc-notched-outline__trailing {
+  border-color:
+    #52645a !important;
+}
+
+
+/* Focused outline */
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-form-field.mat-focused
+.mdc-notched-outline__leading,
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-form-field.mat-focused
+.mdc-notched-outline__notch,
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-form-field.mat-focused
+.mdc-notched-outline__trailing {
+  border-color:
+    #35b866 !important;
+}
+
+
+/* ==========================================================
+   DARK THEME - DISABLED VALUES
+========================================================== */
+
+:host-context(body.dark-theme)
+.filter-row
+.mat-mdc-form-field-disabled
+.mat-mdc-select-value {
+  color:
+    #85948b !important;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
 @media (max-width: 700px) {
-  .applications-page header,
-  .filter-row {
-    grid-template-columns: 1fr;
-  }
 
   .applications-page header {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .filter-row {
+    grid-template-columns: 1fr;
+  }
+
   .refresh-button {
     width: 100%;
   }
+}
+/* ==========================================================
+   FINAL STATUS CHIP TEXT VISIBILITY FIX
+   Put this at the VERY END of admin-applications.css
+========================================================== */
+
+/* ACCEPTED - bright green text */
+:host-context(body.dark-theme)
+mat-chip.accepted,
+:host-context(body.dark-theme)
+mat-chip.accepted *,
+:host-context(body.dark-theme)
+mat-chip.accepted .mdc-evolution-chip__text-label,
+:host-context(body.dark-theme)
+mat-chip.accepted .mat-mdc-chip-action-label {
+  color: #8dffb5 !important;
+  -webkit-text-fill-color: #8dffb5 !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+
+/* REJECTED - bright red/pink text */
+:host-context(body.dark-theme)
+mat-chip.rejected,
+:host-context(body.dark-theme)
+mat-chip.rejected *,
+:host-context(body.dark-theme)
+mat-chip.rejected .mdc-evolution-chip__text-label,
+:host-context(body.dark-theme)
+mat-chip.rejected .mat-mdc-chip-action-label {
+  color: #ff9b9b !important;
+  -webkit-text-fill-color: #ff9b9b !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+
+/* PENDING - bright yellow text */
+:host-context(body.dark-theme)
+mat-chip.pending,
+:host-context(body.dark-theme)
+mat-chip.pending *,
+:host-context(body.dark-theme)
+mat-chip.pending .mdc-evolution-chip__text-label,
+:host-context(body.dark-theme)
+mat-chip.pending .mat-mdc-chip-action-label {
+  color: #ffe082 !important;
+  -webkit-text-fill-color: #ffe082 !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+/* ==========================================================
+   FIX MATERIAL FILTER LABEL / TEXT OVERLAP
+========================================================== */
+
+/* Search field does not need a floating label */
+.filter-row .search-field .mdc-floating-label {
+  display: none !important;
+}
+
+/* Keep input vertically centered after hiding label */
+.filter-row .search-field .mat-mdc-form-field-infix {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+  min-height: 54px !important;
+}
+
+/* Search text */
+.filter-row .search-field input {
+  color: var(--wz-text-primary) !important;
+  font-size: 14px !important;
+}
+
+/* Search placeholder */
+.filter-row .search-field input::placeholder {
+  color: var(--wz-text-secondary) !important;
+  opacity: 1 !important;
+}
+
+/* Select values */
+.filter-row .mat-mdc-select-value,
+.filter-row .mat-mdc-select-value-text,
+.filter-row .mat-mdc-select-min-line {
+  color: var(--wz-text-primary) !important;
+}
+
+/* Dark theme */
+:host-context(body.dark-theme) .filter-row .search-field input {
+  color: #f1f6f3 !important;
+}
+
+:host-context(body.dark-theme)
+.filter-row .search-field input::placeholder {
+  color: #b9c7bf !important;
+  opacity: 1 !important;
+}
+
+:host-context(body.dark-theme)
+.filter-row .mat-mdc-select-value,
+:host-context(body.dark-theme)
+.filter-row .mat-mdc-select-value-text,
+:host-context(body.dark-theme)
+.filter-row .mat-mdc-select-min-line {
+  color: #f1f6f3 !important;
 }

@@ -10,8 +10,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../auth/auth.service';
+import { ApplicationService } from '../../applications/application.service';
+import {
+  ApplicationStatus,
+  VolunteerApplicationRequest
+} from '../../applications/application.model';
 import { DeleteOpportunityDialog } from '../delete-opportunity-dialog/delete-opportunity-dialog';
-import { Opportunity, OpportunityJoinRequest } from '../opportunity.model';
+import { Opportunity } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
 
 @Component({
@@ -25,6 +30,7 @@ export class OpportunityDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly opportunityService = inject(OpportunityService);
+  private readonly applicationService = inject(ApplicationService);
   private readonly authService = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
@@ -34,8 +40,12 @@ export class OpportunityDetail implements OnInit {
   loading = true;
   errorMessage = '';
   sendingJoinRequest = false;
-  private readonly recentlySentOpportunityIds = new Set<string>();
-  private readonly joinRequestStorageKey = 'wastezero.joinRequests';
+
+applicationStatusLoading = false;
+applicationStatusError = '';
+applicationStatus: ApplicationStatus | null = null;
+
+appliedOpportunityIds = new Set<string>();
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
   ngOnInit(): void {
@@ -55,6 +65,7 @@ export class OpportunityDetail implements OnInit {
           this.opportunity = opportunity;
           this.sendingJoinRequest = false;
           this.loading = false;
+          if (this.isVolunteer()) this.loadApplicationState(opportunity.id);
           this.cdr.detectChanges();
         },
         error: (error) => {
@@ -69,7 +80,7 @@ export class OpportunityDetail implements OnInit {
   }
 
   delete(): void {
-    if (!this.opportunity || !this.canManageOpportunities()) return;
+    if (!this.opportunity || !this.canManageSelectedOpportunity()) return;
 
     this.dialog.open(DeleteOpportunityDialog, { data: { title: this.opportunity.title }, width: '420px' })
       .afterClosed()
@@ -92,52 +103,47 @@ export class OpportunityDetail implements OnInit {
   apply(): void {
     if (!this.opportunity || !this.isVolunteer()) return;
     if (this.hasJoinRequest(this.opportunity.id)) {
-      this.snackBar.open('Request Already Sent', 'Close', { duration: 3500 });
+      this.snackBar.open('Already Applied', 'Close', { duration: 3500 });
       return;
     }
 
     const user = this.authService.getUser();
-    if (!user?.id || !user.fullName || !user.email) {
-      this.snackBar.open('Unable to send join request. Please sign in again.', 'Close', { duration: 3500 });
+    if (!user?.id) {
+      this.snackBar.open('Unable to submit application. Please sign in again.', 'Close', { duration: 3500 });
       return;
     }
 
-    const request: OpportunityJoinRequest = {
+    const request: VolunteerApplicationRequest = {
       opportunityId: this.opportunity.id,
-      volunteerUserId: user.id,
-      volunteerFullName: user.fullName,
-      volunteerEmail: user.email,
-      timestamp: new Date().toISOString(),
     };
 
     this.sendingJoinRequest = true;
-    this.opportunityService.joinOpportunity(request).subscribe({
+    this.applicationService.apply(request).subscribe({
       next: () => {
-        this.markJoinRequestSent(request.opportunityId);
-        this.recentlySentOpportunityIds.add(request.opportunityId);
+        this.appliedOpportunityIds.add(request.opportunityId);
         this.sendingJoinRequest = false;
-        this.snackBar.open('Join request sent successfully.', 'Close', { duration: 3500 });
+        this.snackBar.open('Application submitted successfully.', 'Close', { duration: 3500 });
         this.cdr.detectChanges();
       },
       error: (error: { error?: { message?: string } }) => {
-        console.error('Failed to send join request:', error);
+        console.error('Failed to submit application:', error);
+        if (error.error?.message?.toLowerCase().includes('already applied')) {
+          this.appliedOpportunityIds.add(request.opportunityId);
+        }
         this.sendingJoinRequest = false;
-        this.snackBar.open(error.error?.message || 'Unable to send join request.', 'Close', { duration: 3500 });
+        this.snackBar.open(error.error?.message || 'Unable to submit application.', 'Close', { duration: 3500 });
         this.cdr.detectChanges();
       }
     });
   }
 
   hasJoinRequest(opportunityId: string): boolean {
-    const userId = this.authService.getUser()?.id;
-    if (!userId) return false;
-    return this.readJoinRequests().includes(this.joinRequestKey(opportunityId, userId));
+    return this.appliedOpportunityIds.has(opportunityId);
   }
 
   joinButtonText(opportunityId: string): string {
     if (this.sendingJoinRequest) return 'Sending...';
-    if (this.recentlySentOpportunityIds.has(opportunityId)) return 'Request Sent';
-    if (this.hasJoinRequest(opportunityId)) return 'Request Already Sent';
+    if (this.hasJoinRequest(opportunityId)) return 'Already Applied';
     return 'Apply / Join Opportunity';
   }
   usePlaceholder(event: Event): void {
@@ -147,40 +153,55 @@ export class OpportunityDetail implements OnInit {
 
   postedByName(postedBy?: Opportunity['postedBy']): string {
     if (typeof postedBy === 'string') return postedBy;
-    return postedBy?.name || postedBy?.email || 'Unknown User';
+    return postedBy?.username || postedBy?.name || postedBy?.fullName || postedBy?.email || 'Unknown User';
   }
 
   postedByRole(postedBy?: Opportunity['postedBy']): string {
     if (typeof postedBy === 'object' && postedBy?.role) return postedBy.role;
-    // TODO: Backend should include postedBy.role so the creator can be labeled as NGO or Admin.
     return 'Role unavailable';
   }
 
   canManageOpportunities(): boolean { return this.authService.canManageOpportunities(); }
 
+  canManageSelectedOpportunity(): boolean {
+    if (!this.opportunity || !this.canManageOpportunities()) return false;
+    if (this.authService.getUserRole() === 'Admin') return true;
+    const userId = this.authService.getUser()?.id;
+    return !!userId && this.opportunity.ngoId === userId;
+  }
+
   isVolunteer(): boolean { return this.authService.getUserRole() === 'Volunteer'; }
 
-  private markJoinRequestSent(opportunityId: string): void {
-    const userId = this.authService.getUser()?.id;
-    if (!userId || typeof localStorage === 'undefined') return;
+  private loadApplicationState(opportunityId: string): void {
+  this.applicationStatusLoading = true;
+  this.applicationStatusError = '';
+  this.applicationStatus = null;
 
-    const requests = new Set(this.readJoinRequests());
-    requests.add(this.joinRequestKey(opportunityId, userId));
-    localStorage.setItem(this.joinRequestStorageKey, JSON.stringify([...requests]));
-  }
+  this.applicationService.hasApplication(opportunityId).subscribe({
+    next: (result) => {
 
-  private readJoinRequests(): string[] {
-    if (typeof localStorage === 'undefined') return [];
+      if (result.applied && result.application) {
+        this.appliedOpportunityIds.add(opportunityId);
 
-    try {
-      const savedRequests = JSON.parse(localStorage.getItem(this.joinRequestStorageKey) || '[]');
-      return Array.isArray(savedRequests) ? savedRequests.filter((request) => typeof request === 'string') : [];
-    } catch {
-      return [];
+        this.applicationStatus = result.application.status;
+      } else {
+        this.appliedOpportunityIds.delete(opportunityId);
+        this.applicationStatus = null;
+      }
+
+      this.applicationStatusLoading = false;
+      this.cdr.detectChanges();
+    },
+
+    error: (error) => {
+      console.error('Failed to check application status:', error);
+
+      this.applicationStatusLoading = false;
+      this.applicationStatusError =
+        error.error?.message || 'Unable to load application status.';
+
+      this.cdr.detectChanges();
     }
-  }
-
-  private joinRequestKey(opportunityId: string, userId: string): string {
-    return `${userId}:${opportunityId}`;
-  }
+  });
+}
 }

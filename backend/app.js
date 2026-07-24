@@ -15,6 +15,8 @@ const opportunityRoutes = require('./routes/opportunityRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
+const adminRoutes = require('./routes/adminRoutes');
+
 const app = express();
 
 app.use(helmet({
@@ -38,6 +40,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/pickups', pickupRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/application', applicationRoutes);
+app.use('/api/applications', applicationRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

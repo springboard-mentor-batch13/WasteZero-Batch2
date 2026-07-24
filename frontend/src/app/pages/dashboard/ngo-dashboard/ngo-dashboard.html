@@ -15,28 +15,45 @@
 
     <div class="stat-card">
       <div class="stat-icon">📢</div>
+      <h3>Opportunities</h3>
+      <span>{{ loading ? '...' : stats.totalOpportunities }}</span>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
       <h3>My Opportunities</h3>
-      <span>12</span>
+      <span>{{ loading ? '...' : stats.myOpportunities }}</span>
     </div>
 
     <div class="stat-card">
       <div class="stat-icon">📝</div>
       <h3>Applications</h3>
-      <span>48</span>
+      <span>{{ loading ? '...' : stats.totalApplications }}</span>
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon">🤝</div>
-      <h3>Active Volunteers</h3>
-      <span>27</span>
+      <div class="stat-icon">👥</div>
+      <h3>My Opp-Applications</h3>
+      <span>{{ loading ? '...' : stats.myOpportunityApplications }}</span>
     </div>
 
     <div class="stat-card">
       <div class="stat-icon">✅</div>
       <h3>Completed Drives</h3>
-      <span>9</span>
+      <span>{{ loading ? '...' : stats.completedDrives }}</span>
     </div>
 
+    <div class="stat-card">
+      <div class="stat-icon">🏆</div>
+      <h3>My Completed Drives</h3>
+      <span>{{ loading ? '...' : stats.myCompletedDrives }}</span>
+    </div>
+
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="dashboard-error">
+    {{ errorMessage }}
   </div>
 
   <!-- Bottom Section -->

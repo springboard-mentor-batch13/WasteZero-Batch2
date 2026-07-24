@@ -1,8 +1,7 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, delay, map, of } from 'rxjs';
-
-import { Opportunity, OpportunityDraft, OpportunityJoinRequest, OpportunityStatus } from './opportunity.model';
+import { Observable, map, shareReplay } from 'rxjs';
+import { Opportunity, OpportunityDraft, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -13,7 +12,7 @@ interface ApiResponse<T> {
 interface OpportunityApiModel {
   _id: string;
   id?: string;
-  ngoId?: string;
+  ngoId?: string | { _id?: string };
   postedBy?: Opportunity['postedBy'];
   title: string;
   category?: string;
@@ -38,7 +37,23 @@ export interface DashboardStats {
   openOpportunities: number;
   closedOpportunities: number;
   inProgressOpportunities: number;
+  myOpportunities: number;
+  totalApplications: number;
+  myOpportunityApplications: number;
+  completedDrives: number;
+  myCompletedDrives: number;
 }
+
+
+export interface AdminDashboardStats {
+  totalUsers: number;
+  totalOpportunities: number;
+  adminOpportunities: number;
+  ngoOpportunities: number;
+}
+
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -46,7 +61,28 @@ export interface DashboardStats {
 export class OpportunityService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:5000/api/opportunities';
+  private dashboardStatsCache$?: Observable<DashboardStats>;
+  private dashboardStatsCache?: DashboardStats;
 
+  getAdminDashboardStats(): Observable<AdminDashboardStats> {
+  return this.http
+    .get<ApiResponse<AdminDashboardStats>>(
+      `${this.apiUrl}/dashboard/admin-stats`,
+      { headers: this.headers() }
+    )
+    .pipe(
+      map((response) => response.data)
+    );
+}
+
+  private clearDashboardStatsCache(): void {
+  this.dashboardStatsCache$ = undefined;
+  this.dashboardStatsCache = undefined;
+}
+
+  getCachedDashboardStats(): DashboardStats | undefined {
+  return this.dashboardStatsCache;
+}
   getAll(): Observable<Opportunity[]> {
     return this.http.get<ApiResponse<OpportunityApiModel[]>>(this.apiUrl, { headers: this.headers() }).pipe(
       map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
@@ -98,24 +134,26 @@ export class OpportunityService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(map(() => undefined));
   }
 
-  getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<ApiResponse<DashboardStats>>(`${this.apiUrl}/dashboard/stats`, { headers: this.headers() }).pipe(
-      map((response) => response.data)
-    );
+ getDashboardStats(forceRefresh = false): Observable<DashboardStats> {
+
+  if (!this.dashboardStatsCache$ || forceRefresh) {
+
+    this.dashboardStatsCache$ = this.http
+      .get<ApiResponse<DashboardStats>>(
+        `${this.apiUrl}/dashboard/stats`,
+        { headers: this.headers() }
+      )
+      .pipe(
+        map((response) => {
+          this.dashboardStatsCache = response.data;
+          return response.data;
+        }),
+        shareReplay(1)
+      );
   }
 
-  joinOpportunity(request: OpportunityJoinRequest): Observable<void> {
-    // TODO: Replace with POST /api/opportunities/:id/join (or /apply) when backend is available.
-    return of(request).pipe(
-      delay(450),
-      map(() => undefined)
-    );
-  }
-
-  getJoinRequests(): Observable<OpportunityJoinRequest[]> {
-    // TODO: Replace with GET /api/opportunities/join-requests when backend is available for Admin review.
-    return of([]);
-  }
+  return this.dashboardStatsCache$;
+}
 
   private headers(): HttpHeaders {
     const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');
@@ -133,7 +171,7 @@ export class OpportunityService {
 
     return {
       id: opportunity._id || opportunity.id || '',
-      ngoId: opportunity.ngoId,
+      ngoId: this.toId(opportunity.ngoId),
       postedBy: opportunity.postedBy,
       title: opportunity.title,
       category: opportunity.category || '',
@@ -182,6 +220,11 @@ export class OpportunityService {
     if (Array.isArray(value)) return value.map((skill) => String(skill).trim()).filter(Boolean);
     if (typeof value === 'string') return value.split(',').map((skill) => skill.trim()).filter(Boolean);
     return [];
+  }
+
+  private toId(value?: string | { _id?: string }): string | undefined {
+    if (!value) return undefined;
+    return typeof value === 'string' ? value : value._id;
   }
 
   private toDate(date?: string): Date {
