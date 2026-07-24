@@ -115,7 +115,7 @@ mat-chip.pending {
   --mdc-chip-label-text-color: #8b6400;
 }
 
-mat-chip.approved {
+mat-chip.accepted {
   --mdc-chip-elevated-container-color: #e9f8ef;
   --mdc-chip-label-text-color: #16754d;
 }

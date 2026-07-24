@@ -4,6 +4,8 @@ export type OpportunityCategory = 'Environment' | 'Healthcare' | 'Education' | '
 export interface PostedBy {
   _id?: string;
   name?: string;
+  fullName?: string;
+  username?: string;
   email?: string;
   role?: 'Volunteer' | 'NGO' | 'Admin' | string;
 }
@@ -37,14 +39,6 @@ export type OpportunityDraft = Omit<Opportunity, 'id' | 'ngoId' | 'postedBy' | '
   skillsRequired?: string[];
   removeImage?: boolean;
 };
-
-export interface OpportunityJoinRequest {
-  opportunityId: string;
-  volunteerUserId: string;
-  volunteerFullName: string;
-  volunteerEmail: string;
-  timestamp: string;
-}
 
 export interface StateCityOption {
   state: string;
