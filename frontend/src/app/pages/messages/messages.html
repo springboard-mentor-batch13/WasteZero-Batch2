@@ -1,15 +1,22 @@
+   <div class="messages-header">
+           <h2>Messages</h2>
+            <p>Chat with volunteers, NGOs, and waste management partners</p>
+    </div>
 <div class="messages-container">
 
   <!-- Left Side -->
   <div class="chat-list">
 
-    <!-- Search -->
     <div class="search-box">
-      <input
-        type="text"
-        placeholder="Search Role or Member"
-        [(ngModel)]="searchText">
-    </div>
+  <i class="bi bi-search search-icon"></i>
+
+  <input
+    type="text"
+    placeholder="Search Role or Member"
+    [(ngModel)]="searchText">
+</div>
+
+  
 
     <!-- Roles -->
     @for (role of getFilteredRoles(); track role.role) {
@@ -80,14 +87,11 @@
 
         @for (message of selectedMember.messages; track $index) {
 
-          <div
-            class="message"
-            [class.me]="message.sender == 'You'">
-
-            <strong>{{ message.sender }}</strong>
-            <p>{{ message.text }}</p>
-
-          </div>
+         <div class="message" [class.me]="message.sender === 'You'">
+                <strong>{{ message.sender }}</strong>
+                <p>{{ message.text }}</p>
+                <span class="time">{{ message.time }}</span>
+         </div>
 
         }
 
