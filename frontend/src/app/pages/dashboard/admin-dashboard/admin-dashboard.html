@@ -10,34 +10,67 @@
     <span class="role-badge">ADMIN</span>
   </div>
 
+  <!-- Error Message -->
+  <p *ngIf="errorMessage">
+    {{ errorMessage }}
+  </p>
+
   <!-- Statistics Cards -->
   <div class="stats-grid">
 
+    <!-- Total Users -->
     <div class="stat-card">
       <div class="stat-icon">👥</div>
       <h3>Total Users</h3>
-      <span>120</span>
+
+      <span *ngIf="!loading">
+        {{ stats.totalUsers }}
+      </span>
+
+      <span *ngIf="loading">...</span>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">🏢</div>
-      <h3>NGOs</h3>
-      <span>18</span>
-    </div>
 
+    <!-- Total Opportunities -->
     <div class="stat-card">
-      <div class="stat-icon">🙋</div>
-      <h3>Volunteers</h3>
-      <span>95</span>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon">♻️</div>
+      <div class="stat-icon">📢</div>
       <h3>Opportunities</h3>
-      <span>46</span>
+
+      <span *ngIf="!loading">
+        {{ stats.totalOpportunities }}
+      </span>
+
+      <span *ngIf="loading">...</span>
+    </div>
+
+
+    <!-- Admin Opportunities -->
+    <div class="stat-card">
+      <div class="stat-icon">🛡️</div>
+      <h3>Admin Opportunities</h3>
+
+      <span *ngIf="!loading">
+        {{ stats.adminOpportunities }}
+      </span>
+
+      <span *ngIf="loading">...</span>
+    </div>
+
+
+    <!-- NGO Opportunities -->
+    <div class="stat-card">
+      <div class="stat-icon">🌱</div>
+      <h3>NGO Opportunities</h3>
+
+      <span *ngIf="!loading">
+        {{ stats.ngoOpportunities }}
+      </span>
+
+      <span *ngIf="loading">...</span>
     </div>
 
   </div>
+
 
   <!-- Bottom Section -->
   <div class="dashboard-content">
@@ -50,6 +83,7 @@
       <button>♻️ Manage Opportunities</button>
       <button>📊 View Reports</button>
     </div>
+
 
     <!-- Recent Activity -->
     <div class="dashboard-card">
@@ -65,27 +99,28 @@
 
   </div>
 
+
   <!-- Platform Overview -->
-  <div class="dashboard-card analytics-card">
-    <h3>Platform Overview</h3>
+<div class="dashboard-card analytics-card">
 
-    <p>
-      WasteZero helps NGOs, Volunteers, and Administrators collaborate
-      to organize waste collection drives, manage opportunities, and
-      promote a cleaner environment.
-    </p>
+  <h3>Platform Overview</h3>
 
-    <br>
+  <p>
+    Monitor and manage the WasteZero platform by overseeing users,
+    opportunities, volunteer applications, and activities created by
+    NGOs and administrators.
+  </p>
 
-    <strong>Recent Opportunities</strong>
+  <br>
 
-    <ul>
-      <li>🌱 Beach Cleanup Drive</li>
-      <li>🌳 Tree Plantation Campaign</li>
-      <li>🥫 Food Donation Program</li>
-      <li>♻️ Plastic Recycling Awareness</li>
-    </ul>
+  <strong>Admin Responsibilities</strong>
 
-  </div>
+  <ul>
+    <li>👥 Manage registered users and their roles</li>
+    <li>📢 Monitor opportunities created across the platform</li>
+    <li>📄 Review volunteer applications</li>
+    <li>🛡️ Manage administrative activities and platform operations</li>
+  </ul>
 
 </div>
+

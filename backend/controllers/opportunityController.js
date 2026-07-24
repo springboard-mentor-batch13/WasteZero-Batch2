@@ -1,5 +1,6 @@
 const Opportunity = require('../models/Opportunity');
 const Application = require('../models/Application');
+const User = require('../models/User');
 
 const parseRequiredSkills = (requiredSkills) => {
   if (Array.isArray(requiredSkills)) return requiredSkills;
@@ -410,13 +411,55 @@ const deleteOpportunity = async (req, res) => {
   }
 };
 
+const getAdminDashboardStatistics = async (req, res) => {
+  try {
+    // Get all Admin and NGO user IDs
+    const [totalUsers, admins, ngos, totalOpportunities] = await Promise.all([
+      User.countDocuments(),
+      User.find({ role: 'Admin' }).select('_id').lean(),
+      User.find({ role: 'NGO' }).select('_id').lean(),
+      Opportunity.countDocuments()
+    ]);
+
+    const adminIds = admins.map((user) => user._id);
+    const ngoIds = ngos.map((user) => user._id);
+
+    // Count opportunities based on the role of the creator
+    const [adminOpportunities, ngoOpportunities] = await Promise.all([
+      Opportunity.countDocuments({
+        postedBy: { $in: adminIds }
+      }),
+
+      Opportunity.countDocuments({
+        postedBy: { $in: ngoIds }
+      })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalOpportunities,
+        adminOpportunities,
+        ngoOpportunities
+      }
+    });
+
+  } catch (error) {
+    sendServerError(res, error);
+  }
+};
+
+
 module.exports = {
   createOpportunity,
   getAllOpportunities,
   searchOpportunities,
   filterOpportunities,
   getDashboardStatistics,
+  getAdminDashboardStatistics,
   getOpportunityById,
   updateOpportunity,
   deleteOpportunity,
 };
+

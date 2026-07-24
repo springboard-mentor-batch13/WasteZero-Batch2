@@ -28,6 +28,13 @@ interface ApplicationCheckApiModel {
   application?: ApplicationApiModel | null;
 }
 
+export interface VolunteerDashboardStats {
+  availableOpportunities: number;
+  myApplications: number;
+  completedOpportunities: number;
+  pendingOpportunities: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApplicationService {
   private readonly http = inject(HttpClient);
@@ -67,6 +74,15 @@ export class ApplicationService {
       application: response.data.application ? this.fromApi(response.data.application) : undefined,
     })));
   }
+
+  getVolunteerDashboardStats(): Observable<VolunteerDashboardStats> {
+  return this.http.get<ApiResponse<VolunteerDashboardStats>>(
+    `${this.applicationsUrl}/dashboard/volunteer-stats`,
+    { headers: this.headers() }
+  ).pipe(
+    map((response) => response.data)
+  );
+}
 
   private headers(): HttpHeaders {
     const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');

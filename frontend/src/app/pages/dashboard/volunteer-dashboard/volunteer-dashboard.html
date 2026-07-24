@@ -10,31 +10,41 @@
     <span class="role-badge">VOLUNTEER</span>
   </div>
 
+  <!-- Loading -->
+  <div *ngIf="loading" class="dashboard-message">
+    Loading dashboard statistics...
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="errorMessage" class="dashboard-message error-message">
+    {{ errorMessage }}
+  </div>
+
   <!-- Statistics Cards -->
   <div class="stats-grid">
 
     <div class="stat-card">
       <div class="stat-icon">🌱</div>
       <h3>Available Opportunities</h3>
-      <span>18</span>
+      <span>{{ stats.availableOpportunities }}</span>
     </div>
 
     <div class="stat-card">
       <div class="stat-icon">📄</div>
       <h3>My Applications</h3>
-      <span>6</span>
+      <span>{{ stats.myApplications }}</span>
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon">🏆</div>
-      <h3>Completed Events</h3>
-      <span>14</span>
+      <div class="stat-icon">✅</div>
+      <h3>Completed Opportunities</h3>
+      <span>{{ stats.completedOpportunities }}</span>
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon">⭐</div>
-      <h3>Reward Points</h3>
-      <span>520</span>
+      <div class="stat-icon">⏳</div>
+      <h3>Pending Opportunities</h3>
+      <span>{{ stats.pendingOpportunities }}</span>
     </div>
 
   </div>
@@ -46,7 +56,7 @@
     <div class="dashboard-card">
       <h3>Quick Actions</h3>
 
-      <button>🔍 Browse Opportunities</button>
+      <button>🌱 Browse Opportunities</button>
       <button>📄 My Applications</button>
       <button>👤 Update Profile</button>
     </div>
@@ -56,10 +66,10 @@
       <h3>Recent Activity</h3>
 
       <ul>
-        <li>🟢 Applied for Beach Cleanup Drive</li>
-        <li>🟢 Completed Tree Plantation Event</li>
-        <li>🟢 Earned 100 Reward Points</li>
-        <li>🟢 Updated Profile Successfully</li>
+        <li>🟢 View your latest opportunity applications</li>
+        <li>🟢 Track accepted volunteering opportunities</li>
+        <li>🟢 Check completed volunteering activities</li>
+        <li>🟢 Keep your volunteer profile updated</li>
       </ul>
     </div>
 
@@ -72,20 +82,18 @@
 
     <p>
       Track your volunteering journey, participate in environmental
-      initiatives, earn reward points, and contribute towards building
-      a cleaner and greener community.
+      initiatives, monitor your applications, and contribute towards
+      building a cleaner and greener community.
     </p>
 
     <br>
 
-    <strong>Recommended Opportunities</strong>
+    <strong>Explore Opportunities</strong>
 
-    <ul>
-      <li>🌳 Tree Plantation Drive</li>
-      <li>🏖️ Beach Cleanup Campaign</li>
-      <li>♻️ Plastic Recycling Awareness</li>
-      <li>🥫 Food Donation Program</li>
-    </ul>
+    <p>
+      Browse available opportunities and apply for initiatives that
+      match your interests and skills.
+    </p>
 
   </div>
 

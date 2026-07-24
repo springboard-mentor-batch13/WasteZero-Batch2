@@ -45,6 +45,16 @@ export interface DashboardStats {
 }
 
 
+export interface AdminDashboardStats {
+  totalUsers: number;
+  totalOpportunities: number;
+  adminOpportunities: number;
+  ngoOpportunities: number;
+}
+
+
+
+
 @Injectable({
   providedIn: 'root'
 })
@@ -53,6 +63,17 @@ export class OpportunityService {
   private readonly apiUrl = 'http://localhost:5000/api/opportunities';
   private dashboardStatsCache$?: Observable<DashboardStats>;
   private dashboardStatsCache?: DashboardStats;
+
+  getAdminDashboardStats(): Observable<AdminDashboardStats> {
+  return this.http
+    .get<ApiResponse<AdminDashboardStats>>(
+      `${this.apiUrl}/dashboard/admin-stats`,
+      { headers: this.headers() }
+    )
+    .pipe(
+      map((response) => response.data)
+    );
+}
 
   private clearDashboardStatsCache(): void {
   this.dashboardStatsCache$ = undefined;

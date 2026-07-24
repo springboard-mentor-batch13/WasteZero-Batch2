@@ -208,10 +208,88 @@ const rejectApplication = async (req, res) => {
     }
 };
 
+const getVolunteerDashboardStats = async (req, res) => {
+    try {
+        const volunteerId = req.user._id;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        // Total opportunities available in the system
+        const availableOpportunities = await Opportunity.countDocuments();
+
+        // Get every application submitted by this volunteer
+        // and populate the corresponding opportunity date
+        const myApplicationsList = await Application.find({
+            volunteerId
+        })
+        .select('status opportunityId')
+        .populate('opportunityId', 'date eventDate');
+
+        // Pending + Accepted + Rejected
+        const myApplications = myApplicationsList.length;
+
+        let completedOpportunities = 0;
+        let pendingOpportunities = 0;
+
+        for (const application of myApplicationsList) {
+
+            // Only accepted applications count as
+            // completed/pending opportunities
+            if (application.status !== 'Accepted') {
+                continue;
+            }
+
+            const opportunity = application.opportunityId;
+
+            // Ignore application if its opportunity was deleted
+            if (!opportunity) {
+                continue;
+            }
+
+            const opportunityDate =
+                opportunity.date || opportunity.eventDate;
+
+            if (!opportunityDate) {
+                continue;
+            }
+
+            const eventDate = new Date(opportunityDate);
+            eventDate.setHours(0, 0, 0, 0);
+
+            if (eventDate < today) {
+                completedOpportunities++;
+            } else {
+                pendingOpportunities++;
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                availableOpportunities,
+                myApplications,
+                completedOpportunities,
+                pendingOpportunities
+            }
+        });
+
+    } catch (error) {
+        console.error(
+            'Volunteer dashboard statistics error:',
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: 'Server Error'
+        });
+    }
+};
+
 module.exports = {
     applyForOpportunity,
     getAllApplications,
     getMyApplicationForOpportunity,
+    getVolunteerDashboardStats,
     acceptApplication,
     rejectApplication,
 };

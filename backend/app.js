@@ -15,6 +15,8 @@ const opportunityRoutes = require('./routes/opportunityRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
+const adminRoutes = require('./routes/adminRoutes');
+
 const app = express();
 
 app.use(helmet({
