@@ -81,7 +81,7 @@ export class MessagesService {
     member.messages.push({
       sender: 'You',
       text: message,
-      time: '10:32 AM'
+      time: '03:50 PM'
     });
   }
 }
