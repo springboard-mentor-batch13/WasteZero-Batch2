@@ -51,14 +51,14 @@ export class Sidebar implements OnInit {
         dashboard,
         { label: 'Schedule Pickup', icon: 'bi-calendar-check' },
         { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
-        { label: 'Messages', icon: 'bi-chat-left-text' },
+        { label: 'Messages', icon: 'bi-chat-left-text', route: '/messages' },
         { label: 'My Impact', icon: 'bi-bar-chart' },
       ],
       NGO: [
         dashboard,
         { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
         { label: 'Applications', icon: 'bi-file-earmark-text' },
-        { label: 'Messages', icon: 'bi-chat-left-text' },
+        { label: 'Messages', icon: 'bi-chat-left-text', route: '/messages' },
         { label: 'Reports / Analytics', icon: 'bi-bar-chart' },
       ],
       Admin: [
@@ -67,7 +67,7 @@ export class Sidebar implements OnInit {
         { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
         { label: 'Applications', icon: 'bi-file-earmark-text', route: '/admin/applications' },
         { label: 'Reports / Analytics', icon: 'bi-bar-chart' },
-        { label: 'Messages', icon: 'bi-chat-left-text' },
+       { label: 'Messages', icon: 'bi-chat-left-text', route: '/messages' },
         { label: 'Admin Panel', icon: 'bi-shield-lock' },
       ],
     };

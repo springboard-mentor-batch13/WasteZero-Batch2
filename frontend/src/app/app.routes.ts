@@ -19,6 +19,8 @@ import { opportunityManagerGuard } from './core/guards/opportunity-manager-guard
 import { ApplicationsComponent } from './pages/applications/admin-applications';
 import { adminGuard } from './core/guards/admin-guard';
 
+import { Messages } from './pages/messages/messages';
+
 
 export const routes: Routes = [
   {
@@ -107,5 +109,12 @@ export const routes: Routes = [
     component: ApplicationsComponent,
     canActivate: [adminGuard],
     title: 'Applications | WasteZero'
-  }
+  },
+
+{
+  path: 'messages',
+  component: Messages,
+  title: 'Messages | WasteZero'
+}
+
 ];
