@@ -1,7 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
-
+import { Observable, map, shareReplay } from 'rxjs';
 import { Opportunity, OpportunityDraft, OpportunityStatus } from './opportunity.model';
 
 interface ApiResponse<T> {
@@ -38,7 +37,23 @@ export interface DashboardStats {
   openOpportunities: number;
   closedOpportunities: number;
   inProgressOpportunities: number;
+  myOpportunities: number;
+  totalApplications: number;
+  myOpportunityApplications: number;
+  completedDrives: number;
+  myCompletedDrives: number;
 }
+
+
+export interface AdminDashboardStats {
+  totalUsers: number;
+  totalOpportunities: number;
+  adminOpportunities: number;
+  ngoOpportunities: number;
+}
+
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -46,7 +61,28 @@ export interface DashboardStats {
 export class OpportunityService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:5000/api/opportunities';
+  private dashboardStatsCache$?: Observable<DashboardStats>;
+  private dashboardStatsCache?: DashboardStats;
 
+  getAdminDashboardStats(): Observable<AdminDashboardStats> {
+  return this.http
+    .get<ApiResponse<AdminDashboardStats>>(
+      `${this.apiUrl}/dashboard/admin-stats`,
+      { headers: this.headers() }
+    )
+    .pipe(
+      map((response) => response.data)
+    );
+}
+
+  private clearDashboardStatsCache(): void {
+  this.dashboardStatsCache$ = undefined;
+  this.dashboardStatsCache = undefined;
+}
+
+  getCachedDashboardStats(): DashboardStats | undefined {
+  return this.dashboardStatsCache;
+}
   getAll(): Observable<Opportunity[]> {
     return this.http.get<ApiResponse<OpportunityApiModel[]>>(this.apiUrl, { headers: this.headers() }).pipe(
       map((response) => response.data.map((opportunity) => this.fromApi(opportunity)))
@@ -98,11 +134,7 @@ export class OpportunityService {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`, { headers: this.headers() }).pipe(map(() => undefined));
   }
 
-  getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<ApiResponse<DashboardStats>>(`${this.apiUrl}/dashboard/stats`, { headers: this.headers() }).pipe(
-      map((response) => response.data)
-    );
-  }
+ getDashboardStats(forceRefresh = false): Observable<DashboardStats> {
 
   private headers(): HttpHeaders {
     const token = typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');

@@ -1,4 +1,6 @@
 const Opportunity = require('../models/Opportunity');
+const Application = require('../models/Application');
+const User = require('../models/User');
 
 const parseRequiredSkills = (requiredSkills) => {
   if (Array.isArray(requiredSkills)) return requiredSkills;
@@ -201,12 +203,62 @@ const filterOpportunities = async (req, res) => {
   }
 };
 
-const getDashboardStatistics = async (_req, res) => {
+  const getDashboardStatistics = async (req, res) => {
   try {
-    const totalOpportunities = await Opportunity.countDocuments();
-    const openOpportunities = await Opportunity.countDocuments({ status: 'Open' });
-    const closedOpportunities = await Opportunity.countDocuments({ status: 'Closed' });
-    const inProgressOpportunities = await Opportunity.countDocuments({ status: 'In Progress' });
+    const currentUserId = req.user._id;
+    const today = new Date();
+
+    // Run independent database queries in parallel
+    const [
+      totalOpportunities,
+      openOpportunities,
+      closedOpportunities,
+      inProgressOpportunities,
+      myOpportunities,
+      totalApplications,
+      completedDrives,
+      myCompletedDrives,
+      myOpportunityIds
+    ] = await Promise.all([
+      Opportunity.countDocuments(),
+
+      Opportunity.countDocuments({
+        status: 'Open'
+      }),
+
+      Opportunity.countDocuments({
+        status: 'Closed'
+      }),
+
+      Opportunity.countDocuments({
+        status: 'In Progress'
+      }),
+
+      Opportunity.countDocuments({
+        ngoId: currentUserId
+      }),
+
+      Application.countDocuments(),
+
+      Opportunity.countDocuments({
+        date: { $lt: today }
+      }),
+
+      Opportunity.countDocuments({
+        ngoId: currentUserId,
+        date: { $lt: today }
+      }),
+
+      Opportunity.find({
+        ngoId: currentUserId
+      }).distinct('_id')
+    ]);
+
+    // This depends on myOpportunityIds, so run it afterward
+    const myOpportunityApplications =
+      await Application.countDocuments({
+        opportunityId: { $in: myOpportunityIds }
+      });
 
     res.status(200).json({
       success: true,
@@ -215,8 +267,15 @@ const getDashboardStatistics = async (_req, res) => {
         openOpportunities,
         closedOpportunities,
         inProgressOpportunities,
-      },
+
+        myOpportunities,
+        totalApplications,
+        myOpportunityApplications,
+        completedDrives,
+        myCompletedDrives
+      }
     });
+
   } catch (error) {
     sendServerError(res, error);
   }
@@ -352,13 +411,55 @@ const deleteOpportunity = async (req, res) => {
   }
 };
 
+const getAdminDashboardStatistics = async (req, res) => {
+  try {
+    // Get all Admin and NGO user IDs
+    const [totalUsers, admins, ngos, totalOpportunities] = await Promise.all([
+      User.countDocuments(),
+      User.find({ role: 'Admin' }).select('_id').lean(),
+      User.find({ role: 'NGO' }).select('_id').lean(),
+      Opportunity.countDocuments()
+    ]);
+
+    const adminIds = admins.map((user) => user._id);
+    const ngoIds = ngos.map((user) => user._id);
+
+    // Count opportunities based on the role of the creator
+    const [adminOpportunities, ngoOpportunities] = await Promise.all([
+      Opportunity.countDocuments({
+        postedBy: { $in: adminIds }
+      }),
+
+      Opportunity.countDocuments({
+        postedBy: { $in: ngoIds }
+      })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalOpportunities,
+        adminOpportunities,
+        ngoOpportunities
+      }
+    });
+
+  } catch (error) {
+    sendServerError(res, error);
+  }
+};
+
+
 module.exports = {
   createOpportunity,
   getAllOpportunities,
   searchOpportunities,
   filterOpportunities,
   getDashboardStatistics,
+  getAdminDashboardStatistics,
   getOpportunityById,
   updateOpportunity,
   deleteOpportunity,
 };
+

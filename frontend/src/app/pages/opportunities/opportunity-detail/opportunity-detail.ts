@@ -11,7 +11,10 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../auth/auth.service';
 import { ApplicationService } from '../../applications/application.service';
-import { VolunteerApplicationRequest } from '../../applications/application.model';
+import {
+  ApplicationStatus,
+  VolunteerApplicationRequest
+} from '../../applications/application.model';
 import { DeleteOpportunityDialog } from '../delete-opportunity-dialog/delete-opportunity-dialog';
 import { Opportunity } from '../opportunity.model';
 import { OpportunityService } from '../opportunity.service';
@@ -37,7 +40,12 @@ export class OpportunityDetail implements OnInit {
   loading = true;
   errorMessage = '';
   sendingJoinRequest = false;
-  appliedOpportunityIds = new Set<string>();
+
+applicationStatusLoading = false;
+applicationStatusError = '';
+applicationStatus: ApplicationStatus | null = null;
+
+appliedOpportunityIds = new Set<string>();
   readonly placeholderImage = 'images/opportunity-placeholder.svg';
 
   ngOnInit(): void {
@@ -166,15 +174,35 @@ export class OpportunityDetail implements OnInit {
   isVolunteer(): boolean { return this.authService.getUserRole() === 'Volunteer'; }
 
   private loadApplicationState(opportunityId: string): void {
-    this.applicationService.hasApplication(opportunityId).subscribe({
-      next: (result) => {
-        if (result.applied) this.appliedOpportunityIds.add(opportunityId);
-        else this.appliedOpportunityIds.delete(opportunityId);
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Failed to check application status:', error);
+  this.applicationStatusLoading = true;
+  this.applicationStatusError = '';
+  this.applicationStatus = null;
+
+  this.applicationService.hasApplication(opportunityId).subscribe({
+    next: (result) => {
+
+      if (result.applied && result.application) {
+        this.appliedOpportunityIds.add(opportunityId);
+
+        this.applicationStatus = result.application.status;
+      } else {
+        this.appliedOpportunityIds.delete(opportunityId);
+        this.applicationStatus = null;
       }
-    });
-  }
+
+      this.applicationStatusLoading = false;
+      this.cdr.detectChanges();
+    },
+
+    error: (error) => {
+      console.error('Failed to check application status:', error);
+
+      this.applicationStatusLoading = false;
+      this.applicationStatusError =
+        error.error?.message || 'Unable to load application status.';
+
+      this.cdr.detectChanges();
+    }
+  });
+}
 }

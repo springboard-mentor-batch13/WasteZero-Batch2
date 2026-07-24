@@ -15,6 +15,7 @@ const { authorizeRoles } = require('../middleware/roleMiddleware');
 
 const validateRequest = (req, res, next) => {
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
         return res.status(400).json({
             success: false,
@@ -26,12 +27,20 @@ const validateRequest = (req, res, next) => {
     next();
 };
 
-// Volunteer applies
+// =====================================================
+// VOLUNTEER ROUTES
+// =====================================================
+
+// Volunteer applies for an opportunity
 router.post(
     '/apply',
     protect,
     authorizeRoles('Volunteer'),
-    [body('opportunityId').isMongoId().withMessage('Valid opportunity ID is required')],
+    [
+        body('opportunityId')
+            .isMongoId()
+            .withMessage('Valid opportunity ID is required')
+    ],
     validateRequest,
     applyForOpportunity
 );
