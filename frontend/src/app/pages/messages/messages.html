@@ -1,24 +1,22 @@
-   <div class="messages-header">
-           <h2>Messages</h2>
-            <p>Chat with volunteers, NGOs, and waste management partners</p>
-    </div>
+<div class="messages-header">
+  <h2>Messages</h2>
+  <p>Chat with volunteers, NGOs, and waste management partners</p>
+</div>
+
 <div class="messages-container">
 
   <!-- Left Side -->
   <div class="chat-list">
 
     <div class="search-box">
-  <i class="bi bi-search search-icon"></i>
+      <i class="bi bi-search search-icon"></i>
 
-  <input
-    type="text"
-    placeholder="Search Role or Member"
-    [(ngModel)]="searchText">
-</div>
+      <input
+        type="text"
+        placeholder="Search Role or Member"
+        [(ngModel)]="searchText">
+    </div>
 
-  
-
-    <!-- Roles -->
     @for (role of getFilteredRoles(); track role.role) {
 
       <h3
@@ -29,7 +27,7 @@
 
       @if (expandedRole === role.role || searchText.trim()) {
 
-        @for (member of role.members; track member.name) {
+        @for (member of role.members; track member._id) {
 
           <div
             class="member"
@@ -39,7 +37,7 @@
             <i class="bi bi-person-circle member-icon"></i>
 
             <span class="member-name">
-              {{ member.name }}
+              {{ member.fullName }}
             </span>
 
           </div>
@@ -55,7 +53,6 @@
   <!-- Right Side -->
   <div class="chat-window">
 
-    <!-- Header -->
     <div class="chat-header">
 
       @if (selectedMember) {
@@ -67,7 +64,7 @@
           </div>
 
           <div class="user-info">
-            <h2>{{ selectedMember.name }}</h2>
+            <h2>{{ selectedMember.fullName }}</h2>
           </div>
 
         </div>
@@ -80,18 +77,21 @@
 
     </div>
 
-    <!-- Chat Body -->
     <div class="chat-body">
 
       @if (selectedMember) {
 
-        @for (message of selectedMember.messages; track $index) {
+        @for (message of selectedMember.messages; track message._id) {
 
-         <div class="message" [class.me]="message.sender === 'You'">
-                <strong>{{ message.sender }}</strong>
-                <p>{{ message.text }}</p>
-                <span class="time">{{ message.time }}</span>
-         </div>
+          <div class="message">
+
+            <p>{{ message.content }}</p>
+
+            <span class="time">
+              {{ message.createdAt | date:'shortTime' }}
+            </span>
+
+          </div>
 
         }
 
@@ -103,7 +103,6 @@
 
     </div>
 
-    <!-- Input -->
     <div class="chat-input">
 
       <input

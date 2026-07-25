@@ -22,13 +22,27 @@ export class Messages implements OnInit {
   expandedRole = '';
 
   ngOnInit(): void {
-    this.messageService.getRoles().subscribe(data => {
-      this.roles = data;
+    this.messageService.getUsersByRole().subscribe({
+      next: (data: any[]) => {
+        this.roles = data;
+      },
+      error: (err) => {
+        console.error('Error loading users:', err);
+      }
     });
   }
 
   selectMember(member: any) {
     this.selectedMember = member;
+
+    this.messageService.getConversation(member._id).subscribe({
+      next: (res: any) => {
+        this.selectedMember.messages = res.data;
+      },
+      error: (err) => {
+        console.error('Error loading conversation:', err);
+      }
+    });
   }
 
   toggleRole(roleName: string) {
@@ -42,12 +56,28 @@ export class Messages implements OnInit {
       return;
     }
 
-    this.messageService.sendMessage(
-      this.selectedMember,
-      this.newMessage
-    );
+    this.messageService
+      .sendMessage(this.selectedMember._id, this.newMessage)
+      .subscribe({
+        next: () => {
 
-    this.newMessage = '';
+          this.messageService
+            .getConversation(this.selectedMember._id)
+            .subscribe({
+              next: (res: any) => {
+                this.selectedMember.messages = res.data;
+              },
+              error: (err) => {
+                console.error(err);
+              }
+            });
+
+          this.newMessage = '';
+        },
+        error: (err) => {
+          console.error('Error sending message:', err);
+        }
+      });
   }
 
   getFilteredRoles() {
@@ -68,7 +98,7 @@ export class Messages implements OnInit {
         return {
           ...role,
           members: role.members.filter((member: any) =>
-            member.name.toLowerCase().includes(search)
+            member.fullName.toLowerCase().includes(search)
           )
         };
 
