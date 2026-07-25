@@ -48,6 +48,169 @@
     </div>
 
   </div>
+  <!-- Milestone 3 - Match Suggestions -->
+<section class="matches-section">
+
+  <div class="matches-heading">
+    <div>
+      <h3>Recommended Opportunities</h3>
+      <p>
+        Opportunities matched to your waste preferences and location.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="browse-button"
+      (click)="browseOpportunities()">
+      Browse All
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div
+    *ngIf="matchesLoading"
+    class="dashboard-message">
+    Finding the best opportunities for you...
+  </div>
+
+  <!-- Error -->
+  <div
+    *ngIf="matchErrorMessage"
+    class="dashboard-message error-message">
+    {{ matchErrorMessage }}
+  </div>
+
+  <!-- No Matches -->
+  <div
+    *ngIf="
+      !matchesLoading &&
+      !matchErrorMessage &&
+      matches.length === 0
+    "
+    class="no-matches">
+
+    <h4>No matches found yet</h4>
+
+    <p>
+      Update your location and preferred waste types
+      to receive personalized opportunity suggestions.
+    </p>
+
+    <button
+      type="button"
+      (click)="updateProfile()">
+      Update Profile
+    </button>
+
+  </div>
+
+  <!-- Match Cards -->
+  <div
+    *ngIf="
+      !matchesLoading &&
+      !matchErrorMessage &&
+      matches.length > 0
+    "
+    class="matches-grid">
+
+    <article
+      *ngFor="let opportunity of matches"
+      class="match-card">
+
+      <div class="match-card-header">
+
+        <span class="match-score">
+          {{ opportunity.matchScore }}% Match
+        </span>
+
+        <span class="opportunity-status">
+          {{ opportunity.status }}
+        </span>
+
+      </div>
+
+      <h4>{{ opportunity.title }}</h4>
+
+      <p class="match-category">
+        {{ opportunity.category }}
+      </p>
+
+      <p class="match-description">
+        {{ opportunity.description }}
+      </p>
+
+      <div class="match-info">
+
+        <p>
+          <strong>Location:</strong>
+          {{ opportunity.city }},
+          {{ opportunity.state }}
+        </p>
+
+        <p>
+          <strong>Duration:</strong>
+          {{ opportunity.duration }}
+        </p>
+
+      </div>
+
+      <div
+        *ngIf="
+          opportunity.matchDetails.matchedWasteTypes.length > 0
+        "
+        class="matched-waste-types">
+
+        <strong>Matched Waste Types</strong>
+
+        <div class="waste-tags">
+
+          <span
+            *ngFor="
+              let wasteType of
+              opportunity.matchDetails.matchedWasteTypes
+            "
+            class="waste-tag">
+
+            {{ wasteType }}
+
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="match-reasons">
+
+        <span
+          *ngIf="opportunity.matchDetails.locationMatch">
+          ✓ Location Match
+        </span>
+
+        <span
+          *ngIf="
+            !opportunity.matchDetails.locationMatch &&
+            opportunity.matchDetails.sameState
+          ">
+          ✓ State Match
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="view-opportunity-button"
+        (click)="viewOpportunity(opportunity.id)">
+
+        View Opportunity
+
+      </button>
+
+    </article>
+
+  </div>
+
+</section>
 
   <!-- Bottom Section -->
   <div class="dashboard-content">
