@@ -13,6 +13,8 @@ const profileRoutes = require('./routes/profileRoutes');
 const pickupRoutes = require('./routes/pickupRoutes');
 const opportunityRoutes = require('./routes/opportunityRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const matchingRoutes = require('./routes/matchingRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const adminRoutes = require('./routes/adminRoutes');
@@ -41,6 +43,8 @@ app.use('/api/pickups', pickupRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/application', applicationRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/matches', matchingRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
