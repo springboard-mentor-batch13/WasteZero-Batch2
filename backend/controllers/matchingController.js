@@ -11,34 +11,63 @@ const normalize = (value) =>
  *
  * Returns matching opportunities for the currently
  * authenticated Volunteer.
+ *
+ * Matching rules:
+ * 1. State is mandatory - only opportunities from the
+ *    volunteer's selected state are considered.
+ * 2. Same city contributes 50%.
+ * 3. Waste preference matching contributes the remaining 50%.
+ * 4. Results are sorted from highest to lowest match.
  */
 const getMatches = async (req, res) => {
   try {
-    // protect middleware already provides the authenticated user
     const volunteer = req.user;
 
-    // Matching is intended for Volunteers
+    // Matching is available only for Volunteers
     if (volunteer.role !== 'Volunteer') {
       return res.status(403).json({
         success: false,
-        message: 'Match suggestions are available only for Volunteers',
+        message:
+          'Match suggestions are available only for Volunteers',
       });
     }
 
-    const preferredWasteTypes = Array.isArray(volunteer.preferredWasteTypes)
-      ? volunteer.preferredWasteTypes
-      : [];
+    const volunteerState = normalize(volunteer.state);
+    const volunteerCity = normalize(volunteer.city);
 
-    if (preferredWasteTypes.length === 0) {
+    const preferredWasteTypes =
+      Array.isArray(volunteer.preferredWasteTypes)
+        ? volunteer.preferredWasteTypes.filter(
+            (type) => normalize(type) !== ''
+          )
+        : [];
+
+    /**
+     * All three preference fields are required.
+     */
+    if (
+      !volunteerState ||
+      !volunteerCity ||
+      preferredWasteTypes.length === 0
+    ) {
       return res.status(200).json({
         success: true,
         count: 0,
-        message: 'Add preferred waste types to your profile to get match suggestions',
+        message:
+          'Set your state, city and preferred waste types to get match suggestions',
         data: [],
       });
     }
 
-    // Only currently Open opportunities are candidates
+    /**
+     * STATE IS THE MANDATORY BOUNDARY.
+     *
+     * Fetch Open opportunities and then keep only those
+     * belonging to the volunteer's selected state.
+     *
+     * Filtering after retrieval keeps the comparison
+     * case-insensitive and whitespace-safe.
+     */
     const opportunities = await Opportunity.find({
       status: 'Open',
     })
@@ -46,43 +75,63 @@ const getMatches = async (req, res) => {
       .populate('ngoId', 'fullName username role')
       .lean();
 
-    const normalizedPreferences = preferredWasteTypes.map(normalize);
+    const stateOpportunities = opportunities.filter(
+      (opportunity) =>
+        normalize(opportunity.state) === volunteerState
+    );
 
-    const matches = opportunities
+    const normalizedPreferences =
+      preferredWasteTypes.map(normalize);
+
+    const matches = stateOpportunities
       .map((opportunity) => {
-        const opportunityWasteTypes = Array.isArray(opportunity.wasteTypes)
-          ? opportunity.wasteTypes
-          : [];
+        const opportunityWasteTypes =
+          Array.isArray(opportunity.wasteTypes)
+            ? opportunity.wasteTypes
+            : [];
 
-        // Find common waste types
-        const matchedWasteTypes = opportunityWasteTypes.filter((wasteType) =>
-          normalizedPreferences.includes(normalize(wasteType))
-        );
-
-        // Waste type is the primary matching requirement
-        if (matchedWasteTypes.length === 0) {
-          return null;
-        }
+        /**
+         * Find waste types common to the volunteer
+         * preferences and opportunity.
+         */
+        const matchedWasteTypes =
+          opportunityWasteTypes.filter((wasteType) =>
+            normalizedPreferences.includes(
+              normalize(wasteType)
+            )
+          );
 
         const sameCity =
-          normalize(volunteer.city) !== '' &&
-          normalize(volunteer.city) === normalize(opportunity.city);
+          volunteerCity === normalize(opportunity.city);
 
-        const sameState =
-          normalize(volunteer.state) !== '' &&
-          normalize(volunteer.state) === normalize(opportunity.state);
+        // State is guaranteed because it was filtered above
+        const sameState = true;
 
-        let matchScore = 0;
+        /**
+         * MATCH SCORE
+         *
+         * City       = 50%
+         * Waste Type = 50%
+         */
 
-        // Geographic score
-        if (sameCity && sameState) {
-          matchScore += 50;
-        } else if (sameState) {
-          matchScore += 25;
-        }
+        const cityScore = sameCity ? 50 : 0;
 
-        // Waste type score
-        matchScore += matchedWasteTypes.length * 25;
+        /**
+         * Example:
+         *
+         * Volunteer selected 4 waste types.
+         * Opportunity matches 2.
+         *
+         * 2 / 4 * 50 = 25%
+         */
+        const wasteScore =
+          (matchedWasteTypes.length /
+            normalizedPreferences.length) *
+          50;
+
+        const matchScore = Math.round(
+          cityScore + wasteScore
+        );
 
         return {
           ...opportunity,
@@ -90,14 +139,18 @@ const getMatches = async (req, res) => {
           matchScore,
 
           matchDetails: {
-            locationMatch: sameCity && sameState,
+            locationMatch: sameCity,
             sameCity,
             sameState,
             matchedWasteTypes,
           },
         };
       })
-      .filter(Boolean)
+
+      // Don't show completely unrelated opportunities
+      .filter((opportunity) => opportunity.matchScore > 0)
+
+      // Highest match first
       .sort((a, b) => b.matchScore - a.matchScore);
 
     return res.status(200).json({
@@ -106,9 +159,15 @@ const getMatches = async (req, res) => {
       data: matches,
     });
   } catch (error) {
+    console.error(
+      'Opportunity matching error:',
+      error
+    );
+
     return res.status(500).json({
       success: false,
-      message: 'Failed to generate match suggestions',
+      message:
+        'Failed to generate match suggestions',
       error: error.message,
     });
   }

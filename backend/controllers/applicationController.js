@@ -285,10 +285,44 @@ const getVolunteerDashboardStats = async (req, res) => {
     }
 };
 
+// Get applications submitted by the currently logged-in volunteer
+const getMyApplications = async (req, res) => {
+    try {
+        const volunteerId = req.user._id;
+
+        const applications = await Application.find({
+            volunteerId
+        })
+        .populate(
+            'opportunityId',
+            'title category description city state location date eventDate duration status imageUrl'
+        )
+        .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            count: applications.length,
+            data: applications
+        });
+
+    } catch (error) {
+        console.error(
+            'Get volunteer applications error:',
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to load your applications'
+        });
+    }
+};
+
 module.exports = {
     applyForOpportunity,
     getAllApplications,
     getMyApplicationForOpportunity,
+    getMyApplications,
     getVolunteerDashboardStats,
     acceptApplication,
     rejectApplication,

@@ -1,15 +1,16 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const router = express.Router();
-
 const {
     applyForOpportunity,
     getAllApplications,
     getMyApplicationForOpportunity,
+    getMyApplications,
     getVolunteerDashboardStats,
     acceptApplication,
     rejectApplication,
 } = require('../controllers/applicationController');
+
 
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
@@ -67,7 +68,13 @@ router.get(
     authorizeRoles('Volunteer'),
     getVolunteerDashboardStats
 );
-
+// Volunteer views their own applications
+router.get(
+    '/my',
+    protect,
+    authorizeRoles('Volunteer'),
+    getMyApplications
+);
 // =====================================================
 // ADMIN ROUTES
 // =====================================================

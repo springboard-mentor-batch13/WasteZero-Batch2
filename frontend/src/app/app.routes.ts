@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 
+import { MyApplicationsComponent } from './pages/applications/my-applications/my-applications';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { MyProfile } from './pages/my-profile/my-profile';
 import { EditProfile } from './pages/edit-profile/edit-profile';
@@ -102,6 +103,11 @@ export const routes: Routes = [
     component: OpportunityDetail,
     title: 'Opportunity Details | WasteZero'
   },
+  {
+  path: 'my-applications',
+  component: MyApplicationsComponent,
+  title: 'My Applications | WasteZero'
+},
   {
     path: 'admin/applications',
     component: ApplicationsComponent,

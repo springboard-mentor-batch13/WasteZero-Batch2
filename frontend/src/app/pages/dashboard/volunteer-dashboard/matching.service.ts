@@ -54,6 +54,22 @@ interface MatchResponse {
   data: MatchApiOpportunity[];
 }
 
+export interface MatchingPreferences {
+  city: string;
+  state: string;
+  preferredWasteTypes: string[];
+}
+
+interface ProfileResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    city?: string;
+    state?: string;
+    preferredWasteTypes?: string[];
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -63,6 +79,9 @@ export class MatchingService {
 
   private readonly apiUrl =
     'http://localhost:5000/api/matches';
+
+  private readonly profileApiUrl =
+  'http://localhost:5000/api/profile';
 
   getMatches(): Observable<MatchedOpportunity[]> {
 
@@ -75,12 +94,53 @@ export class MatchingService {
       )
       .pipe(
         map(response =>
-          response.data.map(opportunity =>
-            this.fromApi(opportunity)
-          )
-        )
+  response.data
+    .map(opportunity =>
+      this.fromApi(opportunity)
+    )
+    .sort((a, b) => b.matchScore - a.matchScore)
+)
       );
   }
+
+  getPreferences(): Observable<MatchingPreferences> {
+  return this.http
+    .get<ProfileResponse>(
+      this.profileApiUrl,
+      {
+        headers: this.headers()
+      }
+    )
+    .pipe(
+      map(response => ({
+        city: response.data.city || '',
+        state: response.data.state || '',
+        preferredWasteTypes:
+          response.data.preferredWasteTypes || []
+      }))
+    );
+}
+
+savePreferences(
+  preferences: MatchingPreferences
+): Observable<MatchingPreferences> {
+  return this.http
+    .put<ProfileResponse>(
+      this.profileApiUrl,
+      preferences,
+      {
+        headers: this.headers()
+      }
+    )
+    .pipe(
+      map(response => ({
+        city: response.data.city || '',
+        state: response.data.state || '',
+        preferredWasteTypes:
+          response.data.preferredWasteTypes || []
+      }))
+    );
+}
 
   private headers(): HttpHeaders {
 
