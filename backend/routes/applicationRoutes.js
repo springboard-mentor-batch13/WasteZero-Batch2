@@ -52,11 +52,7 @@ router.get(
     '/opportunity/:opportunityId/me',
     protect,
     authorizeRoles('Volunteer'),
-    [
-        param('opportunityId')
-            .isMongoId()
-            .withMessage('Valid opportunity ID is required')
-    ],
+    [param('opportunityId').isMongoId().withMessage('Valid opportunity ID is required')],
     validateRequest,
     getMyApplicationForOpportunity
 );
@@ -80,28 +76,12 @@ router.get(
 // =====================================================
 
 // Admin views all applications
-router.get(
-    '/',
-    protect,
-    authorizeRoles('Admin'),
-    getAllApplications
-);
+router.get('/', protect, authorizeRoles('Admin'), getAllApplications);
 
 // Admin accepts application
-router.put(
-    '/:id/accept',
-    protect,
-    authorizeRoles('Admin'),
-    acceptApplication
-);
+router.put('/:id/accept', protect, authorizeRoles('Admin'), acceptApplication);
 
 // Admin rejects application
-router.put(
-    '/:id/reject',
-    protect,
-    authorizeRoles('Admin'),
-    rejectApplication
-);
+router.put('/:id/reject', protect, authorizeRoles('Admin'), rejectApplication);
 
 module.exports = router;
-
