@@ -21,7 +21,22 @@ export class Messages implements OnInit {
   searchText = '';
   expandedRole = '';
 
+  // Current logged-in user id
+  currentUserId = '';
+
   ngOnInit(): void {
+
+    //Get current user id from localStorage
+    const user = localStorage.getItem('user');
+
+   if (user) 
+    {
+  console.log('User Object:', JSON.parse(user));
+
+  this.currentUserId = JSON.parse(user).id;
+
+  console.log('Current User ID:', this.currentUserId);
+}
     this.messageService.getUsersByRole().subscribe({
       next: (data: any[]) => {
         this.roles = data;
@@ -65,6 +80,7 @@ export class Messages implements OnInit {
             .getConversation(this.selectedMember._id)
             .subscribe({
               next: (res: any) => {
+                
                 this.selectedMember.messages = res.data;
               },
               error: (err) => {
@@ -106,4 +122,7 @@ export class Messages implements OnInit {
       .filter(role => role.members.length > 0);
   }
 
+  
+
 }
+

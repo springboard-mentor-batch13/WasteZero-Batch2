@@ -83,7 +83,25 @@
 
         @for (message of selectedMember.messages; track message._id) {
 
-          <div class="message">
+          <div
+            class="message"
+            [ngClass]="{
+              'sent': message.senderId === currentUserId,
+              'received': message.senderId !== currentUserId
+            }">
+
+              <!-- Sender / Receiver Name -->
+               <strong class="message-name">
+               {{ message.senderId === currentUserId ? 'You' : selectedMember.fullName }}
+               </strong>
+
+            <!--
+                <strong class="message-name">
+                  {{ message.senderId === currentUserId ? message.senderName : message.receiverName }}
+              </strong>
+            -->
+             
+            
 
             <p>{{ message.content }}</p>
 
