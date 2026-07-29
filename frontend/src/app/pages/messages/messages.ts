@@ -24,29 +24,42 @@ export class Messages implements OnInit {
   // Current logged-in user id
   currentUserId = '';
 
+  currentUserRole = '';
+
   ngOnInit(): void {
 
-    //Get current user id from localStorage
-    const user = localStorage.getItem('user');
+  // Get current user from localStorage
+  const user = localStorage.getItem('user');
 
-   if (user) 
-    {
-  console.log('User Object:', JSON.parse(user));
+  if (user) {
+    const userData = JSON.parse(user);
 
-  this.currentUserId = JSON.parse(user).id;
+    console.log('User Object:', userData);
 
-  console.log('Current User ID:', this.currentUserId);
-}
-    this.messageService.getUsersByRole().subscribe({
-      next: (data: any[]) => {
-        this.roles = data;
-      },
-      error: (err) => {
-        console.error('Error loading users:', err);
-      }
-    });
+    this.currentUserId = userData.id;
+    this.currentUserRole = userData.role;
+
+    console.log('Current User ID:', this.currentUserId);
+    console.log('Current User Role:', this.currentUserRole);
   }
 
+  this.messageService.getUsersByRole().subscribe({
+    next: (data: any[]) => {
+
+      // Volunteer can message only Admin and NGO
+      if (this.currentUserRole === 'Volunteer') {
+        data = data.filter(role =>
+          role.role === 'Admin' || role.role === 'NGO'
+        );
+      }
+
+      this.roles = data;
+    },
+    error: (err) => {
+      console.error('Error loading users:', err);
+    }
+  });
+}
   selectMember(member: any) {
     this.selectedMember = member;
 
