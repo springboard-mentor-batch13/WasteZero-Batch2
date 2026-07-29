@@ -1,0 +1,199 @@
+<div class="notification-detail-page">
+
+  <!-- Back Button -->
+  <button
+    class="back-btn"
+    (click)="goBack()"
+    type="button"
+    mat-stroked-button
+  >
+    <mat-icon>arrow_back</mat-icon>
+    Back to Notifications
+  </button>
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-state">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p class="loading-text">Loading notification details...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error && !loading) {
+    <div class="error-state">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h3 class="error-title">{{ error }}</h3>
+      <button
+        class="retry-btn"
+        (click)="goBack()"
+        type="button"
+        mat-stroked-button
+      >
+        <mat-icon>arrow_back</mat-icon>
+        Go Back
+      </button>
+    </div>
+  }
+
+  <!-- Notification Detail -->
+  @if (notification && !loading && !error) {
+    <mat-card
+      class="detail-card"
+      [class.unread]="!notification.isRead"
+    >
+
+      <mat-card-header class="card-header">
+
+        <!-- Type Icon -->
+        <div
+          class="type-icon-wrapper"
+          [style.color]="getTypeColor(notification.type)"
+        >
+          <mat-icon>{{ getTypeIcon(notification.type) }}</mat-icon>
+        </div>
+
+        <div class="header-content">
+          <mat-card-title class="notification-title">
+            {{ notification.title }}
+          </mat-card-title>
+
+          <mat-card-subtitle class="notification-type">
+            <span
+              class="type-badge"
+              [style.background-color]="getTypeColor(notification.type) + '15'"
+              [style.color]="getTypeColor(notification.type)"
+            >
+              {{ notification.type }}
+            </span>
+
+            @if (!notification.isRead) {
+              <span class="unread-badge">Unread</span>
+            } @else {
+              <span class="read-badge">Read</span>
+            }
+          </mat-card-subtitle>
+        </div>
+      </mat-card-header>
+
+      <mat-divider></mat-divider>
+
+      <mat-card-content class="card-content">
+
+        <!-- Message -->
+        <div class="message-section">
+          <h4 class="section-label">Message</h4>
+          <p class="notification-message">
+            {{ notification.message }}
+          </p>
+        </div>
+
+        <!-- Metadata -->
+        <div class="meta-section">
+          <h4 class="section-label">Details</h4>
+
+          <div class="meta-grid">
+
+            <div class="meta-item">
+              <span class="meta-label">
+                <mat-icon>access_time</mat-icon>
+                Created
+              </span>
+              <span class="meta-value">
+                {{ notification.createdAt | date: 'medium' }}
+              </span>
+            </div>
+
+            <div class="meta-item">
+              <span class="meta-label">
+                <mat-icon>label</mat-icon>
+                Type
+              </span>
+              <span class="meta-value">{{ notification.type }}</span>
+            </div>
+
+            <div class="meta-item">
+              <span class="meta-label">
+                <mat-icon>
+                  @if (notification.isRead) {
+                    mark_email_read
+                  } @else {
+                    mark_email_unread
+                  }
+                </mat-icon>
+                Status
+              </span>
+              <span class="meta-value">
+                {{ notification.isRead ? 'Read' : 'Unread' }}
+              </span>
+            </div>
+
+            @if (notification.redirectUrl) {
+              <div class="meta-item">
+                <span class="meta-label">
+                  <mat-icon>link</mat-icon>
+                  Redirect URL
+                </span>
+                <span class="meta-value redirect-url">
+                  {{ notification.redirectUrl }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </mat-card-content>
+
+      <mat-divider></mat-divider>
+
+      <!-- Card Actions -->
+      <mat-card-actions class="card-actions">
+
+        @if (notification.isRead) {
+          <button
+            mat-stroked-button
+            class="action-button action-outline"
+            (click)="markAsUnread()"
+            type="button"
+          >
+            <mat-icon>mark_email_unread</mat-icon>
+            Mark as Unread
+          </button>
+        } @else {
+          <button
+            mat-stroked-button
+            class="action-button action-outline"
+            (click)="markAsRead()"
+            type="button"
+          >
+            <mat-icon>mark_email_read</mat-icon>
+            Mark as Read
+          </button>
+        }
+
+        @if (notification.redirectUrl) {
+          <button
+            mat-flat-button
+            color="primary"
+            class="action-button action-primary"
+            (click)="navigateToRelated()"
+            type="button"
+          >
+            <mat-icon>open_in_new</mat-icon>
+            Go to Related Module
+          </button>
+        }
+
+        <button
+          mat-stroked-button
+          color="warn"
+          class="action-button action-outline action-danger"
+          (click)="delete()"
+          type="button"
+        >
+          <mat-icon>delete</mat-icon>
+          Delete Notification
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+</div>

@@ -1,0 +1,289 @@
+<div class="notification-page">
+
+  <!-- Page Header -->
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Notifications</span>
+      <h1 class="page-title">All Notifications</h1>
+      <p class="page-subtitle">
+        Stay updated with your matches, messages, and opportunities.
+      </p>
+    </div>
+
+    @if (filteredNotifications.length > 0 && selectedFilter !== 'read') {
+      <button
+        class="mark-all-btn"
+        (click)="markAllAsRead()"
+        type="button"
+        matTooltip="Mark all as read"
+      >
+        <mat-icon>done_all</mat-icon>
+        Mark All Read
+      </button>
+    }
+  </header>
+
+  <!-- Search & Filter Row -->
+  <div class="controls-row">
+    <mat-form-field class="search-field" appearance="outline">
+      <mat-label>Search notifications</mat-label>
+      <input
+        matInput
+        placeholder="Search by title or message..."
+        [(ngModel)]="searchText"
+        (ngModelChange)="onSearchChange()"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field class="filter-field" appearance="outline">
+      <mat-label>Filter</mat-label>
+      <mat-select
+        [(value)]="selectedFilter"
+        (selectionChange)="onFilterChange()"
+      >
+        <mat-select-trigger>
+          <span class="selected-filter">
+            <mat-icon>{{ getSelectedFilterIcon() }}</mat-icon>
+            {{ getFilterLabel(selectedFilter) }}
+          </span>
+        </mat-select-trigger>
+
+        @for (filter of filters; track filter.value) {
+          <mat-option [value]="filter.value">
+            <div class="filter-option">
+              <mat-icon>{{ filter.icon }}</mat-icon>
+              {{ filter.label }}
+            </div>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Results Summary -->
+  @if (!loading && !errorMessage) {
+    <div class="results-summary">
+      <span class="count-text">
+        {{ filteredNotifications.length }} notification(s)
+        @if (selectedFilter !== 'all') {
+          <span class="filter-active">
+            - filtered by "{{ getFilterLabel(selectedFilter) }}"
+          </span>
+        }
+      </span>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-state">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p class="loading-text">Loading notifications...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage) {
+    <div class="error-state">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h3 class="error-title">Something went wrong</h3>
+      <p class="error-message">{{ errorMessage }}</p>
+      <button
+        class="retry-btn"
+        (click)="retry()"
+        type="button"
+        mat-stroked-button
+      >
+        <mat-icon>refresh</mat-icon>
+        Retry
+      </button>
+    </div>
+  }
+
+  <!-- Notification List -->
+  @if (!loading && !errorMessage && displayedNotifications.length > 0) {
+    <div class="notification-list">
+
+      @for (notification of displayedNotifications; track notification.id) {
+        <mat-card
+          class="notification-card"
+          [class.unread]="!notification.isRead"
+        >
+
+          <mat-card-content class="card-content">
+
+            <!-- Type Icon -->
+            <div
+              class="type-icon-wrapper"
+              [style.color]="getTypeColor(notification.type)"
+            >
+              <mat-icon>{{ getTypeIcon(notification.type) }}</mat-icon>
+            </div>
+
+            <!-- Notification Content -->
+            <div class="notification-body">
+
+              <div class="notification-header">
+                <h3 class="notification-title">
+                  {{ notification.title }}
+                </h3>
+
+                <span
+                  class="type-badge"
+                  [style.background-color]="getTypeColor(notification.type) + '15'"
+                  [style.color]="getTypeColor(notification.type)"
+                >
+                  {{ notification.type }}
+                </span>
+              </div>
+
+              <p class="notification-message">
+                {{ notification.message }}
+              </p>
+
+              <div class="notification-meta">
+                <span class="notification-time">
+                  <mat-icon>access_time</mat-icon>
+                  {{ notification.createdAt | date: 'mediumDate' }}
+                  {{ notification.createdAt | date: 'shortTime' }}
+                </span>
+
+                @if (notification.redirectUrl) {
+                  <span class="redirect-badge">
+                    <mat-icon>open_in_new</mat-icon>
+                    Has related link
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Read/Unread Indicator -->
+            <div
+              class="read-indicator"
+              [class.unread-status]="!notification.isRead"
+              [matTooltip]="notification.isRead ? 'Read' : 'Unread'"
+            >
+              @if (notification.isRead) {
+                <mat-icon>drafts</mat-icon>
+              } @else {
+                <mat-icon>markunread</mat-icon>
+              }
+            </div>
+          </mat-card-content>
+
+          <!-- Card Actions -->
+          <mat-card-actions class="card-actions">
+
+            @if (notification.isRead) {
+              <button
+                mat-stroked-button
+                class="action-button action-outline"
+                (click)="markAsUnread(notification)"
+                type="button"
+                matTooltip="Mark as unread"
+              >
+                <mat-icon>mark_email_unread</mat-icon>
+                Mark Unread
+              </button>
+            } @else {
+              <button
+                mat-stroked-button
+                class="action-button action-outline"
+                (click)="markAsRead(notification)"
+                type="button"
+                matTooltip="Mark as read"
+              >
+                <mat-icon>mark_email_read</mat-icon>
+                Mark Read
+              </button>
+            }
+
+            <button
+              mat-stroked-button
+              color="warn"
+              class="action-button action-outline action-danger"
+              (click)="deleteNotification(notification)"
+              type="button"
+              matTooltip="Delete notification"
+            >
+              <mat-icon>delete</mat-icon>
+              Delete
+            </button>
+
+            <button
+              mat-flat-button
+              color="primary"
+              class="action-button action-primary"
+              (click)="openNotification(notification)"
+              type="button"
+            >
+              @if (notification.redirectUrl) {
+                <ng-container>
+                  <mat-icon>open_in_new</mat-icon>
+                  Go to Link
+                </ng-container>
+              } @else {
+                <ng-container>
+                  <mat-icon>visibility</mat-icon>
+                  View Details
+                </ng-container>
+              }
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+
+    <!-- Load More -->
+    @if (hasMore) {
+      <div class="load-more-container">
+        <button
+          class="load-more-btn"
+          (click)="loadMore()"
+          type="button"
+          mat-stroked-button
+        >
+          <mat-icon>download</mat-icon>
+          Load More
+        </button>
+      </div>
+    }
+  }
+
+  <!-- Empty State -->
+  @if (!loading && !errorMessage && displayedNotifications.length === 0) {
+    <div class="empty-state">
+      <div class="empty-illustration">
+        <mat-icon>notifications_off</mat-icon>
+      </div>
+      <h2>
+        @if (selectedFilter === 'all') {
+          You're all caught up!
+        } @else {
+          No matching notifications
+        }
+      </h2>
+      <p>
+        @if (selectedFilter === 'all') {
+          You have no notifications at the moment. Check back later!
+        } @else {
+          No notifications match the current filter.
+          Try adjusting your search or filter.
+        }
+      </p>
+
+      @if (selectedFilter !== 'all' || searchText) {
+        <button
+          class="clear-filters-btn"
+          (click)="selectedFilter = 'all'; searchText = ''; applyFilters()"
+          type="button"
+          mat-stroked-button
+        >
+          <mat-icon>clear</mat-icon>
+          Clear Filters
+        </button>
+      }
+    </div>
+  }
+</div>

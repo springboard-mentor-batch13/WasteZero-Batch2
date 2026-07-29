@@ -21,6 +21,10 @@ import { adminGuard } from './core/guards/admin-guard';
 
 import { Messages } from './pages/messages/messages';
 
+// Kavipriya - Notification System
+import { NotificationList } from './pages/notifications/notification-list/notification-list';
+import { NotificationDetail } from './pages/notifications/notification-detail/notification-detail';
+
 
 export const routes: Routes = [
   {
@@ -115,6 +119,18 @@ export const routes: Routes = [
   path: 'messages',
   component: Messages,
   title: 'Messages | WasteZero'
+},
+
+// Kavipriya - Notification System
+{
+  path: 'notifications',
+  component: NotificationList,
+  title: 'Notifications | WasteZero'
+},
+{
+  path: 'notifications/:id',
+  component: NotificationDetail,
+  title: 'Notification Details | WasteZero'
 }
 
 ];
