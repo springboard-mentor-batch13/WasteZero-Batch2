@@ -56,6 +56,19 @@ export class ApplicationService {
     ).pipe(map((response) => response.data.map((application) => this.fromApi(application))));
   }
 
+  getMyApplications(): Observable<VolunteerApplication[]> {
+  return this.http.get<ApiResponse<ApplicationApiModel[]>>(
+    `${this.applicationsUrl}/my`,
+    { headers: this.headers() }
+  ).pipe(
+    map((response) =>
+      response.data.map((application) =>
+        this.fromApi(application)
+      )
+    )
+  );
+}
+
   updateStatus(id: string, status: ApplicationStatus): Observable<VolunteerApplication> {
     const action = status === 'Accepted' ? 'accept' : 'reject';
     return this.http.put<ApiResponse<ApplicationApiModel>>(

@@ -315,3 +315,854 @@
     padding: 20px;
   }
 }
+/* ==========================================================
+   MILESTONE 3 - MATCHING
+========================================================== */
+
+.matching-section {
+  margin-bottom: 30px;
+}
+
+
+/* ==========================================================
+   PREFERENCE CARDS
+========================================================== */
+
+.preferences-card,
+.saved-preferences-card {
+  background: var(--wz-surface);
+  border: 1px solid var(--wz-border);
+  border-radius: 18px;
+  padding: 25px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--wz-shadow-md);
+}
+
+
+/* ==========================================================
+   FIRST TIME USER CARD
+========================================================== */
+
+.preference-intro-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+
+  border-left: 5px solid var(--wz-primary);
+}
+
+.preference-intro-content {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.preference-icon {
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 14px;
+
+  background: rgba(69, 200, 117, 0.12);
+
+  font-size: 27px;
+}
+
+.preference-intro-card h3 {
+  margin: 0 0 7px;
+  color: var(--wz-primary);
+  font-size: 20px;
+}
+
+.preference-intro-card p {
+  margin: 0;
+  color: var(--wz-text-secondary);
+  line-height: 1.6;
+}
+
+.set-preferences-btn {
+  border: none;
+  border-radius: 10px;
+
+  padding: 13px 22px;
+
+  background: var(--wz-primary);
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition: .2s ease;
+}
+
+.set-preferences-btn:hover {
+  background: var(--wz-primary-hover);
+  transform: translateY(-2px);
+}
+
+
+/* ==========================================================
+   PREFERENCE FORM
+========================================================== */
+
+.preference-form-card {
+  border-left: 5px solid var(--wz-primary);
+}
+
+.preference-form-header {
+  margin-bottom: 24px;
+}
+
+.preference-form-header h3 {
+  margin: 0 0 7px;
+
+  color: var(--wz-primary);
+
+  font-size: 20px;
+}
+
+.preference-form-header p {
+  margin: 0;
+
+  color: var(--wz-text-secondary);
+
+  font-size: 14px;
+}
+
+
+/* State + City */
+
+.preference-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(220px, 1fr));
+
+  gap: 20px;
+
+  margin-bottom: 25px;
+}
+
+.preference-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.preference-field label {
+  color: var(--wz-text-primary);
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.preference-field select {
+  width: 100%;
+
+  padding: 13px 14px;
+
+  border: 1px solid var(--wz-border);
+  border-radius: 10px;
+
+  background: var(--wz-page-bg);
+  color: var(--wz-text-primary);
+
+  font-size: 14px;
+
+  outline: none;
+  cursor: pointer;
+
+  transition: .2s ease;
+}
+
+.preference-field select:hover {
+  border-color: var(--wz-primary);
+}
+
+.preference-field select:focus {
+  border-color: var(--wz-primary);
+
+  box-shadow:
+    0 0 0 3px rgba(69, 200, 117, 0.14);
+}
+
+.preference-field select:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+
+/* ==========================================================
+   WASTE TYPE SELECTION
+========================================================== */
+
+.waste-preference-section {
+  margin-bottom: 25px;
+}
+
+.waste-preference-section > label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--wz-text-primary);
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.field-hint {
+  margin: 0 0 14px;
+
+  color: var(--wz-text-secondary);
+
+  font-size: 13px;
+}
+
+.waste-type-options {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+.waste-type-chip {
+  padding: 10px 16px;
+
+  border: 1px solid var(--wz-border);
+  border-radius: 25px;
+
+  background: var(--wz-page-bg);
+  color: var(--wz-text-secondary);
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: .2s ease;
+}
+
+.waste-type-chip:hover {
+  color: var(--wz-primary);
+
+  border-color: var(--wz-primary);
+
+  transform: translateY(-1px);
+}
+
+.waste-type-chip.selected {
+  background: var(--wz-primary);
+  color: #ffffff;
+
+  border-color: var(--wz-primary);
+}
+
+
+/* ==========================================================
+   FORM ACTIONS
+========================================================== */
+
+.preference-form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid var(--wz-border);
+}
+
+.cancel-preference-btn,
+.save-preference-btn {
+  padding: 12px 22px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s ease;
+}
+
+.cancel-preference-btn {
+  background: transparent;
+
+  color: var(--wz-text-secondary);
+
+  border: 1px solid var(--wz-border);
+}
+
+.cancel-preference-btn:hover {
+  background: var(--wz-surface-hover);
+}
+
+.save-preference-btn {
+  background: var(--wz-primary);
+  color: #ffffff;
+
+  border: 1px solid var(--wz-primary);
+}
+
+.save-preference-btn:hover {
+  background: var(--wz-primary-hover);
+}
+
+.save-preference-btn:disabled,
+.cancel-preference-btn:disabled {
+  opacity: .55;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* ==========================================================
+   ERROR
+========================================================== */
+
+.preference-error {
+  padding: 11px 14px;
+
+  margin-bottom: 18px;
+
+  border-radius: 9px;
+
+  background: rgba(220, 53, 69, .1);
+
+  color: #dc5966;
+
+  font-size: 13px;
+}
+
+
+/* ==========================================================
+   SAVED PREFERENCES
+========================================================== */
+
+.saved-preferences-card {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 20px;
+
+  border-left: 5px solid var(--wz-primary);
+}
+
+.saved-preferences-card h3 {
+  margin: 0 0 10px;
+
+  color: var(--wz-primary);
+
+  font-size: 18px;
+}
+
+.saved-preference-details {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 12px;
+}
+
+.saved-preference-details span {
+  padding: 7px 12px;
+
+  border-radius: 20px;
+
+  background: rgba(69, 200, 117, .10);
+
+  color: var(--wz-text-secondary);
+
+  font-size: 13px;
+}
+
+.edit-preferences-btn {
+  padding: 10px 18px;
+
+  border-radius: 9px;
+
+  border: 1px solid var(--wz-primary);
+
+  background: transparent;
+  color: var(--wz-primary);
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  transition: .2s ease;
+}
+
+.edit-preferences-btn:hover {
+  background: var(--wz-primary);
+  color: #ffffff;
+}
+
+
+/* ==========================================================
+   RECOMMENDATIONS
+========================================================== */
+
+.recommendations-section {
+  margin-top: 28px;
+}
+
+.recommendations-header {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 20px;
+
+  margin-bottom: 18px;
+}
+
+.recommendations-header h3 {
+  margin: 0 0 5px;
+
+  color: var(--wz-primary);
+
+  font-size: 20px;
+}
+
+.recommendations-header p {
+  margin: 0;
+
+  color: var(--wz-text-secondary);
+
+  font-size: 14px;
+}
+
+.browse-all-btn {
+  padding: 10px 18px;
+
+  border: 1px solid var(--wz-primary);
+  border-radius: 9px;
+
+  background: transparent;
+  color: var(--wz-primary);
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  transition: .2s ease;
+}
+
+.browse-all-btn:hover {
+  background: var(--wz-primary);
+  color: #ffffff;
+}
+
+
+/* ==========================================================
+   MATCH LIST
+========================================================== */
+
+.match-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.match-item {
+  overflow: hidden;
+
+  background: var(--wz-surface);
+
+  border: 1px solid var(--wz-border);
+  border-radius: 14px;
+
+  box-shadow: var(--wz-shadow-md);
+
+  transition: .2s ease;
+}
+
+.match-item:hover {
+  border-color: var(--wz-primary);
+}
+
+
+/* ==========================================================
+   COMPACT MATCH ROW
+========================================================== */
+
+.match-summary {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 18px 20px;
+
+  border: none;
+
+  background: transparent;
+
+  color: var(--wz-text-primary);
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.match-title {
+  flex: 1;
+
+  min-width: 0;
+}
+
+.match-title strong {
+  font-size: 15px;
+  color: var(--wz-text-primary);
+}
+
+.match-summary-right {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  flex-shrink: 0;
+}
+
+
+/* Status */
+
+.match-status {
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  border: 1px solid var(--wz-border);
+
+  color: var(--wz-text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.match-status.open {
+  background: rgba(69, 200, 117, .10);
+
+  border-color: rgba(69, 200, 117, .30);
+
+  color: var(--wz-primary);
+}
+
+
+/* Match Percentage */
+
+.match-score {
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  background: var(--wz-primary);
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* Dropdown arrow */
+
+.match-chevron {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: var(--wz-page-bg);
+
+  color: var(--wz-text-secondary);
+
+  font-size: 12px;
+}
+
+
+/* ==========================================================
+   EXPANDED OPPORTUNITY
+========================================================== */
+
+.match-expanded {
+  padding: 20px;
+
+  border-top: 1px solid var(--wz-border);
+
+  background: var(--wz-page-bg);
+}
+
+.match-detail-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(150px, 1fr));
+
+  gap: 18px;
+
+  margin-bottom: 20px;
+}
+
+.match-detail-grid > div {
+  padding: 14px;
+
+  border: 1px solid var(--wz-border);
+  border-radius: 10px;
+
+  background: var(--wz-surface);
+}
+
+.detail-label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: var(--wz-text-secondary);
+
+  font-size: 12px;
+}
+
+.match-detail-grid strong {
+  color: var(--wz-text-primary);
+
+  font-size: 14px;
+}
+
+
+/* ==========================================================
+   MATCHED WASTE TYPES
+========================================================== */
+
+.matched-waste-section {
+  margin-bottom: 18px;
+}
+
+.matched-waste-list {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 8px;
+}
+
+.matched-waste-chip {
+  padding: 7px 12px;
+
+  border-radius: 20px;
+
+  background: rgba(69, 200, 117, .12);
+
+  color: var(--wz-primary);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* ==========================================================
+   MATCH REASONS
+========================================================== */
+
+.match-reasons {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.match-reasons span {
+  padding: 7px 11px;
+
+  border-radius: 8px;
+
+  background: rgba(69, 200, 117, .10);
+
+  color: var(--wz-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* ==========================================================
+   VIEW OPPORTUNITY
+========================================================== */
+
+.match-expanded-actions {
+  display: flex;
+
+  justify-content: flex-end;
+}
+
+.view-opportunity-btn {
+  padding: 11px 18px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: var(--wz-primary);
+  color: #ffffff;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: .2s ease;
+}
+
+.view-opportunity-btn:hover {
+  background: var(--wz-primary-hover);
+
+  transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   NO MATCHES
+========================================================== */
+
+.no-matches {
+  padding: 30px;
+
+  text-align: center;
+
+  background: var(--wz-surface);
+
+  border: 1px dashed var(--wz-border);
+  border-radius: 15px;
+}
+
+.no-matches h4 {
+  margin: 0 0 8px;
+
+  color: var(--wz-text-primary);
+}
+
+.no-matches p {
+  margin: 0;
+
+  color: var(--wz-text-secondary);
+}
+
+
+/* ==========================================================
+   DARK THEME
+========================================================== */
+
+:host-context(body.dark-theme) .preferences-card,
+:host-context(body.dark-theme) .saved-preferences-card,
+:host-context(body.dark-theme) .match-item,
+:host-context(body.dark-theme) .no-matches {
+  background: var(--wz-surface);
+
+  border-color: var(--wz-border);
+}
+
+:host-context(body.dark-theme) .preference-field select,
+:host-context(body.dark-theme) .waste-type-chip,
+:host-context(body.dark-theme) .match-expanded {
+  background: var(--wz-page-bg);
+}
+
+:host-context(body.dark-theme) .match-detail-grid > div {
+  background: var(--wz-surface);
+}
+
+:host-context(body.dark-theme) .match-title strong,
+:host-context(body.dark-theme) .match-detail-grid strong {
+  color: #e1ebe5;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 768px) {
+
+  .preference-intro-card {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .preference-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-preferences-card {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .recommendations-header {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .match-summary {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .match-summary-right {
+    width: 100%;
+
+    flex-wrap: wrap;
+  }
+
+  .match-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preference-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancel-preference-btn,
+  .save-preference-btn {
+    width: 100%;
+  }
+}

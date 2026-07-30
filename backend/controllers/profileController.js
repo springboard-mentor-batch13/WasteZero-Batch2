@@ -41,12 +41,15 @@ const updateProfile = async (req, res) => {
     }
 
     const {
-      fullName,
-      location,
-      skills,
-      bio,
-      profileImage,
-    } = req.body;
+  fullName,
+  location,
+  skills,
+  bio,
+  profileImage,
+  city,
+  state,
+  preferredWasteTypes,
+} = req.body;
 
 
 
@@ -60,6 +63,13 @@ const updateProfile = async (req, res) => {
     user.bio = bio ?? user.bio;
 
     user.profileImage = profileImage ?? user.profileImage;
+
+    user.city = city ?? user.city;
+
+    user.state = state ?? user.state;
+
+    user.preferredWasteTypes =
+        preferredWasteTypes ?? user.preferredWasteTypes;
 
 
 
