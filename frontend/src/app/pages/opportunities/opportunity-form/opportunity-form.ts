@@ -107,7 +107,8 @@ export class OpportunityForm implements OnInit, OnDestroy {
           date: opportunity.date,
           duration: opportunity.duration,
           requiredVolunteers: opportunity.requiredVolunteers,
-          requiredSkills: opportunity.requiredSkills.join(', ')
+          requiredSkills: opportunity.requiredSkills.join(', '),
+          wasteTypes: opportunity.wasteTypes ?? [],
         });
         this.imagePreviewUrl = opportunity.imageUrl;
         this.serviceOwnedPreview = !!opportunity.imageUrl;
@@ -242,6 +243,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
       duration: value.duration.trim(),
       requiredVolunteers: Number(value.requiredVolunteers),
       requiredSkills: value.requiredSkills.split(',').map((skill) => skill.trim()).filter(Boolean),
+      wasteTypes: value.wasteTypes,
       imageFile: this.selectedImageFile,
       imageUrl: this.serviceOwnedPreview ? this.imagePreviewUrl : undefined,
       removeImage: this.imageRemoved

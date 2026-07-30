@@ -538,6 +538,11 @@ export class OpportunityService {
     );
 
     formData.append(
+  'wasteTypes',
+  JSON.stringify(draft.wasteTypes ?? [])
+);
+
+    formData.append(
       'duration',
       draft.duration
     );
