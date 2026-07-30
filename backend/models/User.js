@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: [true, 'Full name is required'],
+      required: [true, 'Fullname is required'],
       trim: true,
     },
 
@@ -36,14 +36,49 @@ const userSchema = new mongoose.Schema(
       default: 'Volunteer',
     },
 
-    // Profile fields
+    // Existing profile location field
+    // Kept for backward compatibility with Milestones 1 and 2
     location: {
       type: String,
       default: '',
+      trim: true,
     },
 
+    // Milestone 3 - structured geographic location for matching
+    city: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    state: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    // Existing skills field
     skills: {
       type: [String],
+      default: [],
+    },
+
+    // Milestone 3 - volunteer waste preferences used for matching
+    preferredWasteTypes: {
+      type: [
+        {
+          type: String,
+          enum: [
+            'Plastic',
+            'Organic',
+            'E-Waste',
+            'Paper',
+            'Glass',
+            'Metal',
+            'Mixed',
+          ],
+        },
+      ],
       default: [],
     },
 
@@ -62,4 +97,10 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Milestone 3 - supports volunteer geographic matching
+userSchema.index({
+  role: 1,
+  city: 1,
+  state: 1,
+});
 module.exports = mongoose.model('User', userSchema, 'Users');
