@@ -37,6 +37,15 @@ export class OpportunityForm implements OnInit, OnDestroy {
   readonly categories = OPPORTUNITY_CATEGORIES;
   readonly stateCities = OPPORTUNITY_STATE_CITIES;
   readonly states = OPPORTUNITY_STATE_CITIES.map((option) => option.state);
+  readonly wasteTypes = [
+  'Plastic',
+  'Organic',
+  'E-Waste',
+  'Paper',
+  'Glass',
+  'Metal',
+  'Mixed'
+];
   readonly today = new Date();
   readonly acceptedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   readonly maxImageSize = 5 * 1024 * 1024;
@@ -58,7 +67,8 @@ export class OpportunityForm implements OnInit, OnDestroy {
     date: [null as Date | null, Validators.required],
     duration: ['', Validators.required],
     requiredVolunteers: [1, [Validators.required, Validators.min(1)]],
-    requiredSkills: ['']
+    requiredSkills: [''],
+    wasteTypes: [[] as string[]]
   });
 
   ngOnInit(): void {
@@ -97,7 +107,8 @@ export class OpportunityForm implements OnInit, OnDestroy {
           date: opportunity.date,
           duration: opportunity.duration,
           requiredVolunteers: opportunity.requiredVolunteers,
-          requiredSkills: opportunity.requiredSkills.join(', ')
+          requiredSkills: opportunity.requiredSkills.join(', '),
+          wasteTypes: opportunity.wasteTypes ?? [],
         });
         this.imagePreviewUrl = opportunity.imageUrl;
         this.serviceOwnedPreview = !!opportunity.imageUrl;
@@ -232,6 +243,7 @@ export class OpportunityForm implements OnInit, OnDestroy {
       duration: value.duration.trim(),
       requiredVolunteers: Number(value.requiredVolunteers),
       requiredSkills: value.requiredSkills.split(',').map((skill) => skill.trim()).filter(Boolean),
+      wasteTypes: value.wasteTypes,
       imageFile: this.selectedImageFile,
       imageUrl: this.serviceOwnedPreview ? this.imagePreviewUrl : undefined,
       removeImage: this.imageRemoved

@@ -30,6 +30,24 @@ const opportunitySchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    // Milestone 3 - waste types used for volunteer-opportunity matching
+wasteTypes: {
+  type: [
+    {
+      type: String,
+      enum: [
+        'Plastic',
+        'Organic',
+        'E-Waste',
+        'Paper',
+        'Glass',
+        'Metal',
+        'Mixed',
+      ],
+    },
+  ],
+  default: [],
+},
     duration: {
       type: String,
       required: [true, 'Duration is required'],
@@ -74,4 +92,12 @@ const opportunitySchema = new mongoose.Schema(
   }
 );
 
+// Milestone 3 - supports matching open opportunities
+// by geographic location and waste type
+opportunitySchema.index({
+  status: 1,
+  city: 1,
+  state: 1,
+  wasteTypes: 1,
+});
 module.exports = mongoose.model('Opportunity', opportunitySchema, 'Opportunities');

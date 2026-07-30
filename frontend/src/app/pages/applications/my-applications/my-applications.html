@@ -1,0 +1,150 @@
+<div class="my-applications-page">
+
+  <div class="page-header">
+
+    <div>
+      <h2>My Applications</h2>
+
+      <p>
+        Track all the volunteering opportunities
+        you have applied for.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="goBack()">
+      ← Back to Dashboard
+    </button>
+
+  </div>
+
+
+  <!-- Loading -->
+
+  <div
+    *ngIf="loading"
+    class="page-message">
+
+    Loading your applications...
+
+  </div>
+
+
+  <!-- Error -->
+
+  <div
+    *ngIf="errorMessage"
+    class="page-message error-message">
+
+    {{ errorMessage }}
+
+  </div>
+
+
+  <!-- No Applications -->
+
+  <div
+    *ngIf="
+      !loading &&
+      !errorMessage &&
+      applications.length === 0
+    "
+    class="empty-state">
+
+    <div class="empty-icon">📄</div>
+
+    <h3>No Applications Yet</h3>
+
+    <p>
+      You haven't applied for any volunteering
+      opportunities yet.
+    </p>
+
+    <button
+      type="button"
+      (click)="browseOpportunities()">
+
+      Browse Opportunities
+
+    </button>
+
+  </div>
+
+
+  <!-- Applications -->
+
+  <div
+    *ngIf="
+      !loading &&
+      !errorMessage &&
+      applications.length > 0
+    "
+    class="applications-list">
+
+    <article
+      *ngFor="let application of applications"
+      class="application-card">
+
+      <div class="application-main">
+
+        <div class="application-info">
+
+          <h3>
+            {{ application.opportunityTitle }}
+          </h3>
+
+          <p class="applied-date">
+            Applied:
+            {{
+              application.appliedDate
+                | date:'dd MMM yyyy'
+            }}
+          </p>
+
+        </div>
+
+
+        <span
+          class="status-badge"
+          [class.pending]="
+            application.status === 'Pending'
+          "
+          [class.accepted]="
+            application.status === 'Accepted'
+          "
+          [class.rejected]="
+            application.status === 'Rejected'
+          ">
+
+          {{ application.status }}
+
+        </span>
+
+      </div>
+
+
+      <div class="application-actions">
+
+        <button
+          type="button"
+          class="view-button"
+          [disabled]="!application.opportunityId"
+          (click)="
+            viewOpportunity(
+              application.opportunityId
+            )
+          ">
+
+          View Opportunity →
+
+        </button>
+
+      </div>
+
+    </article>
+
+  </div>
+
+</div>

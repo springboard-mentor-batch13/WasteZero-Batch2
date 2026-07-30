@@ -1,6 +1,8 @@
 <div class="volunteer-dashboard">
 
+  <!-- ===================================================== -->
   <!-- Header -->
+  <!-- ===================================================== -->
   <div class="dashboard-header">
     <div>
       <h2>Welcome back, {{ userName }} 👋</h2>
@@ -10,17 +12,22 @@
     <span class="role-badge">VOLUNTEER</span>
   </div>
 
-  <!-- Loading -->
+
+  <!-- ===================================================== -->
+  <!-- Dashboard Loading / Error -->
+  <!-- ===================================================== -->
   <div *ngIf="loading" class="dashboard-message">
     Loading dashboard statistics...
   </div>
 
-  <!-- Error -->
   <div *ngIf="errorMessage" class="dashboard-message error-message">
     {{ errorMessage }}
   </div>
 
+
+  <!-- ===================================================== -->
   <!-- Statistics Cards -->
+  <!-- ===================================================== -->
   <div class="stats-grid">
 
     <div class="stat-card">
@@ -49,36 +56,648 @@
 
   </div>
 
+
+  <!-- ===================================================== -->
+  <!-- Milestone 3 - Matching Preferences -->
+  <!-- ===================================================== -->
+  <section class="matching-section">
+
+
+    <!-- Preference Loading -->
+    <div
+      *ngIf="preferencesLoading"
+      class="preferences-card">
+
+      Loading matching preferences...
+
+    </div>
+
+
+    <!-- =================================================== -->
+    <!-- FIRST TIME USER -->
+    <!-- =================================================== -->
+    <div
+      *ngIf="
+        !preferencesLoading &&
+        !hasPreferences &&
+        !showPreferenceForm
+      "
+      class="preferences-card preference-intro-card">
+
+      <div class="preference-intro-content">
+
+        <div class="preference-icon">
+          🎯
+        </div>
+
+        <div>
+          <h3>Set Your Matching Preferences</h3>
+
+          <p>
+            Get opportunity recommendations based on your location
+            and the waste types you're interested in.
+          </p>
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="set-preferences-btn"
+        (click)="openPreferenceForm()">
+
+        Set Preferences →
+
+      </button>
+
+    </div>
+
+
+    <!-- =================================================== -->
+    <!-- SET / EDIT PREFERENCES FORM -->
+    <!-- =================================================== -->
+    <div
+      *ngIf="showPreferenceForm"
+      class="preferences-card preference-form-card">
+
+
+      <!-- Form Header -->
+      <div class="preference-form-header">
+
+        <div>
+          <h3>🎯 Matching Preferences</h3>
+
+          <p>
+            Choose your location and the waste types you're
+            interested in.
+          </p>
+        </div>
+
+      </div>
+
+
+      <!-- Location Fields -->
+      <div class="preference-form-grid">
+
+
+        <!-- State -->
+        <div class="preference-field">
+
+          <label for="matchingState">
+            State
+          </label>
+
+          <select
+            id="matchingState"
+            [(ngModel)]="preferences.state"
+            (ngModelChange)="onStateChange()">
+
+            <option value="">
+              Select State
+            </option>
+
+            <option
+              *ngFor="let state of states"
+              [value]="state">
+
+              {{ state }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- City -->
+        <div class="preference-field">
+
+          <label for="matchingCity">
+            City
+          </label>
+
+          <select
+            id="matchingCity"
+            [(ngModel)]="preferences.city"
+            [disabled]="!preferences.state">
+
+            <option value="">
+              Select City
+            </option>
+
+            <option
+              *ngFor="let city of availableCities"
+              [value]="city">
+
+              {{ city }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- Waste Type Preferences -->
+      <!-- ================================================= -->
+      <div class="waste-preference-section">
+
+        <label>
+          Preferred Waste Types
+        </label>
+
+        <p class="field-hint">
+          Select one or more waste types you're interested in.
+        </p>
+
+
+        <div class="waste-type-options">
+
+          <button
+            type="button"
+            *ngFor="let wasteType of wasteTypes"
+            class="waste-type-chip"
+            [class.selected]="isWasteTypeSelected(wasteType)"
+            (click)="toggleWasteType(wasteType)">
+
+            <span *ngIf="isWasteTypeSelected(wasteType)">
+              ✓
+            </span>
+
+            {{ wasteType }}
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Preference Error -->
+      <div
+        *ngIf="preferenceErrorMessage"
+        class="preference-error">
+
+        {{ preferenceErrorMessage }}
+
+      </div>
+
+
+      <!-- Form Buttons -->
+      <div class="preference-form-actions">
+
+        <button
+          type="button"
+          class="cancel-preference-btn"
+          (click)="cancelPreferenceForm()"
+          [disabled]="savingPreferences">
+
+          Cancel
+
+        </button>
+
+        <button
+          type="button"
+          class="save-preference-btn"
+          (click)="savePreferences()"
+          [disabled]="savingPreferences">
+
+          {{
+            savingPreferences
+              ? 'Saving...'
+              : 'Save Preferences'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================================== -->
+    <!-- SAVED PREFERENCES -->
+    <!-- =================================================== -->
+    <div
+      *ngIf="
+        !preferencesLoading &&
+        hasPreferences &&
+        !showPreferenceForm
+      "
+      class="saved-preferences-card">
+
+      <div>
+
+        <h3>
+          🎯 Your Matching Preferences
+        </h3>
+
+        <div class="saved-preference-details">
+
+          <span>
+            📍 {{ preferences.city }},
+            {{ preferences.state }}
+          </span>
+
+          <span>
+            ♻ {{ preferences.preferredWasteTypes.join(' • ') }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="edit-preferences-btn"
+        (click)="openPreferenceForm()">
+
+        Edit Preferences
+
+      </button>
+
+    </div>
+
+
+    <!-- =================================================== -->
+    <!-- RECOMMENDED OPPORTUNITIES -->
+    <!-- =================================================== -->
+    <div
+      *ngIf="
+        hasPreferences &&
+        !showPreferenceForm
+      "
+      class="recommendations-section">
+
+
+      <!-- Heading -->
+      <div class="recommendations-header">
+
+        <div>
+
+          <h3>
+            Recommended Opportunities
+          </h3>
+
+          <p>
+            Opportunities ranked from highest to lowest
+            based on your matching preferences.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="browse-all-btn"
+          (click)="browseOpportunities()">
+
+          Browse All
+
+        </button>
+
+      </div>
+
+
+      <!-- Loading Matches -->
+      <div
+        *ngIf="matchesLoading"
+        class="dashboard-message">
+
+        Finding the best opportunities for you...
+
+      </div>
+
+
+      <!-- Match Error -->
+      <div
+        *ngIf="
+          !matchesLoading &&
+          matchErrorMessage
+        "
+        class="dashboard-message error-message">
+
+        {{ matchErrorMessage }}
+
+      </div>
+
+
+      <!-- No Matches -->
+      <div
+        *ngIf="
+          !matchesLoading &&
+          !matchErrorMessage &&
+          matches.length === 0
+        "
+        class="no-matches">
+
+        <h4>
+          No matching opportunities found yet
+        </h4>
+
+        <p>
+          Try changing your matching preferences or browse
+          all available opportunities.
+        </p>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- MATCH LIST -->
+      <!-- ================================================= -->
+      <div
+        *ngIf="
+          !matchesLoading &&
+          !matchErrorMessage &&
+          matches.length > 0
+        "
+        class="match-list">
+
+
+        <div
+          *ngFor="let opportunity of matches"
+          class="match-item">
+
+
+          <!-- ============================================= -->
+          <!-- Compact Opportunity Row -->
+          <!-- ============================================= -->
+          <button
+            type="button"
+            class="match-summary"
+            (click)="toggleOpportunity(opportunity.id)">
+
+
+            <!-- Title -->
+            <div class="match-title">
+
+              <strong>
+                {{ opportunity.title }}
+              </strong>
+
+            </div>
+
+
+            <!-- Status / Score / Dropdown -->
+            <div class="match-summary-right">
+
+
+              <span
+                class="match-status"
+                [class.open]="opportunity.status === 'Open'">
+
+                {{ opportunity.status }}
+
+              </span>
+
+
+              <span class="match-score">
+
+                {{ opportunity.matchScore }}% Match
+
+              </span>
+
+
+              <span class="match-chevron">
+
+                {{
+                  isOpportunityExpanded(opportunity.id)
+                    ? '▲'
+                    : '▼'
+                }}
+
+              </span>
+
+            </div>
+
+          </button>
+
+
+          <!-- ============================================= -->
+          <!-- Expanded Opportunity Details -->
+          <!-- ============================================= -->
+          <div
+            *ngIf="isOpportunityExpanded(opportunity.id)"
+            class="match-expanded">
+
+
+            <!-- Basic Details -->
+            <div class="match-detail-grid">
+
+
+              <!-- Category -->
+              <div>
+
+                <span class="detail-label">
+                  Category
+                </span>
+
+                <strong>
+                  {{ opportunity.category }}
+                </strong>
+
+              </div>
+
+
+              <!-- Location -->
+              <div>
+
+                <span class="detail-label">
+                  Location
+                </span>
+
+                <strong>
+                  {{ opportunity.city }},
+                  {{ opportunity.state }}
+                </strong>
+
+              </div>
+
+
+              <!-- Duration -->
+              <div>
+
+                <span class="detail-label">
+                  Duration
+                </span>
+
+                <strong>
+                  {{ opportunity.duration }}
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            <!-- =========================================== -->
+            <!-- Matched Waste Types -->
+            <!-- =========================================== -->
+            <div
+              *ngIf="
+                opportunity.matchDetails
+                  .matchedWasteTypes.length > 0
+              "
+              class="matched-waste-section">
+
+              <span class="detail-label">
+                Matched Waste Types
+              </span>
+
+
+              <div class="matched-waste-list">
+
+                <span
+                  *ngFor="
+                    let wasteType of
+                    opportunity.matchDetails.matchedWasteTypes
+                  "
+                  class="matched-waste-chip">
+
+                  {{ wasteType }}
+
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- =========================================== -->
+            <!-- Match Reasons -->
+            <!-- =========================================== -->
+            <div class="match-reasons">
+
+
+              <span
+                *ngIf="
+                  opportunity.matchDetails.locationMatch
+                ">
+
+                ✓ Location Match
+
+              </span>
+
+
+              <span
+                *ngIf="
+                  opportunity.matchDetails
+                    .matchedWasteTypes.length > 0
+                ">
+
+                ✓ Waste Preference Match
+
+              </span>
+
+            </div>
+
+
+            <!-- =========================================== -->
+            <!-- View Opportunity -->
+            <!-- =========================================== -->
+            <div class="match-expanded-actions">
+
+              <button
+                type="button"
+                class="view-opportunity-btn"
+                (click)="viewOpportunity(opportunity.id)">
+
+                View Opportunity →
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ===================================================== -->
   <!-- Bottom Section -->
+  <!-- ===================================================== -->
   <div class="dashboard-content">
+
 
     <!-- Quick Actions -->
     <div class="dashboard-card">
+
       <h3>Quick Actions</h3>
 
-      <button>🌱 Browse Opportunities</button>
-      <button>📄 My Applications</button>
-      <button>👤 Update Profile</button>
+      <button
+        type="button"
+        (click)="browseOpportunities()">
+
+        🌱 Browse Opportunities
+
+      </button>
+
+      <button
+  type="button"
+  (click)="myApplications()">
+
+  📄 My Applications
+
+</button>
+
+      <button
+        type="button"
+        (click)="updateProfile()">
+
+        👤 Update Profile
+
+      </button>
+
     </div>
+
 
     <!-- Recent Activity -->
     <div class="dashboard-card">
+
       <h3>Recent Activity</h3>
 
       <ul>
-        <li>🟢 View your latest opportunity applications</li>
-        <li>🟢 Track accepted volunteering opportunities</li>
-        <li>🟢 Check completed volunteering activities</li>
-        <li>🟢 Keep your volunteer profile updated</li>
+        <li>
+          🟢 View your latest opportunity applications
+        </li>
+
+        <li>
+          🟢 Track accepted volunteering opportunities
+        </li>
+
+        <li>
+          🟢 Check completed volunteering activities
+        </li>
+
+        <li>
+          🟢 Keep your volunteer profile updated
+        </li>
       </ul>
+
     </div>
 
   </div>
 
+
+  <!-- ===================================================== -->
   <!-- Volunteer Overview -->
+  <!-- ===================================================== -->
   <div class="dashboard-card analytics-card">
 
-    <h3>Volunteer Progress</h3>
+    <h3>
+      Volunteer Progress
+    </h3>
 
     <p>
       Track your volunteering journey, participate in environmental
@@ -88,7 +707,9 @@
 
     <br>
 
-    <strong>Explore Opportunities</strong>
+    <strong>
+      Explore Opportunities
+    </strong>
 
     <p>
       Browse available opportunities and apply for initiatives that
