@@ -116,9 +116,9 @@
             <!-- Type Icon -->
             <div
               class="type-icon-wrapper"
-              [style.color]="getTypeColor(notification.type)"
+              [style.color]="getNotificationColor(notification)"
             >
-              <mat-icon>{{ getTypeIcon(notification.type) }}</mat-icon>
+              <mat-icon>{{ getNotificationIcon(notification) }}</mat-icon>
             </div>
 
             <!-- Notification Content -->
@@ -131,10 +131,10 @@
 
                 <span
                   class="type-badge"
-                  [style.background-color]="getTypeColor(notification.type) + '15'"
-                  [style.color]="getTypeColor(notification.type)"
+                  [style.background-color]="getNotificationColor(notification) + '15'"
+                  [style.color]="getNotificationColor(notification)"
                 >
-                  {{ notification.type }}
+                  {{ getNotificationLabel(notification) }}
                 </span>
               </div>
 

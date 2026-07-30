@@ -48,9 +48,9 @@
         <!-- Type Icon -->
         <div
           class="type-icon-wrapper"
-          [style.color]="getTypeColor(notification.type)"
+          [style.color]="getNotificationColor(notification)"
         >
-          <mat-icon>{{ getTypeIcon(notification.type) }}</mat-icon>
+          <mat-icon>{{ getNotificationIcon(notification) }}</mat-icon>
         </div>
 
         <div class="header-content">
@@ -61,10 +61,10 @@
           <mat-card-subtitle class="notification-type">
             <span
               class="type-badge"
-              [style.background-color]="getTypeColor(notification.type) + '15'"
-              [style.color]="getTypeColor(notification.type)"
+              [style.background-color]="getNotificationColor(notification) + '15'"
+              [style.color]="getNotificationColor(notification)"
             >
-              {{ notification.type }}
+              {{ getNotificationLabel(notification) }}
             </span>
 
             @if (!notification.isRead) {
@@ -109,7 +109,7 @@
                 <mat-icon>label</mat-icon>
                 Type
               </span>
-              <span class="meta-value">{{ notification.type }}</span>
+              <span class="meta-value">{{ getNotificationLabel(notification) }}</span>
             </div>
 
             <div class="meta-item">

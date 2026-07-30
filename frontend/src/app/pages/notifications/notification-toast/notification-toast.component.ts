@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 
 import {
   Notification,
-  NotificationType,
+  NOTIFICATION_DISPLAY_TYPE_CONFIG,
   NOTIFICATION_TYPE_CONFIG,
 } from '../notification.model';
 
@@ -21,8 +21,12 @@ import {
   imports: [CommonModule, MatIconModule, MatButtonModule, MatTooltipModule],
   template: `
     <div class="toast-shell" (click)="onToastClick()">
-      <div class="toast-icon" aria-hidden="true">
-        <mat-icon>{{ getTypeIcon(notification.type) }}</mat-icon>
+      <div
+        class="toast-icon"
+        [style.color]="getNotificationColor(notification)"
+        aria-hidden="true"
+      >
+        <mat-icon>{{ getNotificationIcon(notification) }}</mat-icon>
       </div>
 
       <div class="toast-body">
@@ -46,6 +50,10 @@ import {
         </div>
 
         <div class="toast-footer">
+          <div class="toast-type">
+            {{ getNotificationLabel(notification) }}
+          </div>
+
           <div class="toast-time">
             <mat-icon>access_time</mat-icon>
             {{ formatTime(notification.createdAt) }}
@@ -138,6 +146,14 @@ import {
       min-width: 0;
     }
 
+    .toast-type {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--wz-toast-accent, #16a34a);
+      line-height: 1.2;
+      min-width: 0;
+    }
+
     .toast-time {
       display: flex;
       align-items: center;
@@ -216,12 +232,16 @@ export class NotificationToastComponent {
     this.notification = data;
   }
 
-  getTypeIcon(type: NotificationType): string {
-    return NOTIFICATION_TYPE_CONFIG[type]?.icon ?? 'notifications';
+  getNotificationIcon(notification: Notification): string {
+    return this.getNotificationConfig(notification).icon;
   }
 
-  getTypeColor(type: NotificationType): string {
-    return NOTIFICATION_TYPE_CONFIG[type]?.color ?? 'var(--wz-text-muted)';
+  getNotificationColor(notification: Notification): string {
+    return this.getNotificationConfig(notification).color;
+  }
+
+  getNotificationLabel(notification: Notification): string {
+    return this.getNotificationConfig(notification).label;
   }
 
   formatTime(createdAt: string): string {
@@ -260,5 +280,11 @@ export class NotificationToastComponent {
   closeToast(event: MouseEvent): void {
     event.stopPropagation();
     this.snackBarRef.dismiss();
+  }
+
+  private getNotificationConfig(notification: Notification) {
+    return notification.displayType
+      ? NOTIFICATION_DISPLAY_TYPE_CONFIG[notification.displayType]
+      : NOTIFICATION_TYPE_CONFIG[notification.type];
   }
 }

@@ -11,7 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import {
   Notification,
-  NotificationType,
+  NOTIFICATION_DISPLAY_TYPE_CONFIG,
   NOTIFICATION_TYPE_CONFIG,
 } from '../notification.model';
 import { NotificationService } from '../notification.service';
@@ -233,16 +233,26 @@ export class NotificationBellComponent implements OnInit {
      HELPER: TYPE ICON
      ========================================================== */
 
-  getTypeIcon(type: NotificationType): string {
-    return NOTIFICATION_TYPE_CONFIG[type]?.icon ?? 'notifications';
+  getNotificationIcon(notification: Notification): string {
+    return this.getNotificationConfig(notification).icon;
   }
 
   /* ==========================================================
      HELPER: TYPE COLOR
      ========================================================== */
 
-  getTypeColor(type: NotificationType): string {
-    return NOTIFICATION_TYPE_CONFIG[type]?.color ?? 'var(--wz-text-muted)';
+  getNotificationColor(notification: Notification): string {
+    return this.getNotificationConfig(notification).color;
+  }
+
+  getNotificationLabel(notification: Notification): string {
+    return this.getNotificationConfig(notification).label;
+  }
+
+  private getNotificationConfig(notification: Notification) {
+    return notification.displayType
+      ? NOTIFICATION_DISPLAY_TYPE_CONFIG[notification.displayType]
+      : NOTIFICATION_TYPE_CONFIG[notification.type];
   }
 
   /* ==========================================================

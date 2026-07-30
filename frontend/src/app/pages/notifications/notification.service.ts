@@ -15,9 +15,13 @@ import {
 import { API_BASE_URL } from '../../core/api/api-config';
 import { AuthResponse, AuthService } from '../../auth/auth.service';
 import {
+  ADMIN_BLOCKED_NOTIFICATION_DISPLAY_TYPES,
   Notification,
   NotificationApiResponse,
+  NotificationDisplayType,
   NotificationRecipientRole,
+  ROLE_NOTIFICATION_DISPLAY_TYPES,
+  RoleNotificationRecipient,
   NotificationSourceRole,
   NotificationType,
 } from './notification.model';
@@ -272,6 +276,7 @@ export class NotificationService {
       recipientId: notification.recipientId ?? undefined,
       recipientRole:
         notification.recipientRole as NotificationRecipientRole | undefined,
+      displayType: this.resolveDisplayType(notification),
     };
   }
 
@@ -281,16 +286,30 @@ export class NotificationService {
   ): Notification[] {
     const role = this.getUserRole(user);
 
-    if (role === 'Admin') {
-      return notifications;
+    if (!this.isRoleNotificationRecipient(role)) {
+      return [];
     }
 
     return notifications.filter((notification) => {
-      if (notification.recipientRole === 'All') {
-        return true;
+      const displayType =
+        notification.displayType ?? this.resolveDisplayType(notification);
+
+      if (!ROLE_NOTIFICATION_DISPLAY_TYPES[role].includes(displayType)) {
+        return false;
       }
 
-      if (notification.recipientRole !== role) {
+      if (
+        role === 'Admin' &&
+        ADMIN_BLOCKED_NOTIFICATION_DISPLAY_TYPES.includes(displayType)
+      ) {
+        return false;
+      }
+
+      if (
+        notification.recipientRole &&
+        notification.recipientRole !== role &&
+        notification.recipientRole !== 'All'
+      ) {
         return false;
       }
 
@@ -310,6 +329,112 @@ export class NotificationService {
 
   private getUserRole(user: AuthResponse['user'] | null): string {
     return user?.role || this.authService.getRole() || '';
+  }
+
+  private isRoleNotificationRecipient(
+    role: string
+  ): role is RoleNotificationRecipient {
+    return role === 'Volunteer' || role === 'NGO' || role === 'Admin';
+  }
+
+  private resolveDisplayType(
+    notification: Pick<
+      Notification,
+      'type' | 'title' | 'message' | 'recipientRole' | 'sourceRole'
+    >
+  ): NotificationDisplayType {
+    const text = `${notification.title} ${notification.message}`.toLowerCase();
+    const recipientRole = notification.recipientRole;
+
+    if (this.hasAny(text, ['application accepted', 'accepted application'])) {
+      return 'ApplicationAccepted';
+    }
+
+    if (this.hasAny(text, ['application rejected', 'rejected application'])) {
+      return 'ApplicationRejected';
+    }
+
+    if (this.hasAny(text, ['pickup accepted', 'accepted pickup'])) {
+      return 'PickupAccepted';
+    }
+
+    if (this.hasAny(text, ['pickup rejected', 'rejected pickup'])) {
+      return 'PickupRejected';
+    }
+
+    if (
+      this.hasAny(text, [
+        'pickup schedule',
+        'pickup scheduled',
+        'scheduled pickup',
+      ])
+    ) {
+      return 'PickupSchedule';
+    }
+
+    if (
+      this.hasAny(text, [
+        'drive completed',
+        'completed drive',
+        'opportunity completed',
+        'completed opportunity',
+      ])
+    ) {
+      return 'DriveCompleted';
+    }
+
+    if (
+      this.hasAny(text, [
+        'volunteer applied',
+        'applied for an opportunity',
+        'application received',
+        'applications received',
+        'new application',
+      ])
+    ) {
+      return recipientRole === 'Admin'
+        ? 'AdminVolunteerApplied'
+        : 'ApplicationsReceived';
+    }
+
+    if (
+      this.hasAny(text, [
+        'ngo created a new opportunity',
+        'created a new opportunity',
+        'new opportunity created',
+      ])
+    ) {
+      return recipientRole === 'Admin'
+        ? 'AdminNgoCreatedOpportunity'
+        : 'NewOpportunity';
+    }
+
+    if (notification.type === 'Match') {
+      return 'MatchOpportunity';
+    }
+
+    if (notification.type === 'Message') {
+      return 'Message';
+    }
+
+    if (notification.type === 'System') {
+      return 'System';
+    }
+
+    if (
+      recipientRole === 'Admin' ||
+      notification.sourceRole === 'NGO'
+    ) {
+      return recipientRole === 'Admin'
+        ? 'AdminNgoCreatedOpportunity'
+        : 'NewOpportunity';
+    }
+
+    return 'NewOpportunity';
+  }
+
+  private hasAny(text: string, phrases: string[]): boolean {
+    return phrases.some((phrase) => text.includes(phrase));
   }
 
   private getHttpOptions(): { headers: HttpHeaders } {

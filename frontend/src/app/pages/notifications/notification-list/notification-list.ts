@@ -17,7 +17,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   Notification,
   NotificationFilter,
-  NotificationType,
+  NOTIFICATION_DISPLAY_TYPE_CONFIG,
   NOTIFICATION_FILTERS,
   NOTIFICATION_TYPE_CONFIG,
 } from '../notification.model';
@@ -298,14 +298,16 @@ export class NotificationList implements OnInit {
      HELPER METHODS
      ========================================================== */
 
-  getTypeIcon(type: NotificationType): string {
-    return NOTIFICATION_TYPE_CONFIG[type]?.icon ?? 'notifications';
+  getNotificationIcon(notification: Notification): string {
+    return this.getNotificationConfig(notification).icon;
   }
 
-  getTypeColor(type: NotificationType): string {
-    return (
-      NOTIFICATION_TYPE_CONFIG[type]?.color ?? 'var(--wz-text-muted)'
-    );
+  getNotificationColor(notification: Notification): string {
+    return this.getNotificationConfig(notification).color;
+  }
+
+  getNotificationLabel(notification: Notification): string {
+    return this.getNotificationConfig(notification).label;
   }
 
   getFilterLabel(filter: NotificationFilter): string {
@@ -324,5 +326,11 @@ export class NotificationList implements OnInit {
 
   private showMessage(message: string): void {
     this.snackBar.open(message, 'Close', { duration: 3500 });
+  }
+
+  private getNotificationConfig(notification: Notification) {
+    return notification.displayType
+      ? NOTIFICATION_DISPLAY_TYPE_CONFIG[notification.displayType]
+      : NOTIFICATION_TYPE_CONFIG[notification.type];
   }
 }
