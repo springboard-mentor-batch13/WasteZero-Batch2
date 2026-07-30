@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 
+import { MyApplicationsComponent } from './pages/applications/my-applications/my-applications';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { MyProfile } from './pages/my-profile/my-profile';
 import { EditProfile } from './pages/edit-profile/edit-profile';
@@ -18,6 +19,8 @@ import { OpportunityDetail } from './pages/opportunities/opportunity-detail/oppo
 import { opportunityManagerGuard } from './core/guards/opportunity-manager-guard';
 import { ApplicationsComponent } from './pages/applications/admin-applications';
 import { adminGuard } from './core/guards/admin-guard';
+
+import { Messages } from './pages/messages/messages';
 
 
 export const routes: Routes = [
@@ -103,9 +106,21 @@ export const routes: Routes = [
     title: 'Opportunity Details | WasteZero'
   },
   {
+  path: 'my-applications',
+  component: MyApplicationsComponent,
+  title: 'My Applications | WasteZero'
+},
+  {
     path: 'admin/applications',
     component: ApplicationsComponent,
     canActivate: [adminGuard],
     title: 'Applications | WasteZero'
-  }
+  },
+
+{
+  path: 'messages',
+  component: Messages,
+  title: 'Messages | WasteZero'
+}
+
 ];

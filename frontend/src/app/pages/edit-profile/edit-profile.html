@@ -1,1 +1,185 @@
-<p>edit-profile works!</p>
+<div class="edit-profile-page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>Edit Profile</h1>
+      <p>
+        Update your personal information and volunteer details.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="back-button"
+      (click)="cancel()">
+      ← Back to Dashboard
+    </button>
+
+  </div>
+
+
+  <div
+    *ngIf="loading"
+    class="message-card">
+    Loading your profile...
+  </div>
+
+
+  <div
+    *ngIf="errorMessage"
+    class="message-card error-message">
+    {{ errorMessage }}
+  </div>
+
+
+  <div
+    *ngIf="successMessage"
+    class="message-card success-message">
+    ✓ {{ successMessage }}
+  </div>
+
+
+  <div
+    *ngIf="!loading"
+    class="profile-card">
+
+    <div class="profile-card-header">
+
+      <div class="profile-avatar">
+        {{ user.fullName.charAt(0).toUpperCase() || 'U' }}
+      </div>
+
+      <div>
+        <h2>{{ user.fullName || 'Volunteer' }}</h2>
+        <p>{{ user.email }}</p>
+      </div>
+
+    </div>
+
+
+    <form
+      #profileForm="ngForm"
+      (ngSubmit)="saveProfile()">
+
+      <div class="form-grid">
+
+        <div class="form-group">
+
+          <label for="fullName">
+            Full Name
+          </label>
+
+          <input
+            id="fullName"
+            name="fullName"
+            type="text"
+            [(ngModel)]="user.fullName"
+            required
+            placeholder="Enter your full name">
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="email">
+            Email Address
+          </label>
+
+          <input
+            id="email"
+            name="email"
+            type="email"
+            [(ngModel)]="user.email"
+            disabled>
+
+          <small>
+            Email cannot be changed here.
+          </small>
+
+        </div>
+
+
+        <div class="form-group full-width">
+
+          <label for="location">
+            Location
+          </label>
+
+          <input
+            id="location"
+            name="location"
+            type="text"
+            [(ngModel)]="user.location"
+            placeholder="Enter your location">
+
+        </div>
+
+
+        <div class="form-group full-width">
+
+          <label for="skills">
+            Skills
+          </label>
+
+          <input
+            id="skills"
+            name="skills"
+            type="text"
+            [(ngModel)]="user.skills"
+            placeholder="Example: Recycling, Community Service, Event Management">
+
+          <small>
+            Separate multiple skills using commas.
+          </small>
+
+        </div>
+
+
+        <div class="form-group full-width">
+
+          <label for="bio">
+            Bio
+          </label>
+
+          <textarea
+            id="bio"
+            name="bio"
+            [(ngModel)]="user.bio"
+            rows="5"
+            placeholder="Tell us a little about yourself"></textarea>
+
+        </div>
+
+      </div>
+
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="cancel()">
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="
+            saving ||
+            profileForm.invalid
+          ">
+
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

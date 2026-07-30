@@ -14,9 +14,12 @@ const pickupRoutes = require('./routes/pickupRoutes');
 const opportunityRoutes = require('./routes/opportunityRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const messageRoutes = require('./routes/messageRoutes');
-const { notFound, errorHandler } = require('./middleware/errorHandler');
+const matchingRoutes = require('./routes/matchingRoutes');
 
+
+const notificationRoutes = require('./routes/notificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -43,6 +46,10 @@ app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/application', applicationRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/matches', matchingRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
+
 app.use(notFound);
 app.use(errorHandler);
 

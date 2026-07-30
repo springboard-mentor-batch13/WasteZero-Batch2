@@ -18,11 +18,13 @@ export interface Opportunity {
   category: OpportunityCategory | string;
   description: string;
   requiredSkills: string[];
+  wasteTypes?: string[];
   skillsRequired: string[];
   duration: string;
   city: string;
   state: string;
   date: Date;
+  
   eventDate: string;
   location: string;
   requiredVolunteers: number;
