@@ -67,8 +67,8 @@ const getConversation = async (req, res) => {
                 }
             ]
         })
-            .populate('senderId', '_id fullName')
-            .populate('receiverId', '_id fullName')
+            .populate('senderId', '_id fullName username')
+            .populate('receiverId', '_id fullName username')
             .sort({ createdAt: 1 });
 
         res.json({
