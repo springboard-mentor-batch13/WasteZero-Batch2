@@ -5,7 +5,7 @@ const getUsersByRole = async (req, res) => {
     try {
         const users = await User.find(
             { _id: { $ne: req.user._id } },
-            '_id fullName role'
+            '_id fullName username role'
         );
         res.json({
             success: true,
