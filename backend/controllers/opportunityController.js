@@ -17,6 +17,21 @@ const parseRequiredSkills = (requiredSkills) => {
   }
 };
 
+const parseWasteTypes = (wasteTypes) => {
+  if (Array.isArray(wasteTypes)) return wasteTypes;
+  if (typeof wasteTypes !== 'string') return [];
+
+  try {
+    const parsed = JSON.parse(wasteTypes);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return wasteTypes
+      .split(',')
+      .map(type => type.trim())
+      .filter(Boolean);
+  }
+};
+
 const sendServerError = (res, error) => {
   res.status(500).json({
     success: false,
@@ -46,21 +61,24 @@ const resolveOpportunityPlace = ({ city, state, location }) => {
 const createOpportunity = async (req, res) => {
   try {
     const {
-      title,
-      category,
-      description,
-      requiredSkills,
-      duration,
-      location,
-      city,
-      state,
-      date,
-      eventDate,
-      requiredVolunteers,
-      status,
-    } = req.body;
+  title,
+  category,
+  description,
+  requiredSkills,
+  wasteTypes,
+  duration,
+  location,
+  city,
+  state,
+  date,
+  eventDate,
+  requiredVolunteers,
+  status,
+} = req.body;
+    
 
     const skills = parseRequiredSkills(requiredSkills) || [];
+    const waste = parseWasteTypes(wasteTypes);
     const opportunityDate = date || eventDate;
     const place = resolveOpportunityPlace({ city, state, location });
 
@@ -103,7 +121,9 @@ const createOpportunity = async (req, res) => {
       category,
       description,
       requiredSkills: skills,
-      duration,
+wasteTypes: waste,
+duration,
+     
       city: place.city,
       state: place.state,
       date: opportunityDate,
@@ -337,6 +357,8 @@ const updateOpportunity = async (req, res) => {
       category,
       description,
       requiredSkills,
+      wasteTypes,
+
       duration,
       location,
       city,
@@ -349,6 +371,7 @@ const updateOpportunity = async (req, res) => {
     } = req.body;
 
     const skills = parseRequiredSkills(requiredSkills);
+    const waste = parseWasteTypes(wasteTypes);
     const updateFields = {};
     const place = resolveOpportunityPlace({ city, state, location });
 
@@ -356,6 +379,8 @@ const updateOpportunity = async (req, res) => {
     if (category !== undefined) updateFields.category = category;
     if (description !== undefined) updateFields.description = description;
     if (skills !== undefined) updateFields.requiredSkills = skills;
+    if (wasteTypes !== undefined)
+  updateFields.wasteTypes = waste;
     if (duration !== undefined) updateFields.duration = duration;
     if (location !== undefined || city !== undefined || state !== undefined) {
       if (place.location !== undefined) updateFields.location = place.location;
