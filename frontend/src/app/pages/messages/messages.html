@@ -5,9 +5,10 @@
 
 <div class="messages-container">
 
-  <!-- Left Side -->
+  <!-- ================= LEFT SIDE ================= -->
   <div class="chat-list">
 
+    <!-- Search -->
     <div class="search-box">
       <i class="bi bi-search search-icon"></i>
 
@@ -17,6 +18,7 @@
         [(ngModel)]="searchText">
     </div>
 
+    <!-- Roles -->
     @for (role of getFilteredRoles(); track role.role) {
 
       <h3
@@ -31,14 +33,69 @@
 
           <div
             class="member"
-            [class.active]="selectedMember === member"
+            [class.active]="selectedMember?._id === member._id"
             (click)="selectMember(member)">
 
-            <i class="bi bi-person-circle member-icon"></i>
+            <!-- Profile + online -->
+            <div class="member-avatar">
 
-            <span class="member-name">
-              {{ member.fullName }}
-            </span>
+              <i class="bi bi-person-circle member-icon"></i>
+
+              @if (isMemberOnline(member)) {
+                <span class="online-dot"></span>
+              }
+
+            </div>
+
+            <!-- Member details -->
+            <div class="member-details">
+
+              <div class="member-top">
+
+             <span class="member-name">
+                      {{ member.username }}
+             </span>
+
+                <!-- Last message time -->
+                @if (getLastMessage(member)) {
+                  <span class="chat-time">
+                    {{ getLastMessageTime(member) }}
+                  </span>
+                }
+
+              </div>
+
+              <!-- Last message -->
+              <div class="last-message-row">
+
+                <span class="last-message">
+
+                  @if (getLastMessage(member)) {
+
+                    <!-- Tick for own last message -->
+                    @if (isMyMessage(getLastMessage(member))) {
+
+                      <span
+                        class="message-tick small"
+                        [class.blue]="isMessageRead(getLastMessage(member))">
+                        {{ getMessageTick(getLastMessage(member)) }}
+                      </span>
+
+                    }
+
+                    {{ getLastMessageText(member) }}
+
+                  } @else {
+
+                    No messages yet
+
+                  }
+
+                </span>
+
+              </div>
+
+            </div>
 
           </div>
 
@@ -50,9 +107,11 @@
 
   </div>
 
-  <!-- Right Side -->
+
+  <!-- ================= RIGHT SIDE ================= -->
   <div class="chat-window">
 
+    <!-- Chat Header -->
     <div class="chat-header">
 
       @if (selectedMember) {
@@ -60,11 +119,37 @@
         <div class="chat-user">
 
           <div class="profile-icon">
+
             <i class="bi bi-person-circle"></i>
+
+            @if (isMemberOnline(selectedMember)) {
+              <span class="header-online-dot"></span>
+            }
+
           </div>
 
           <div class="user-info">
-            <h2>{{ selectedMember.fullName }}</h2>
+
+          <h2>
+              {{ selectedMember.username }}
+          </h2>
+
+            <span class="user-status">
+
+              @if (isMemberOnline(selectedMember)) {
+
+                <span class="online-text">
+                  Online
+                </span>
+
+              } @else {
+
+                {{ getMemberStatus(selectedMember) }}
+
+              }
+
+            </span>
+
           </div>
 
         </div>
@@ -77,60 +162,126 @@
 
     </div>
 
+
+    <!-- ================= CHAT BODY ================= -->
     <div class="chat-body">
 
       @if (selectedMember) {
 
-        @for (message of selectedMember.messages; track message._id) {
+        @if ((selectedMember?.messages ?? []).length > 0) {
 
-          <div
-            class="message"
-            [ngClass]="{
-              'sent': message.senderId === currentUserId,
-              'received': message.senderId !== currentUserId
-            }">
+          @for (
+            message of (selectedMember?.messages ?? []);
+            track message._id
+          ) {
 
-              <!-- Sender / Receiver Name -->
-               <strong class="message-name">
-               {{ message.senderId === currentUserId ? 'You' : selectedMember.fullName }}
-               </strong>
+            <div
+              class="message"
+              [ngClass]="{
+                'sent': isMyMessage(message),
+                'received': !isMyMessage(message)
+              }">
 
-            <!--
-                <strong class="message-name">
-                  {{ message.senderId === currentUserId ? message.senderName : message.receiverName }}
-              </strong>
-            -->
-             
-            
+          <strong class="message-name">
+                 {{
+                          isMyMessage(message)  ? 'You' : (
+                          message.senderId?._id === currentUserId
+                          ? message.receiverId?.username
+                          : message.senderId?.username
+                                )
+                  }}
+           </strong>
 
-            <p>{{ message.content }}</p>
 
-            <span class="time">
-              {{ message.createdAt | date:'shortTime' }}
-            </span>
+              <!-- Message + Time + Tick -->
+              <div class="message-row">
 
+                <!-- Message text -->
+                <p class="message-text">
+                  {{ message.content }}
+                </p>
+
+                <!-- Time -->
+                <span class="time">
+                  {{ message.createdAt | date:'shortTime' }}
+                </span>
+
+                <!-- Message tick -->
+                @if (isMyMessage(message)) {
+
+                  <span
+                    class="message-tick"
+                    [class.blue]="isMessageRead(message)">
+
+                    {{ getMessageTick(message) }}
+
+                  </span>
+
+                }
+
+              </div>
+
+            </div>
+
+          }
+
+        } @else {
+
+          <div class="empty-chat">
+            <i class="bi bi-chat-dots"></i>
+            <p>No messages yet</p>
+            <span>Send a message to start the conversation.</span>
           </div>
 
         }
 
       } @else {
 
-        <p>Select a member to start chatting.</p>
+        <div class="empty-chat">
+          <i class="bi bi-chat-dots"></i>
+          <p>Select a member to start chatting.</p>
+        </div>
 
       }
 
     </div>
 
+
+    <!-- ================= INPUT ================= -->
     <div class="chat-input">
 
-      <input
-        type="text"
-        placeholder="Type a message..."
-        [(ngModel)]="newMessage">
+      @if (selectedMember) {
 
-      <button (click)="sendMessage()">
-        Send
-      </button>
+        <input
+          type="text"
+          placeholder="Type a message..."
+          [(ngModel)]="newMessage"
+          (keyup.enter)="sendMessage()">
+
+        <button
+          type="button"
+          (click)="sendMessage()"
+          [disabled]="!newMessage.trim()">
+
+          <i class="bi bi-send"></i>
+          Send
+
+        </button>
+
+      } @else {
+
+        <input
+          type="text"
+          placeholder="Select a member first"
+          disabled>
+
+        <button
+          type="button"
+          disabled>
+          Send
+        </button>
+
+      }
 
     </div>
 

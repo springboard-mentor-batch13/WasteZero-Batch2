@@ -22,42 +22,64 @@ export class MessagesService {
     };
   }
 
+  // =========================
+  // GET USERS BY ROLE
+  // =========================
   getUsersByRole(): Observable<any[]> {
     return this.http
       .get<any>(`${this.apiUrl}/users`, this.getHeaders())
       .pipe(
         map(res => [
+
           {
             role: 'Admin',
-            members: res.data.admins.map((user: any) => ({
+            members: (res.data.admins || []).map((user: any) => ({
+              ...user,
               _id: user._id,
-              fullName: user.fullName,
+            fullName: user.fullName,
+            username: user.username || user.fullName,
               role: user.role,
-              messages: []
+              messages: user.messages || [],
+              online: user.online ?? user.isOnline ?? false,
+              lastSeen: user.lastSeen || null
             }))
           },
+
           {
             role: 'NGO',
-            members: res.data.ngos.map((user: any) => ({
+            members: (res.data.ngos || []).map((user: any) => ({
+              ...user,
               _id: user._id,
-              fullName: user.fullName,
+             fullName: user.fullName,
+             username: user.username || user.fullName,
               role: user.role,
-              messages: []
+              messages: user.messages || [],
+              online: user.online ?? user.isOnline ?? false,
+              lastSeen: user.lastSeen || null
             }))
           },
+
           {
             role: 'Volunteer',
-            members: res.data.volunteers.map((user: any) => ({
+            members: (res.data.volunteers || []).map((user: any) => ({
+              ...user,
               _id: user._id,
-              fullName: user.fullName,
+             fullName: user.fullName,
+             username: user.username || user.fullName,
               role: user.role,
-              messages: []
+              messages: user.messages || [],
+              online: user.online ?? user.isOnline ?? false,
+              lastSeen: user.lastSeen || null
             }))
           }
+
         ])
       );
   }
 
+  // =========================
+  // GET CONVERSATION
+  // =========================
   getConversation(userId: string): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/conversation/${userId}`,
@@ -65,7 +87,14 @@ export class MessagesService {
     );
   }
 
-  sendMessage(receiverId: string, content: string): Observable<any> {
+  // =========================
+  // SEND MESSAGE
+  // =========================
+  sendMessage(
+    receiverId: string,
+    content: string
+  ): Observable<any> {
+
     return this.http.post<any>(
       `${this.apiUrl}/send`,
       {
