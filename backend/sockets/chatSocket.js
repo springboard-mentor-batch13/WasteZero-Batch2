@@ -32,6 +32,11 @@ const registerChatSocket = (io) => {
     io.on('connection', (socket) => {
 
         onlineUsers.set(socket.user._id.toString(), socket.id);
+        io.emit('userOnline', {
+            userId: socket.user._id,
+            username: socket.user.username,
+            fullName: socket.user.fullName
+        });
 
         console.log(`${socket.user.fullName} connected`);
         socket.on('sendMessage', async ({ receiverId, content }) => {
@@ -39,13 +44,23 @@ const registerChatSocket = (io) => {
                 const message = await Message.create({
                     senderId: socket.user._id,
                     receiverId,
-                    content: content.trim()
+                    content: content.trim(),
+                    status: 'sent'
                 });
 
                 const receiverSocketId = onlineUsers.get(receiverId);
 
                 if (receiverSocketId) {
+
+                    message.status = 'delivered';
+                    await message.save();
+
                     io.to(receiverSocketId).emit('receiveMessage', message);
+
+                    socket.emit('messageDelivered', {
+                        messageId: message._id,
+                        status: 'delivered'
+                    });
                 }
 
                 socket.emit('messageSent', message);
@@ -57,7 +72,36 @@ const registerChatSocket = (io) => {
             }
         });
 
+        socket.on('markAsRead', async ({ messageId }) => {
+            try {
+                const message = await Message.findById(messageId);
+
+                if (!message) return;
+
+                message.status = 'read';
+                await message.save();
+
+                const senderSocketId = onlineUsers.get(message.senderId.toString());
+
+                if (senderSocketId) {
+                    io.to(senderSocketId).emit('messageRead', {
+                        messageId: message._id,
+                        status: 'read'
+                    });
+                }
+
+            } catch (error) {
+                socket.emit('messageError', {
+                    message: error.message
+                });
+            }
+        });
+
         socket.on('disconnect', () => {
+
+            io.emit('userOffline', {
+                userId: socket.user._id
+            });
 
             onlineUsers.delete(socket.user._id.toString());
 
