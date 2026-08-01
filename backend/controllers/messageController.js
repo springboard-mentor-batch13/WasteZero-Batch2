@@ -5,7 +5,7 @@ const getUsersByRole = async (req, res) => {
     try {
         const users = await User.find(
             { _id: { $ne: req.user._id } },
-            '_id fullName role'
+            '_id fullName username role'
         );
         res.json({
             success: true,
@@ -67,8 +67,8 @@ const getConversation = async (req, res) => {
                 }
             ]
         })
-            .populate('senderId', '_id fullName')
-            .populate('receiverId', '_id fullName')
+            .populate('senderId', '_id fullName username')
+            .populate('receiverId', '_id fullName username')
             .sort({ createdAt: 1 });
 
         res.json({
