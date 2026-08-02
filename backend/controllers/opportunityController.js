@@ -1,6 +1,7 @@
 const Opportunity = require('../models/Opportunity');
 const Application = require('../models/Application');
 const User = require('../models/User');
+const Notification = require('../models/Notification'); // 👈 Import Notification Model
 
 const parseRequiredSkills = (requiredSkills) => {
   if (Array.isArray(requiredSkills)) return requiredSkills;
@@ -61,21 +62,20 @@ const resolveOpportunityPlace = ({ city, state, location }) => {
 const createOpportunity = async (req, res) => {
   try {
     const {
-  title,
-  category,
-  description,
-  requiredSkills,
-  wasteTypes,
-  duration,
-  location,
-  city,
-  state,
-  date,
-  eventDate,
-  requiredVolunteers,
-  status,
-} = req.body;
-    
+      title,
+      category,
+      description,
+      requiredSkills,
+      wasteTypes,
+      duration,
+      location,
+      city,
+      state,
+      date,
+      eventDate,
+      requiredVolunteers,
+      status,
+    } = req.body;
 
     const skills = parseRequiredSkills(requiredSkills) || [];
     const waste = parseWasteTypes(wasteTypes);
@@ -121,9 +121,8 @@ const createOpportunity = async (req, res) => {
       category,
       description,
       requiredSkills: skills,
-wasteTypes: waste,
-duration,
-     
+      wasteTypes: waste,
+      duration,
       city: place.city,
       state: place.state,
       date: opportunityDate,
@@ -132,6 +131,31 @@ duration,
       requiredVolunteers: volunteerCount,
       status: status || 'Open',
       imageUrl: req.file?.path || '',
+    });
+
+    // ----------------------------------------------------
+    // 🔔 1. NOTIFICATION TRIGGER: NEW OPPORTUNITY POSTED
+    // ----------------------------------------------------
+    // Broadcast notification to all Volunteers
+    await Notification.create({
+      recipientId: null,
+      recipientRole: 'Volunteer',
+      sourceRole: 'NGO',
+      title: 'New Opportunity Available',
+      message: `New opportunity "${title}" has been posted in ${place.city}!`,
+      type: 'Opportunity',
+      redirectUrl: '/opportunities'
+    });
+
+    // Tracking notification for Admin monitors
+    await Notification.create({
+      recipientId: null,
+      recipientRole: 'Admin',
+      sourceRole: 'NGO',
+      title: 'NGO Created Opportunity',
+      message: `An NGO posted a new opportunity: "${title}".`,
+      type: 'Opportunity',
+      redirectUrl: '/admin/opportunities'
     });
 
     res.status(201).json({
@@ -223,12 +247,11 @@ const filterOpportunities = async (req, res) => {
   }
 };
 
-  const getDashboardStatistics = async (req, res) => {
+const getDashboardStatistics = async (req, res) => {
   try {
     const currentUserId = req.user._id;
     const today = new Date();
 
-    // Run independent database queries in parallel
     const [
       totalOpportunities,
       openOpportunities,
@@ -274,7 +297,6 @@ const filterOpportunities = async (req, res) => {
       }).distinct('_id')
     ]);
 
-    // This depends on myOpportunityIds, so run it afterward
     const myOpportunityApplications =
       await Application.countDocuments({
         opportunityId: { $in: myOpportunityIds }
@@ -358,7 +380,6 @@ const updateOpportunity = async (req, res) => {
       description,
       requiredSkills,
       wasteTypes,
-
       duration,
       location,
       city,
@@ -379,8 +400,7 @@ const updateOpportunity = async (req, res) => {
     if (category !== undefined) updateFields.category = category;
     if (description !== undefined) updateFields.description = description;
     if (skills !== undefined) updateFields.requiredSkills = skills;
-    if (wasteTypes !== undefined)
-  updateFields.wasteTypes = waste;
+    if (wasteTypes !== undefined) updateFields.wasteTypes = waste;
     if (duration !== undefined) updateFields.duration = duration;
     if (location !== undefined || city !== undefined || state !== undefined) {
       if (place.location !== undefined) updateFields.location = place.location;
@@ -399,6 +419,30 @@ const updateOpportunity = async (req, res) => {
       { $set: updateFields },
       { new: true, runValidators: true }
     );
+
+    // ----------------------------------------------------
+    // 🔔 2. NOTIFICATION TRIGGER: OPPORTUNITY UPDATED
+    // ----------------------------------------------------
+    // Notify ONLY ACTIVE applicants (Pending or Accepted)
+    const activeApplications = await Application.find({ 
+      opportunityId: req.params.id,
+      status: { $in: ['Pending', 'Accepted'] }
+    }).select('volunteerId');
+
+    if (activeApplications.length > 0) {
+      const notificationPromises = activeApplications.map((app) => 
+        Notification.create({
+          recipientId: app.volunteerId,
+          recipientRole: 'Volunteer',
+          sourceRole: 'NGO',
+          title: 'Opportunity Updated',
+          message: `The details for "${opportunity.title}" have been updated. Please review the changes!`,
+          type: 'Opportunity',
+          redirectUrl: `/opportunities/${opportunity._id}`
+        })
+      );
+      await Promise.all(notificationPromises);
+    }
 
     res.status(200).json({
       success: true,
@@ -425,6 +469,30 @@ const deleteOpportunity = async (req, res) => {
       });
     }
 
+    // ----------------------------------------------------
+    // 🔔 3. NOTIFICATION TRIGGER: OPPORTUNITY CANCELLED
+    // ----------------------------------------------------
+    // Notify ONLY ACTIVE applicants (Pending or Accepted). Skip Rejected / Withdrawn.
+    const activeApplications = await Application.find({ 
+      opportunityId: req.params.id,
+      status: { $in: ['Pending', 'Accepted'] }
+    }).select('volunteerId');
+
+    if (activeApplications.length > 0) {
+      const notificationPromises = activeApplications.map((app) =>
+        Notification.create({
+          recipientId: app.volunteerId,
+          recipientRole: 'Volunteer',
+          sourceRole: 'NGO',
+          title: 'Opportunity Cancelled',
+          message: `The opportunity "${existingOpportunity.title}" has been cancelled.`,
+          type: 'Opportunity',
+          redirectUrl: '/opportunities'
+        })
+      );
+      await Promise.all(notificationPromises);
+    }
+
     await existingOpportunity.deleteOne();
 
     res.status(200).json({
@@ -438,7 +506,6 @@ const deleteOpportunity = async (req, res) => {
 
 const getAdminDashboardStatistics = async (req, res) => {
   try {
-    // Get all Admin and NGO user IDs
     const [totalUsers, admins, ngos, totalOpportunities] = await Promise.all([
       User.countDocuments(),
       User.find({ role: 'Admin' }).select('_id').lean(),
@@ -449,7 +516,6 @@ const getAdminDashboardStatistics = async (req, res) => {
     const adminIds = admins.map((user) => user._id);
     const ngoIds = ngos.map((user) => user._id);
 
-    // Count opportunities based on the role of the creator
     const [adminOpportunities, ngoOpportunities] = await Promise.all([
       Opportunity.countDocuments({
         postedBy: { $in: adminIds }
@@ -475,7 +541,6 @@ const getAdminDashboardStatistics = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createOpportunity,
   getAllOpportunities,
@@ -487,4 +552,3 @@ module.exports = {
   updateOpportunity,
   deleteOpportunity,
 };
-
