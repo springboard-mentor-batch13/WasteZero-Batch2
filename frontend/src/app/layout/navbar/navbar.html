@@ -10,7 +10,7 @@
 
   <div class="nav-right">
 
-    <i class="bi bi-bell notification"></i>
+    <app-notification-bell />
 
     @if (user$ | async; as user) {
       <div class="profile" (click)="toggleDropdown()">
