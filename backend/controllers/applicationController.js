@@ -1,5 +1,6 @@
 const Application = require('../models/Application');
 const Opportunity = require('../models/Opportunity');
+const Notification = require('../models/Notification'); // 👈 Import Notification Model
 const mongoose = require('mongoose');
 
 const deletedOpportunityTitle = 'Opportunity no longer exists';
@@ -44,7 +45,8 @@ const applyForOpportunity = async (req, res) => {
             });
         }
 
-        const opportunity = await Opportunity.findById(opportunityId).select('title');
+        // Fetch opportunity title along with createdBy / ngoId for notification routing
+        const opportunity = await Opportunity.findById(opportunityId).select('title createdBy ngoId');
 
         if (!opportunity) {
             return res.status(404).json({
@@ -73,13 +75,42 @@ const applyForOpportunity = async (req, res) => {
             email,
         });
 
+        // ----------------------------------------------------
+        // 🔔 1. NOTIFICATION TRIGGER: FOR NGO & ADMIN
+        // ----------------------------------------------------
+        const ngoRecipientId = opportunity.createdBy || opportunity.ngoId;
+
+        // Trigger Notification for the NGO owner of the opportunity
+        if (ngoRecipientId) {
+            await Notification.create({
+                recipientId: ngoRecipientId,
+                recipientRole: 'NGO',
+                sourceRole: 'Volunteer',
+                title: 'New Application Received',
+                message: `${fullName} applied for your opportunity "${opportunity.title}".`,
+                type: 'Opportunity',
+                redirectUrl: '/admin/applications'
+            });
+        }
+
+        // Trigger Broadcast Notification for Admin monitors
+        await Notification.create({
+            recipientId: null,
+            recipientRole: 'Admin',
+            sourceRole: 'Volunteer',
+            title: 'Volunteer Applied',
+            message: `${fullName} applied for "${opportunity.title}".`,
+            type: 'Opportunity',
+            redirectUrl: '/admin/applications'
+        });
+
         res.status(201).json({
             success: true,
             message: 'Application submitted successfully',
             data: application,
         });
     } catch (error) {
-        console.error(error);
+        console.error('Apply for opportunity error:', error);
 
         if (error.code === 11000) {
             return res.status(400).json({
@@ -154,7 +185,7 @@ const acceptApplication = async (req, res) => {
             req.params.id,
             { status: 'Accepted' },
             { new: true }
-        );
+        ).populate('opportunityId', 'title');
 
         if (!application) {
             return res.status(404).json({
@@ -163,13 +194,28 @@ const acceptApplication = async (req, res) => {
             });
         }
 
+        // ----------------------------------------------------
+        // 🔔 2. NOTIFICATION TRIGGER: FOR VOLUNTEER (ACCEPTED)
+        // ----------------------------------------------------
+        const oppTitle = application.opportunityTitle || application.opportunityId?.title || 'the opportunity';
+        
+        await Notification.create({
+            recipientId: application.volunteerId,
+            recipientRole: 'Volunteer',
+            sourceRole: 'NGO',
+            title: 'Application Accepted',
+            message: `Your application for "${oppTitle}" has been accepted!`,
+            type: 'Opportunity',
+            redirectUrl: '/opportunities'
+        });
+
         res.status(200).json({
             success: true,
             message: 'Application accepted',
             data: application,
         });
     } catch (error) {
-        console.error(error);
+        console.error('Accept application error:', error);
 
         res.status(500).json({
             success: false,
@@ -184,7 +230,7 @@ const rejectApplication = async (req, res) => {
             req.params.id,
             { status: 'Rejected' },
             { new: true }
-        );
+        ).populate('opportunityId', 'title');
 
         if (!application) {
             return res.status(404).json({
@@ -193,13 +239,28 @@ const rejectApplication = async (req, res) => {
             });
         }
 
+        // ----------------------------------------------------
+        // 🔔 3. NOTIFICATION TRIGGER: FOR VOLUNTEER (REJECTED)
+        // ----------------------------------------------------
+        const oppTitle = application.opportunityTitle || application.opportunityId?.title || 'the opportunity';
+
+        await Notification.create({
+            recipientId: application.volunteerId,
+            recipientRole: 'Volunteer',
+            sourceRole: 'NGO',
+            title: 'Application Rejected',
+            message: `Your application for "${oppTitle}" was not selected this time.`,
+            type: 'Opportunity',
+            redirectUrl: '/opportunities'
+        });
+
         res.status(200).json({
             success: true,
             message: 'Application rejected',
             data: application,
         });
     } catch (error) {
-        console.error(error);
+        console.error('Reject application error:', error);
 
         res.status(500).json({
             success: false,
@@ -213,34 +274,27 @@ const getVolunteerDashboardStats = async (req, res) => {
         const volunteerId = req.user._id;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        // Total opportunities available in the system
+
         const availableOpportunities = await Opportunity.countDocuments();
 
-        // Get every application submitted by this volunteer
-        // and populate the corresponding opportunity date
         const myApplicationsList = await Application.find({
             volunteerId
         })
         .select('status opportunityId')
         .populate('opportunityId', 'date eventDate');
 
-        // Pending + Accepted + Rejected
         const myApplications = myApplicationsList.length;
 
         let completedOpportunities = 0;
         let pendingOpportunities = 0;
 
         for (const application of myApplicationsList) {
-
-            // Only accepted applications count as
-            // completed/pending opportunities
             if (application.status !== 'Accepted') {
                 continue;
             }
 
             const opportunity = application.opportunityId;
 
-            // Ignore application if its opportunity was deleted
             if (!opportunity) {
                 continue;
             }
@@ -285,7 +339,6 @@ const getVolunteerDashboardStats = async (req, res) => {
     }
 };
 
-// Get applications submitted by the currently logged-in volunteer
 const getMyApplications = async (req, res) => {
     try {
         const volunteerId = req.user._id;
