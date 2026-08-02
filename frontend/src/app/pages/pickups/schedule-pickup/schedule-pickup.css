@@ -1,0 +1,55 @@
+.schedule-pickup-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 40px) clamp(16px, 3vw, 32px) 48px;
+  color: var(--wz-text-primary);
+}
+
+header {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--wz-primary);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  font-weight: 750;
+}
+
+.empty-card {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 44px 20px;
+  text-align: center;
+  background: var(--wz-surface) !important;
+  color: var(--wz-text-secondary);
+  border: 1px dashed var(--wz-border-strong);
+  border-radius: 16px;
+  box-shadow: var(--wz-shadow-sm);
+}
+
+.empty-card mat-icon {
+  width: 42px;
+  height: 42px;
+  color: var(--wz-primary);
+  font-size: 42px;
+}
+
+.empty-card h2 {
+  margin: 8px 0 0;
+  color: var(--wz-text-primary);
+  font-size: 1.25rem;
+}
+
+.empty-card p {
+  max-width: 520px;
+  margin: 0;
+}
