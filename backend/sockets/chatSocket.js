@@ -32,8 +32,20 @@ const registerChatSocket = (io) => {
     io.on('connection', (socket) => {
 
         onlineUsers.set(socket.user._id.toString(), socket.id);
+        console.log("Socket User:", {
+            id: socket.user._id.toString(),
+            username: socket.user.username,
+            fullName: socket.user.fullName
+        });
+
+        console.log("Emitting userOnline:", {
+            userId: socket.user._id.toString(),
+            username: socket.user.username,
+            fullName: socket.user.fullName
+        });
+
         io.emit('userOnline', {
-            userId: socket.user._id,
+            userId: socket.user._id.toString(),
             username: socket.user.username,
             fullName: socket.user.fullName
         });
@@ -96,11 +108,10 @@ const registerChatSocket = (io) => {
                 });
             }
         });
-
         socket.on('disconnect', () => {
 
             io.emit('userOffline', {
-                userId: socket.user._id
+                userId: socket.user._id.toString()
             });
 
             onlineUsers.delete(socket.user._id.toString());
