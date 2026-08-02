@@ -3,34 +3,76 @@ const Pickup = require('../models/Pickup');
 /**
  * Create a new pickup request for the authenticated user.
  */
+const User = require('../models/User');
+
 const createPickup = async (req, res) => {
   try {
-    const { wasteType, pickupAddress, pickupDate } = req.body;
+    const {
+      ngo,
+      wasteType,
+      pickupAddress,
+      state,
+      city,
+      area,
+      pickupDate,
+      pickupTime,
+    } = req.body;
 
-    // Validate required fields
-    if (!wasteType || !pickupAddress || !pickupDate) {
+    if (
+      !ngo ||
+      !wasteType ||
+      !pickupAddress ||
+      !state ||
+      !city ||
+      !area ||
+      !pickupDate ||
+      !pickupTime
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide wasteType, pickupAddress, and pickupDate',
+        message: 'Please provide all required fields.',
       });
     }
 
-    // Create the pickup document
-    const pickup = await Pickup.create({
-      user: req.user._id,
-      wasteType,
-      pickupAddress,
-      pickupDate,
+    // Verify NGO exists
+    const ngoUser = await User.findOne({
+      _id: ngo,
+      role: 'NGO',
     });
 
-    // Return success response
+    if (!ngoUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Selected NGO not found.',
+      });
+    }
+
+    const pickup = await Pickup.create({
+      user: req.user._id,
+      ngo,
+      wasteType,
+      pickupAddress,
+      state,
+      city,
+      area,
+      pickupDate,
+      pickupTime,
+      status: 'Pending',
+    });
+
     res.status(201).json({
       success: true,
-      message: 'Pickup request created successfully',
+      message: 'Pickup request created successfully.',
       data: pickup,
     });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
   }
 };
 
@@ -40,8 +82,11 @@ const createPickup = async (req, res) => {
 const getMyPickups = async (req, res) => {
   try {
     // Find all pickups for the logged-in user and sort by newest first
-    const pickups = await Pickup.find({ user: req.user._id }).sort({ createdAt: -1 });
-
+const pickups = await Pickup.find({
+  user: req.user._id,
+})
+.populate('ngo', 'username fullName')
+.sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
       data: pickups,
@@ -56,8 +101,9 @@ const getMyPickups = async (req, res) => {
  */
 const getPickupById = async (req, res) => {
   try {
-    const pickup = await Pickup.findById(req.params.id);
-
+const pickup = await Pickup.findById(req.params.id)
+.populate('user', 'fullName username')
+.populate('ngo', 'fullName username');
     // Return 404 if not found
     if (!pickup) {
       return res.status(404).json({ success: false, message: 'Pickup not found' });
@@ -77,7 +123,18 @@ const getPickupById = async (req, res) => {
  */
 const updatePickup = async (req, res) => {
   try {
-    const { wasteType, pickupAddress, pickupDate, status } = req.body;
+const {
+  wasteType,
+  pickupAddress,
+  state,
+  city,
+  area,
+  pickupDate,
+  pickupTime,
+  status,
+} = req.body;   
+
+
 
     // Build update object based on provided fields
     const updateFields = {};
@@ -85,7 +142,10 @@ const updatePickup = async (req, res) => {
     if (pickupAddress) updateFields.pickupAddress = pickupAddress;
     if (pickupDate) updateFields.pickupDate = pickupDate;
     if (status) updateFields.status = status;
-
+    if (state) updateFields.state = state;
+if (city) updateFields.city = city;
+if (area) updateFields.area = area;
+if (pickupTime) updateFields.pickupTime = pickupTime;
     const pickup = await Pickup.findByIdAndUpdate(
       req.params.id,
       { $set: updateFields },
