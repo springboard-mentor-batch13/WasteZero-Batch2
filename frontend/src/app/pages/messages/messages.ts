@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessagesService } from './messages.service';
 import { SocketService } from '../../services/socket.service';
+
 
 @Component({
   selector: 'app-messages',
@@ -15,7 +16,8 @@ export class Messages implements OnInit {
 
   constructor(
   private messageService: MessagesService,
-  private socketService: SocketService
+  private socketService: SocketService,
+  private cdr: ChangeDetectorRef
 ) {}
 
   roles: any[] = [];
@@ -59,8 +61,8 @@ export class Messages implements OnInit {
      this.loadUsers();
 
      this.roles.forEach((role: any) => {
-  role.members.forEach((member: any) => {
-    console.log(
+     role.members.forEach((member: any) => {
+     console.log(
       member.username,
       member._id,
       member.online
@@ -95,9 +97,6 @@ export class Messages implements OnInit {
 
 }
 
-
-
-
   // =========================
   // LOAD USERS
   // =========================
@@ -106,6 +105,8 @@ export class Messages implements OnInit {
   this.messageService.getUsersByRole().subscribe({
     next: (data: any[]) => {
 
+       console.log('API Response:', data);
+
       // Volunteer can message only Admin and NGO
       if (this.currentUserRole === 'Volunteer') {
         data = data.filter(role =>
@@ -113,7 +114,22 @@ export class Messages implements OnInit {
         );
       }
 
+      // Admin should not see Admin role
+      if (this.currentUserRole === 'Admin') {
+        data = data.filter(role =>
+          role.role !== 'Admin'
+        );
+      }
+
+      if (this.currentUserRole === 'NGO') {
+    data = data.filter(role => role.role !== 'NGO');
+  }
+
+      console.log('After Filter:', data);
+
       this.roles = data;
+       this.cdr.detectChanges();
+
      console.log('Users by role:', this.roles);
 
       this.roles.forEach((role: any) => {
@@ -121,8 +137,24 @@ export class Messages implements OnInit {
 
           this.messageService.getConversation(member._id).subscribe({
             next: (res: any) => {
-              member.messages = res.data || [];
-            },
+
+           member.messages = res.data || [];
+
+       role.members.sort((a: any, b: any) => {
+
+          const aTime = a.messages?.length
+            ? new Date(a.messages[a.messages.length - 1].createdAt).getTime()
+            : 0;
+
+          const bTime = b.messages?.length
+            ? new Date(b.messages[b.messages.length - 1].createdAt).getTime()
+            : 0;
+
+          return bTime - aTime;
+        });
+
+      },
+          
             error: () => {
               member.messages = [];
             }

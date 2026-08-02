@@ -27,7 +27,7 @@
         {{ role.role }}
       </h3>
 
-      @if (expandedRole === role.role || searchText.trim()) {
+       @if (expandedRole === role.role || searchText.trim()) {
 
         @for (member of role.members; track member._id) {
 
