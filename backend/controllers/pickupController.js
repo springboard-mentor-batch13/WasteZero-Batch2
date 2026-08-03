@@ -1,4 +1,27 @@
 const Pickup = require('../models/Pickup');
+const Notification = require('../models/Notification');
+
+const populatePickupUser = (query) =>
+  query.populate('user', 'fullName username email phone contact mobile');
+
+const createPickupNotification = async ({
+  recipientId = null,
+  recipientRole,
+  sourceRole,
+  title,
+  message,
+  redirectUrl,
+}) => {
+  return Notification.create({
+    recipientId,
+    recipientRole,
+    sourceRole,
+    title,
+    message,
+    type: 'System',
+    redirectUrl,
+  });
+};
 
 /**
  * Create a new pickup request for the authenticated user.
@@ -23,6 +46,14 @@ const createPickup = async (req, res) => {
       pickupDate,
     });
 
+    await createPickupNotification({
+      recipientRole: 'NGO',
+      sourceRole: 'Volunteer',
+      title: 'Pickup Scheduled',
+      message: `${req.user.fullName || req.user.username || 'A volunteer'} scheduled a pickup for ${wasteType}.`,
+      redirectUrl: '/ngo/pickup-requests',
+    });
+
     // Return success response
     res.status(201).json({
       success: true,
@@ -39,8 +70,14 @@ const createPickup = async (req, res) => {
  */
 const getMyPickups = async (req, res) => {
   try {
-    // Find all pickups for the logged-in user and sort by newest first
-    const pickups = await Pickup.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const query =
+      req.user.role === 'NGO' || req.user.role === 'Admin'
+        ? {}
+        : { user: req.user._id };
+
+    const pickups = await populatePickupUser(
+      Pickup.find(query).sort({ createdAt: -1 })
+    );
 
     res.status(200).json({
       success: true,
@@ -56,11 +93,18 @@ const getMyPickups = async (req, res) => {
  */
 const getPickupById = async (req, res) => {
   try {
-    const pickup = await Pickup.findById(req.params.id);
+    const pickup = await populatePickupUser(Pickup.findById(req.params.id));
 
     // Return 404 if not found
     if (!pickup) {
       return res.status(404).json({ success: false, message: 'Pickup not found' });
+    }
+
+    const isOwner = pickup.user?._id?.toString() === req.user._id.toString();
+    const canManagePickups = req.user.role === 'NGO' || req.user.role === 'Admin';
+
+    if (!isOwner && !canManagePickups) {
+      return res.status(403).json({ success: false, message: 'Forbidden: insufficient role' });
     }
 
     res.status(200).json({
@@ -86,15 +130,51 @@ const updatePickup = async (req, res) => {
     if (pickupDate) updateFields.pickupDate = pickupDate;
     if (status) updateFields.status = status;
 
-    const pickup = await Pickup.findByIdAndUpdate(
+    const existingPickup = await Pickup.findById(req.params.id);
+
+    if (!existingPickup) {
+      return res.status(404).json({ success: false, message: 'Pickup not found' });
+    }
+
+    const isOwner = existingPickup.user.toString() === req.user._id.toString();
+    const canManagePickups = req.user.role === 'NGO' || req.user.role === 'Admin';
+
+    if (!isOwner && !canManagePickups) {
+      return res.status(403).json({ success: false, message: 'Forbidden: insufficient role' });
+    }
+
+    if (status && !canManagePickups) {
+      return res.status(403).json({ success: false, message: 'Only NGOs or Admins can update pickup status' });
+    }
+
+    const pickup = await populatePickupUser(Pickup.findByIdAndUpdate(
       req.params.id,
       { $set: updateFields },
       { new: true, runValidators: true } // Returns the modified document
-    );
+    ));
 
-    // Return 404 if not found
-    if (!pickup) {
-      return res.status(404).json({ success: false, message: 'Pickup not found' });
+    if (status && status !== existingPickup.status) {
+      const statusTitle =
+        status === 'Assigned'
+          ? 'Pickup Accepted'
+          : status === 'Cancelled'
+            ? 'Pickup Rejected'
+            : 'Pickup Status Updated';
+      const statusMessage =
+        status === 'Assigned'
+          ? 'Your pickup request has been accepted by the NGO.'
+          : status === 'Cancelled'
+            ? 'Your pickup request has been rejected by the NGO.'
+            : `Your pickup request status changed to ${status}.`;
+
+      await createPickupNotification({
+        recipientId: existingPickup.user,
+        recipientRole: 'Volunteer',
+        sourceRole: req.user.role,
+        title: statusTitle,
+        message: statusMessage,
+        redirectUrl: '/notifications',
+      });
     }
 
     res.status(200).json({

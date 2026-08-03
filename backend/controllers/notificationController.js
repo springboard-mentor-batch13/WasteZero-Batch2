@@ -16,7 +16,8 @@ const getNotifications = async (req, res, next) => {
       query = {
         $or: [
           { recipientId: userId },
-          { recipientRole: 'All' }
+          { recipientRole: 'All' },
+          { recipientRole: userRole, recipientId: null }
         ]
       };
     }
@@ -47,7 +48,8 @@ const getUnreadCount = async (req, res, next) => {
     if (userRole !== 'Admin') {
       query.$or = [
         { recipientId: userId },
-        { recipientRole: 'All' }
+        { recipientRole: 'All' },
+        { recipientRole: userRole, recipientId: null }
       ];
     }
 
@@ -167,7 +169,8 @@ const markAllAsRead = async (req, res, next) => {
       query = {
         $or: [
           { recipientId: userId },
-          { recipientRole: 'All' }
+          { recipientRole: 'All' },
+          { recipientRole: userRole, recipientId: null }
         ]
       };
     }
