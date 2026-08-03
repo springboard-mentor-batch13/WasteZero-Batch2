@@ -10,14 +10,14 @@ const getNotifications = async (req, res, next) => {
     const userId = req.user._id || req.user.id;
     const userRole = req.user.role;
 
-    // Admin sees all notifications; Volunteers/NGOs see their own or broadcasted ('All') ones
+    // Admin sees all notifications; Volunteers/NGOs see their direct ones OR role-based/broadcast ones
     let query = {};
     if (userRole !== 'Admin') {
       query = {
         $or: [
           { recipientId: userId },
-          { recipientRole: 'All' },
-          { recipientRole: userRole, recipientId: null }
+          { recipientRole: userRole }, // 👈 FIXED: Matches 'Volunteer' or 'NGO'
+          { recipientRole: 'All' }
         ]
       };
     }
@@ -48,8 +48,8 @@ const getUnreadCount = async (req, res, next) => {
     if (userRole !== 'Admin') {
       query.$or = [
         { recipientId: userId },
-        { recipientRole: 'All' },
-        { recipientRole: userRole, recipientId: null }
+        { recipientRole: userRole }, // 👈 FIXED: Matches 'Volunteer' or 'NGO'
+        { recipientRole: 'All' }
       ];
     }
 
@@ -169,8 +169,8 @@ const markAllAsRead = async (req, res, next) => {
       query = {
         $or: [
           { recipientId: userId },
-          { recipientRole: 'All' },
-          { recipientRole: userRole, recipientId: null }
+          { recipientRole: userRole }, // 👈 FIXED: Matches 'Volunteer' or 'NGO'
+          { recipientRole: 'All' }
         ]
       };
     }
