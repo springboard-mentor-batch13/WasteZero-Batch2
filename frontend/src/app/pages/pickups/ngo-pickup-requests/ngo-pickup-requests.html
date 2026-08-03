@@ -79,6 +79,10 @@
 
             <div class="info-grid">
               <div>
+                <span>Volunteer Contact</span>
+                <strong>{{ request.volunteerPhone || 'Not provided' }}</strong>
+              </div>
+              <div>
                 <span>Waste Type</span>
                 <strong>{{ request.wasteType }}</strong>
               </div>
@@ -107,11 +111,23 @@
             </button>
 
             @if (request.status === 'Pending') {
-              <button mat-flat-button class="accept-button" type="button" (click)="confirmAction(request, 'accept')">
-                ✓ Accept
+              <button
+                mat-flat-button
+                class="accept-button"
+                type="button"
+                [disabled]="isUpdating(request)"
+                (click)="confirmAction(request, 'accept')">
+                <mat-icon>check</mat-icon>
+                Accept
               </button>
-              <button mat-stroked-button class="reject-button" type="button" (click)="confirmAction(request, 'reject')">
-                ✗ Reject
+              <button
+                mat-stroked-button
+                class="reject-button"
+                type="button"
+                [disabled]="isUpdating(request)"
+                (click)="confirmAction(request, 'reject')">
+                <mat-icon>close</mat-icon>
+                Reject
               </button>
             }
           </mat-card-actions>

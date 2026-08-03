@@ -1,163 +1,236 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, of, throwError } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
 
-import { NgoPickupRequest, NgoPickupStatus } from './ngo-pickup-request.model';
+import { API_BASE_URL } from '../../../core/api/api-config';
+import {
+  NgoPickupRequest,
+  NgoPickupStatus,
+  PickupApiStatus,
+} from './ngo-pickup-request.model';
+
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+  notification?: unknown;
+}
+
+interface PickupUserApiModel {
+  _id?: string;
+  id?: string;
+  fullName?: string;
+  username?: string;
+  email?: string;
+  phone?: string;
+  contact?: string;
+  mobile?: string;
+}
+
+interface PickupApiModel {
+  _id?: string;
+  id?: string;
+  pickupId?: string;
+  requestId?: string;
+  user?: string | PickupUserApiModel;
+  volunteer?: string | PickupUserApiModel;
+  volunteerId?: string | PickupUserApiModel;
+  volunteerName?: string;
+  volunteerPhone?: string;
+  volunteerContact?: string;
+  contact?: string;
+  wasteType?: string;
+  pickupAddress?: string;
+  address?: string;
+  pickupArea?: string;
+  area?: string;
+  location?: string;
+  pickupDate?: string;
+  preferredPickupDate?: string;
+  pickupTime?: string;
+  preferredPickupTime?: string;
+  notes?: string;
+  status?: PickupApiStatus;
+  createdAt?: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class NgoPickupRequestService {
-  private readonly requestsSubject = new BehaviorSubject<NgoPickupRequest[]>([
-    {
-      id: 'PU-1024',
-      volunteerName: 'Aarav Sharma',
-      volunteerPhone: '+91 98765 43210',
-      wasteType: 'Dry Waste',
-      pickupAddress: '14 Green Avenue, near City Library, Pune',
-      pickupArea: 'Shivajinagar',
-      pickupDate: '2026-08-04',
-      pickupTime: '10:00 AM',
-      notes: 'Cardboard boxes are bundled and kept near the gate.',
-      status: 'Pending',
-      createdAt: '2026-07-29T09:15:00.000Z',
-    },
-    {
-      id: 'PU-1025',
-      volunteerName: 'Meera Iyer',
-      volunteerPhone: '+91 99887 76655',
-      wasteType: 'Organic Waste',
-      pickupAddress: '27 Lake Road, Baner, Pune',
-      pickupArea: 'Baner',
-      pickupDate: '2026-08-05',
-      pickupTime: '02:30 PM',
-      notes: 'Please call before arrival. Waste is packed in reusable bins.',
-      status: 'Accepted',
-      createdAt: '2026-07-30T12:40:00.000Z',
-    },
-    {
-      id: 'PU-1026',
-      volunteerName: 'Kabir Khan',
-      volunteerPhone: '+91 90000 45678',
-      wasteType: 'E-waste',
-      pickupAddress: '8 Market Street, Kothrud, Pune',
-      pickupArea: 'Kothrud',
-      pickupDate: '2026-08-07',
-      pickupTime: '11:15 AM',
-      notes: 'Includes two keyboards, old chargers, and one router.',
-      status: 'Rejected',
-      createdAt: '2026-07-31T08:05:00.000Z',
-    },
-    {
-      id: 'PU-1027',
-      volunteerName: 'Nisha Patel',
-      volunteerPhone: '+91 91234 56780',
-      wasteType: 'Plastic Waste',
-      pickupAddress: '3 Sunrise Apartments, Aundh, Pune',
-      pickupArea: 'Aundh',
-      pickupDate: '2026-08-01',
-      pickupTime: '09:00 AM',
-      notes: 'Bottles have been cleaned and sorted.',
-      status: 'Completed',
-      createdAt: '2026-07-28T16:20:00.000Z',
-    },
-    {
-      id: 'PU-1028',
-      volunteerName: 'Rohan Desai',
-      volunteerPhone: '+91 90123 45678',
-      wasteType: 'Mixed Recyclables',
-      pickupAddress: '52 Community Hall Road, Viman Nagar, Pune',
-      pickupArea: 'Viman Nagar',
-      pickupDate: '2026-08-06',
-      pickupTime: '04:00 PM',
-      notes: 'Paper, glass, and cans are separated into labeled bags.',
-      status: 'Pending',
-      createdAt: '2026-08-01T07:30:00.000Z',
-    },
-  ]);
+  private readonly http = inject(HttpClient);
+  private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly pickupsUrl = `${this.apiBaseUrl}/pickups`;
 
   getAssignedRequests(): Observable<NgoPickupRequest[]> {
-    // TODO: Replace mock BehaviorSubject with Get Assigned Pickup Requests API when the NGO pickup backend is available.
-    return this.requestsSubject.asObservable();
+    return this.http
+      .get<ApiResponse<PickupApiModel[]>>(this.pickupsUrl, this.httpOptions())
+      .pipe(
+        map((response) =>
+          (response.data ?? []).map((pickup) => this.fromApi(pickup))
+        )
+      );
   }
 
   getRequestById(id: string): Observable<NgoPickupRequest> {
-    // TODO: Replace mock lookup with Get Pickup Request Details API when the NGO pickup backend is available.
-    const request = this.requestsSubject.value.find((item) => item.id === id);
-
-    if (!request) {
-      return throwError(() => new Error('Pickup request not found.'));
-    }
-
-    return of({ ...request });
+    return this.http
+      .get<ApiResponse<PickupApiModel>>(
+        `${this.pickupsUrl}/${id}`,
+        this.httpOptions()
+      )
+      .pipe(map((response) => this.fromApi(response.data)));
   }
 
   acceptRequest(id: string): Observable<NgoPickupRequest> {
-    // TODO: Replace mock update with Accept Pickup API when the NGO pickup backend is available.
-    return this.updateMockStatus(id, 'Accepted');
+    return this.updateStatus(id, 'Assigned');
   }
 
   rejectRequest(id: string): Observable<NgoPickupRequest> {
-    // TODO: Replace mock update with Reject Pickup API when the NGO pickup backend is available.
-    return this.updateMockStatus(id, 'Rejected');
+    return this.updateStatus(id, 'Cancelled');
   }
 
-  search(searchText: string): Observable<NgoPickupRequest[]> {
-    const search = searchText.trim().toLowerCase();
-
-    return this.getAssignedRequests().pipe(
-      map((requests) =>
-        requests.filter((request) =>
-          !search ||
-          request.volunteerName.toLowerCase().includes(search) ||
-          request.id.toLowerCase().includes(search)
-        )
-      )
-    );
-  }
-
-  filter(
-    status: NgoPickupStatus | 'All',
-    wasteType: string,
-    searchText = ''
-  ): Observable<NgoPickupRequest[]> {
-    const search = searchText.trim().toLowerCase();
-
-    return this.getAssignedRequests().pipe(
-      map((requests) =>
-        requests.filter((request) => {
-          const matchesStatus = status === 'All' || request.status === status;
-          const matchesWasteType = wasteType === 'All' || request.wasteType === wasteType;
-          const matchesSearch =
-            !search ||
-            request.volunteerName.toLowerCase().includes(search) ||
-            request.id.toLowerCase().includes(search);
-
-          return matchesStatus && matchesWasteType && matchesSearch;
-        })
-      )
-    );
-  }
-
-  private updateMockStatus(
+  updateStatus(
     id: string,
-    status: Extract<NgoPickupStatus, 'Accepted' | 'Rejected'>
+    status: Extract<PickupApiStatus, 'Assigned' | 'Cancelled'>
   ): Observable<NgoPickupRequest> {
-    const requests = this.requestsSubject.value;
-    const index = requests.findIndex((request) => request.id === id);
+    return this.http
+      .put<ApiResponse<PickupApiModel>>(
+        `${this.pickupsUrl}/${id}`,
+        { status },
+        this.httpOptions()
+      )
+      .pipe(map((response) => this.fromApi(response.data)));
+  }
 
-    if (index < 0) {
-      return throwError(() => new Error('Pickup request not found.'));
+  getUserFriendlyError(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'Something went wrong. Please try again.';
     }
 
-    const updatedRequest = {
-      ...requests[index],
-      status,
+    if (error.status === 401) {
+      return 'Your session has expired. Please log in again.';
+    }
+
+    if (error.status === 403) {
+      return 'You do not have permission to manage this pickup request.';
+    }
+
+    if (error.status === 404) {
+      return 'Pickup request was not found.';
+    }
+
+    if (error.status >= 500) {
+      return 'Server error while processing the pickup request. Please try again later.';
+    }
+
+    const message = this.readErrorMessage(error);
+    return message || 'Unable to process the pickup request. Please try again.';
+  }
+
+  private fromApi(pickup: PickupApiModel): NgoPickupRequest {
+    const volunteer = this.resolveVolunteer(pickup);
+    const pickupDate =
+      pickup.preferredPickupDate || pickup.pickupDate || pickup.createdAt || '';
+
+    return {
+      id: pickup._id || pickup.id || pickup.pickupId || pickup.requestId || '',
+      volunteerId: volunteer.id,
+      volunteerName:
+        pickup.volunteerName ||
+        volunteer.name ||
+        'Volunteer',
+      volunteerPhone:
+        pickup.volunteerPhone ||
+        pickup.volunteerContact ||
+        pickup.contact ||
+        volunteer.contact ||
+        '',
+      wasteType: pickup.wasteType || 'Not specified',
+      pickupAddress: pickup.pickupAddress || pickup.address || 'Not specified',
+      pickupArea:
+        pickup.pickupArea ||
+        pickup.area ||
+        this.resolveArea(pickup.location || pickup.pickupAddress || pickup.address),
+      pickupDate,
+      pickupTime: pickup.preferredPickupTime || pickup.pickupTime || 'Not specified',
+      notes: pickup.notes || '',
+      status: this.toUiStatus(pickup.status),
+      backendStatus: pickup.status,
+      createdAt: pickup.createdAt || pickupDate,
     };
+  }
 
-    this.requestsSubject.next(
-      requests.map((request) => request.id === id ? updatedRequest : request)
-    );
+  private resolveVolunteer(pickup: PickupApiModel): {
+    id?: string;
+    name?: string;
+    contact?: string;
+  } {
+    const candidate = pickup.volunteer || pickup.volunteerId || pickup.user;
 
-    return of({ ...updatedRequest });
+    if (!candidate) {
+      return {};
+    }
+
+    if (typeof candidate === 'string') {
+      return { id: candidate };
+    }
+
+    return {
+      id: candidate._id || candidate.id,
+      name: candidate.fullName || candidate.username || candidate.email,
+      contact: candidate.phone || candidate.contact || candidate.mobile,
+    };
+  }
+
+  private resolveArea(value?: string): string {
+    if (!value?.trim()) {
+      return 'Not specified';
+    }
+
+    return value.split(',').map((part) => part.trim()).filter(Boolean).at(-1) || value;
+  }
+
+  private toUiStatus(status?: PickupApiStatus): NgoPickupStatus {
+    if (status === 'Assigned' || status === 'Accepted') {
+      return 'Accepted';
+    }
+
+    if (status === 'Cancelled' || status === 'Rejected') {
+      return 'Rejected';
+    }
+
+    if (status === 'Completed') {
+      return 'Completed';
+    }
+
+    return 'Pending';
+  }
+
+  private readErrorMessage(error: HttpErrorResponse): string {
+    if (typeof error.error === 'string') {
+      return error.error;
+    }
+
+    if (
+      error.error &&
+      typeof error.error === 'object' &&
+      'message' in error.error &&
+      typeof error.error.message === 'string'
+    ) {
+      return error.error.message;
+    }
+
+    return '';
+  }
+
+  private httpOptions(): { headers: HttpHeaders } {
+    const token =
+      typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');
+
+    return {
+      headers: token
+        ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+        : new HttpHeaders(),
+    };
   }
 }

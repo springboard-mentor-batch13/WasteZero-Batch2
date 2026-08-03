@@ -23,33 +23,81 @@ h1 {
   font-weight: 750;
 }
 
-.empty-card {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  padding: 44px 20px;
-  text-align: center;
+.pickup-card {
+  padding: clamp(18px, 3vw, 28px);
   background: var(--wz-surface) !important;
-  color: var(--wz-text-secondary);
-  border: 1px dashed var(--wz-border-strong);
-  border-radius: 16px;
+  border: 1px solid var(--wz-border);
+  border-radius: 12px;
   box-shadow: var(--wz-shadow-sm);
 }
 
-.empty-card mat-icon {
-  width: 42px;
-  height: 42px;
+.pickup-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.form-heading,
+.wide,
+.actions {
+  grid-column: 1 / -1;
+}
+
+.form-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.form-heading mat-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  border-radius: 10px;
+  background: var(--wz-surface-soft);
   color: var(--wz-primary);
-  font-size: 42px;
+  font-size: 28px;
 }
 
-.empty-card h2 {
-  margin: 8px 0 0;
-  color: var(--wz-text-primary);
-  font-size: 1.25rem;
-}
-
-.empty-card p {
-  max-width: 520px;
+.form-heading h2 {
   margin: 0;
+  color: var(--wz-text-primary);
+  font-size: 1.2rem;
+}
+
+.form-heading p {
+  margin: 3px 0 0;
+  color: var(--wz-text-secondary);
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.actions button {
+  min-width: 176px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .pickup-form {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions button {
+    width: 100%;
+  }
 }

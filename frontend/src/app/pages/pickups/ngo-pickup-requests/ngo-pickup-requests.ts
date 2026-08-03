@@ -59,6 +59,7 @@ export class NgoPickupRequests implements OnInit {
   searchText = '';
   selectedStatus: NgoPickupStatus | 'All' = 'All';
   selectedWasteType = 'All';
+  updatingRequestIds = new Set<string>();
   readonly statuses = NGO_PICKUP_STATUSES;
   readonly wasteTypes = NGO_PICKUP_WASTE_TYPES;
 
@@ -80,7 +81,8 @@ export class NgoPickupRequests implements OnInit {
         console.error('Failed to load NGO pickup requests:', error);
         this.requests = [];
         this.filteredRequests = [];
-        this.errorMessage = 'Unable to load assigned pickup requests. Please try again.';
+        this.errorMessage = this.pickupService.getUserFriendlyError(error);
+        this.showMessage(this.errorMessage);
         this.loading = false;
       },
     });
@@ -112,14 +114,14 @@ export class NgoPickupRequests implements OnInit {
           panelClass: 'pickup-dialog-panel',
         });
       },
-      error: () => {
-        this.showMessage('Unable to load pickup request details.');
+      error: (error: unknown) => {
+        this.showMessage(this.pickupService.getUserFriendlyError(error));
       },
     });
   }
 
   confirmAction(request: NgoPickupRequest, action: PickupAction): void {
-    if (request.status !== 'Pending') {
+    if (request.status !== 'Pending' || this.isUpdating(request)) {
       return;
     }
 
@@ -134,24 +136,42 @@ export class NgoPickupRequests implements OnInit {
     return request.id;
   }
 
+  isUpdating(request: NgoPickupRequest): boolean {
+    return this.updatingRequestIds.has(request.id);
+  }
+
   private updateStatus(request: NgoPickupRequest, action: PickupAction): void {
     const update$ =
       action === 'accept'
         ? this.pickupService.acceptRequest(request.id)
         : this.pickupService.rejectRequest(request.id);
 
+    this.updatingRequestIds.add(request.id);
+
     update$.subscribe({
-      next: () => {
+      next: (updatedRequest) => {
+        this.replaceRequest(updatedRequest);
         this.showMessage(
           action === 'accept'
-            ? 'Pickup request accepted.'
+            ? 'Pickup request accepted successfully.'
             : 'Pickup request rejected.'
         );
       },
-      error: () => {
-        this.showMessage('Unable to update pickup request.');
+      error: (error: unknown) => {
+        this.showMessage(this.pickupService.getUserFriendlyError(error));
+        this.updatingRequestIds.delete(request.id);
+      },
+      complete: () => {
+        this.updatingRequestIds.delete(request.id);
       },
     });
+  }
+
+  private replaceRequest(updatedRequest: NgoPickupRequest): void {
+    this.requests = this.requests.map((request) =>
+      request.id === updatedRequest.id ? updatedRequest : request
+    );
+    this.applyFilters();
   }
 
   private showMessage(message: string): void {
@@ -264,7 +284,7 @@ export class NgoPickupRequests implements OnInit {
 
       <dl class="details-grid">
         <div>
-          <dt>Contact</dt>
+          <dt>Volunteer Contact</dt>
           <dd>{{ data.volunteerPhone || 'Not available' }}</dd>
         </div>
         <div>
@@ -286,6 +306,10 @@ export class NgoPickupRequests implements OnInit {
         <div>
           <dt>Current Status</dt>
           <dd>{{ data.status }}</dd>
+        </div>
+        <div>
+          <dt>Created Date</dt>
+          <dd>{{ data.createdAt | date:'medium' }}</dd>
         </div>
         <div class="wide">
           <dt>Pickup Address</dt>
