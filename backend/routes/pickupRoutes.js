@@ -4,8 +4,12 @@ const router = express.Router();
 const {
   createPickup,
   getMyPickups,
+  getAssignedPickups,
   getPickupById,
   updatePickup,
+  acceptPickup,
+  rejectPickup,
+  completePickup,
   deletePickup,
 } = require('../controllers/pickupController');
 
@@ -28,6 +32,12 @@ router.post('/', createPickup);
  * @access  Private
  */
 router.get('/', getMyPickups);
+/**
+ * @route   GET /api/pickups/assigned
+ * @desc    Get all pickup requests assigned to the logged-in NGO
+ * @access  Private (NGO)
+ */
+router.get('/assigned', getAssignedPickups);
 
 /**
  * @route   GET /api/pickups/:id
@@ -43,6 +53,27 @@ router.get('/:id', getPickupById);
  */
 router.put('/:id', updatePickup);
 
+/**
+ * @route   PATCH /api/pickups/:id/accept
+ * @desc    Accept a pickup request
+ * @access  Private (NGO)
+ */
+router.patch('/:id/accept', acceptPickup);
+
+/**
+ * @route   PATCH /api/pickups/:id/reject
+ * @desc    Reject a pickup request
+ * @access  Private (NGO)
+ */
+router.patch('/:id/reject', rejectPickup);
+
+/**
+ * @route   PATCH /api/pickups/:id/complete
+ * @desc    Mark a pickup request as completed
+ * @access  Private (NGO)
+ */
+router.patch('/:id/complete', completePickup);
+module.exports = router;
 /**
  * @route   DELETE /api/pickups/:id
  * @desc    Delete a pickup by ID
