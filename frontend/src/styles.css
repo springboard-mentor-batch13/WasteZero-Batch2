@@ -715,3 +715,109 @@ body.dark-theme .mat-mdc-form-field .mdc-floating-label {
 body.dark-theme .mat-mdc-select-arrow {
   color: #ffffff !important;
 }
+
+/* ==========================================================
+   NOTIFICATION TOAST PANEL
+   Styles for the MatSnackBar panel used by
+   NotificationToastComponent.
+   Uses the active WasteZero/Material theme.
+   ========================================================== */
+
+.notification-toast-panel.mat-mdc-snack-bar-container {
+  --wz-toast-bg: #ffffff;
+  --wz-toast-title: #1f2937;
+  --wz-toast-secondary: #6b7280;
+  --wz-toast-muted: #6b7280;
+  --wz-toast-close: #6b7280;
+  --wz-toast-accent: #16a34a;
+  --wz-toast-icon-bg: rgba(22, 163, 74, 0.12);
+  --wz-toast-shadow:
+    0 10px 28px rgba(20, 55, 32, 0.14),
+    0 2px 8px rgba(20, 55, 32, 0.08);
+
+  width: min(420px, calc(100vw - 32px)) !important;
+  max-width: min(420px, calc(100vw - 32px)) !important;
+  min-width: 0 !important;
+  margin: 16px !important;
+  color: var(--wz-toast-title) !important;
+  animation: wz-toast-enter 180ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+.notification-toast-panel.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 16px !important;
+  background: var(--wz-toast-bg) !important;
+  color: var(--wz-toast-title) !important;
+  border: 0 !important;
+  border-left: 4px solid var(--wz-toast-accent) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--wz-toast-shadow) !important;
+  overflow: hidden;
+}
+
+.notification-toast-panel.mat-mdc-snack-bar-container .mat-mdc-snack-bar-label,
+.notification-toast-panel.mat-mdc-snack-bar-container .mdc-snackbar__label {
+  width: 100%;
+  padding: 0 !important;
+  color: inherit !important;
+}
+
+body.dark-theme .notification-toast-panel.mat-mdc-snack-bar-container {
+  --wz-toast-bg: #1e1e1e;
+  --wz-toast-title: #ffffff;
+  --wz-toast-secondary: #d1d5db;
+  --wz-toast-muted: #9ca3af;
+  --wz-toast-close: #9ca3af;
+  --wz-toast-accent: #16a34a;
+  --wz-toast-icon-bg: rgba(22, 163, 74, 0.18);
+  --wz-toast-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.46),
+    0 4px 12px rgba(0, 0, 0, 0.34);
+}
+
+.notification-toast-panel.mat-mdc-snack-bar-container.mat-mdc-snack-bar-container-exit,
+.notification-toast-panel.mat-mdc-snack-bar-container.mdc-snackbar--closing {
+  animation: wz-toast-exit 140ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes wz-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) translateX(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+@keyframes wz-toast-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-6px) translateX(10px);
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-toast-panel.mat-mdc-snack-bar-container {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-toast-panel.mat-mdc-snack-bar-container,
+  .notification-toast-panel.mat-mdc-snack-bar-container.mat-mdc-snack-bar-container-exit,
+  .notification-toast-panel.mat-mdc-snack-bar-container.mdc-snackbar--closing {
+    animation: none;
+  }
+}

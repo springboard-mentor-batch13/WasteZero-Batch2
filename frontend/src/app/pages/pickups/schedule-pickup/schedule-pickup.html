@@ -1,0 +1,70 @@
+<section class="schedule-pickup-page">
+  <header>
+    <p class="eyebrow">VOLUNTEER PICKUP</p>
+    <h1>Schedule Pickup</h1>
+  </header>
+
+  <mat-card class="pickup-card">
+    <form #pickupForm="ngForm" (ngSubmit)="submitPickup(pickupForm)" class="pickup-form">
+      <div class="form-heading">
+        <mat-icon>local_shipping</mat-icon>
+        <div>
+          <h2>Pickup Details</h2>
+          <p>Submit the waste details and preferred date for NGO review.</p>
+        </div>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Waste Type</mat-label>
+        <mat-select
+          name="wasteType"
+          [(ngModel)]="pickup.wasteType"
+          required
+        >
+          <mat-option *ngFor="let wasteType of wasteTypes" [value]="wasteType">
+            {{ wasteType }}
+          </mat-option>
+        </mat-select>
+        <mat-error>Waste type is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Pickup Date</mat-label>
+        <input
+          matInput
+          type="date"
+          name="pickupDate"
+          [(ngModel)]="pickup.pickupDate"
+          [min]="minPickupDate"
+          required
+        />
+        <mat-error>Pickup date is required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Pickup Address</mat-label>
+        <textarea
+          matInput
+          name="pickupAddress"
+          [(ngModel)]="pickup.pickupAddress"
+          rows="4"
+          required
+        ></textarea>
+        <mat-error>Pickup address is required</mat-error>
+      </mat-form-field>
+
+      <div class="actions">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="submitting"
+        >
+          <mat-spinner *ngIf="submitting" diameter="18"></mat-spinner>
+          <mat-icon *ngIf="!submitting">send</mat-icon>
+          {{ submitting ? 'Scheduling...' : 'Schedule Pickup' }}
+        </button>
+      </div>
+    </form>
+  </mat-card>
+</section>

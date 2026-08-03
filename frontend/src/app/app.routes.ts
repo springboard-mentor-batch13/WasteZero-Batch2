@@ -21,6 +21,12 @@ import { ApplicationsComponent } from './pages/applications/admin-applications';
 import { adminGuard } from './core/guards/admin-guard';
 
 import { Messages } from './pages/messages/messages';
+import { NgoPickupRequests } from './pages/pickups/ngo-pickup-requests/ngo-pickup-requests';
+import { SchedulePickup } from './pages/pickups/schedule-pickup/schedule-pickup';
+
+// Kavipriya - Notification System
+import { NotificationList } from './pages/notifications/notification-list/notification-list';
+import { NotificationDetail } from './pages/notifications/notification-detail/notification-detail';
 
 
 export const routes: Routes = [
@@ -121,6 +127,30 @@ export const routes: Routes = [
   path: 'messages',
   component: Messages,
   title: 'Messages | WasteZero'
+},
+
+{
+  path: 'schedule-pickup',
+  component: SchedulePickup,
+  title: 'Schedule Pickup | WasteZero'
+},
+
+{
+  path: 'ngo/pickup-requests',
+  component: NgoPickupRequests,
+  title: 'NGO Pickup Requests | WasteZero'
+},
+
+// Kavipriya - Notification System
+{
+  path: 'notifications',
+  component: NotificationList,
+  title: 'Notifications | WasteZero'
+},
+{
+  path: 'notifications/:id',
+  component: NotificationDetail,
+  title: 'Notification Details | WasteZero'
 }
 
 ];

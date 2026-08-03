@@ -49,13 +49,14 @@ export class Sidebar implements OnInit {
     const menusByRole: Record<string, SidebarMenuItem[]> = {
       Volunteer: [
         dashboard,
-        { label: 'Schedule Pickup', icon: 'bi-calendar-check' },
+        { label: 'Schedule Pickup', icon: 'bi-calendar-check', route: '/schedule-pickup', exact: true },
         { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
         { label: 'Messages', icon: 'bi-chat-left-text', route: '/messages' },
         { label: 'My Impact', icon: 'bi-bar-chart' },
       ],
       NGO: [
         dashboard,
+        { label: 'Pickup Requests', icon: 'bi-truck', route: '/ngo/pickup-requests' },
         { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
         { label: 'Applications', icon: 'bi-file-earmark-text' },
         { label: 'Messages', icon: 'bi-chat-left-text', route: '/messages' },
