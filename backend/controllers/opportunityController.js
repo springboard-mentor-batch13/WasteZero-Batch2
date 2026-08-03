@@ -136,27 +136,31 @@ const createOpportunity = async (req, res) => {
     // ----------------------------------------------------
     // 🔔 1. NOTIFICATION TRIGGER: NEW OPPORTUNITY POSTED
     // ----------------------------------------------------
-    // Broadcast notification to all Volunteers
+    const creatorRole = req.user.role || 'NGO';
+
+    // ALWAYS notify Volunteers (whether posted by NGO or Admin)
     await Notification.create({
       recipientId: null,
       recipientRole: 'Volunteer',
-      sourceRole: 'NGO',
+      sourceRole: creatorRole,
       title: 'New Opportunity Available',
       message: `New opportunity "${title}" has been posted in ${place.city}!`,
       type: 'Opportunity',
       redirectUrl: '/opportunities'
     });
 
-    // Tracking notification for Admin monitors
-    await Notification.create({
-      recipientId: null,
-      recipientRole: 'Admin',
-      sourceRole: 'NGO',
-      title: 'NGO Created Opportunity',
-      message: `An NGO posted a new opportunity: "${title}".`,
-      type: 'Opportunity',
-      redirectUrl: '/admin/opportunities'
-    });
+    // Notify Admins ONLY IF created by an NGO (for platform monitoring)
+    if (creatorRole === 'NGO') {
+      await Notification.create({
+        recipientId: null,
+        recipientRole: 'Admin',
+        sourceRole: 'NGO',
+        title: 'NGO Created Opportunity',
+        message: `An NGO posted a new opportunity: "${title}".`,
+        type: 'Opportunity',
+        redirectUrl: '/admin/opportunities'
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -434,7 +438,7 @@ const updateOpportunity = async (req, res) => {
         Notification.create({
           recipientId: app.volunteerId,
           recipientRole: 'Volunteer',
-          sourceRole: 'NGO',
+          sourceRole: req.user.role || 'NGO',
           title: 'Opportunity Updated',
           message: `The details for "${opportunity.title}" have been updated. Please review the changes!`,
           type: 'Opportunity',
@@ -483,7 +487,7 @@ const deleteOpportunity = async (req, res) => {
         Notification.create({
           recipientId: app.volunteerId,
           recipientRole: 'Volunteer',
-          sourceRole: 'NGO',
+          sourceRole: req.user.role || 'NGO',
           title: 'Opportunity Cancelled',
           message: `The opportunity "${existingOpportunity.title}" has been cancelled.`,
           type: 'Opportunity',
