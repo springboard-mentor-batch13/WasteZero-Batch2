@@ -11,6 +11,7 @@ const {
   rejectPickup,
   completePickup,
   deletePickup,
+  matchPickup,
 } = require('../controllers/pickupController');
 
 // Protect middleware to ensure the user is authenticated
@@ -39,12 +40,23 @@ router.get('/', getMyPickups);
  */
 router.get('/assigned', getAssignedPickups);
 
+
+
+
+
 /**
  * @route   GET /api/pickups/:id
  * @desc    Get a single pickup by ID
  * @access  Private
  */
 router.get('/:id', getPickupById);
+
+/**
+ * @route   GET /api/pickups/:id/match
+ * @desc    Match a pickup with available NGOs
+ * @access  Private
+ */
+router.get('/:id/match', matchPickup);
 
 /**
  * @route   PUT /api/pickups/:id
@@ -73,7 +85,6 @@ router.patch('/:id/reject', rejectPickup);
  * @access  Private (NGO)
  */
 router.patch('/:id/complete', completePickup);
-module.exports = router;
 /**
  * @route   DELETE /api/pickups/:id
  * @desc    Delete a pickup by ID

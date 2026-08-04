@@ -14,49 +14,62 @@ const createPickup = async (req, res) => {
         message: 'Only volunteers can create pickup requests.',
       });
     }
-
     const {
-      ngo,
-      wasteType,
-      pickupAddress,
-      state,
-      city,
-      area,
-      pickupDate,
-      pickupTime,
-    } = req.body;
+  wasteType,
+  pickupAddress,
+  state,
+  city,
+  area,
+  pickupDate,
+  pickupTime,
+} = req.body;
 
     if (
-      !ngo ||
-      !wasteType ||
-      !pickupAddress ||
-      !state ||
-      !city ||
-      !area ||
-      !pickupDate ||
-      !pickupTime
-    ) {
+  !wasteType ||
+  !pickupAddress ||
+  !state ||
+  !city ||
+  !area ||
+  !pickupDate ||
+  !pickupTime
+) {
       return res.status(400).json({
         success: false,
         message: 'Please provide all required fields.',
       });
     }
 
-    const ngoUser = await User.findOne({
-      _id: ngo,
-      role: 'NGO',
-    });
+    const matchedNgos = await User.find({
+  role: 'NGO',
+  state,
+  city,
+  serviceAreas: { $in: [area] },
+});
 
-    if (!ngoUser) {
-      return res.status(404).json({
-        success: false,
-        message: 'Selected NGO not found.',
-      });
-    }
+if (matchedNgos.length === 0) {
+  return res.status(404).json({
+    success: false,
+    message: 'No NGO available for this location.',
+  });
+}
+
+// Pick the nearest/best NGO.
+// For now, use the first match.
+// This can later be replaced with distance-based logic.
+const matchedNgo = matchedNgos[0];
+
+if (!matchedNgo) {
+  return res.status(404).json({
+    success: false,
+    message: 'No NGO available for this location.',
+  });
+}
+
+   
 
     const pickup = await Pickup.create({
       user: req.user._id,
-      ngo,
+      ngo: matchedNgo._id,
       wasteType,
       pickupAddress,
       state,
@@ -456,6 +469,45 @@ const deletePickup = async (req, res) => {
 
   }
 };
+/**
+ * Pickup Matching API
+ */
+const matchPickup = async (req, res) => {
+  try {
+
+    const pickup = await Pickup.findById(req.params.id);
+
+    if (!pickup) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pickup not found',
+      });
+    }
+
+    const ngo = await User.findOne({
+      role: 'NGO',
+      state: pickup.state,
+      city: pickup.city,
+      serviceAreas: pickup.area,
+    }).select('fullName email state city serviceAreas');
+
+    res.status(200).json({
+      success: true,
+      pickup,
+      matchedNgo: ngo,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+
+  }
+};
 
 module.exports = {
   createPickup,
@@ -467,4 +519,5 @@ module.exports = {
   rejectPickup,
   completePickup,
   deletePickup,
+  matchPickup,
 };
