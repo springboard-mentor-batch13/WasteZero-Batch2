@@ -38,13 +38,11 @@
           [(ngModel)]="pickup.wasteType"
           required>
 
-          <mat-option
-            *ngFor="let wasteType of wasteTypes"
-            [value]="wasteType">
-
-            {{ wasteType }}
-
-          </mat-option>
+          @for (wasteType of wasteTypes; track wasteType) {
+            <mat-option [value]="wasteType">
+              {{ wasteType }}
+            </mat-option>
+          }
 
         </mat-select>
 
@@ -72,12 +70,18 @@
 
         <mat-label>Pickup Time</mat-label>
 
-        <input
-          matInput
-          type="time"
+        <mat-select
           name="pickupTime"
           [(ngModel)]="pickup.pickupTime"
           required>
+
+          @for (time of pickupTimes; track time) {
+            <mat-option [value]="time">
+              {{ time }}
+            </mat-option>
+          }
+
+        </mat-select>
 
       </mat-form-field>
 
@@ -87,12 +91,19 @@
 
         <mat-label>State</mat-label>
 
-        <input
-          matInput
+        <mat-select
           name="state"
           [(ngModel)]="pickup.state"
-          placeholder="Andhra Pradesh"
+          (selectionChange)="onStateChange()"
           required>
+
+          @for (state of states; track state) {
+            <mat-option [value]="state">
+              {{ state }}
+            </mat-option>
+          }
+
+        </mat-select>
 
       </mat-form-field>
 
@@ -102,12 +113,19 @@
 
         <mat-label>City</mat-label>
 
-        <input
-          matInput
-          name="city"
-          [(ngModel)]="pickup.city"
-          placeholder="Nellore"
-          required>
+        <mat-select
+  name="city"
+  [(ngModel)]="pickup.city"
+  [disabled]="!pickup.state"
+  required>
+
+          @for (city of currentCities; track city) {
+            <mat-option [value]="city">
+              {{ city }}
+            </mat-option>
+          }
+
+        </mat-select>
 
       </mat-form-field>
 

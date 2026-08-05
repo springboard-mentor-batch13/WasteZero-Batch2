@@ -49,6 +49,80 @@ export class SchedulePickup {
     'Mixed',
   ];
 
+  readonly pickupTimes = [
+    '09:00 AM - 11:00 AM',
+    '11:00 AM - 01:00 PM',
+    '01:00 PM - 03:00 PM',
+    '03:00 PM - 05:00 PM',
+    '05:00 PM - 07:00 PM'
+  ];
+
+  readonly states = [
+    'Andhra Pradesh',
+    'Arunachal Pradesh',
+    'Assam',
+    'Bihar',
+    'Chhattisgarh',
+    'Goa',
+    'Gujarat',
+    'Haryana',
+    'Himachal Pradesh',
+    'Jharkhand',
+    'Karnataka',
+    'Kerala',
+    'Madhya Pradesh',
+    'Maharashtra',
+    'Manipur',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Odisha',
+    'Punjab',
+    'Rajasthan',
+    'Sikkim',
+    'Tamil Nadu',
+    'Telangana',
+    'Tripura',
+    'Uttar Pradesh',
+    'Uttarakhand',
+    'West Bengal'
+  ];
+
+  readonly cities: Record<string, string[]> = {
+
+    'Andhra Pradesh': [
+      'Nellore',
+      'Tirupati',
+      'Vijayawada',
+      'Visakhapatnam',
+      'Guntur'
+    ],
+
+    'Telangana': [
+      'Hyderabad',
+      'Warangal',
+      'Karimnagar',
+      'Nizamabad'
+    ],
+
+    'Tamil Nadu': [
+      'Chennai',
+      'Coimbatore',
+      'Madurai',
+      'Salem'
+    ],
+
+    'Karnataka': [
+      'Bengaluru',
+      'Mysuru',
+      'Hubballi',
+      'Mangaluru'
+    ]
+
+  };
+
+  currentCities: string[] = [];
+
   readonly minPickupDate = new Date().toISOString().slice(0, 10);
 
   pickup = {
@@ -128,6 +202,15 @@ export class SchedulePickup {
         },
 
       });
+
+  }
+
+  onStateChange(): void {
+
+    this.currentCities =
+      this.cities[this.pickup.state] || [];
+
+    this.pickup.city = '';
 
   }
 
