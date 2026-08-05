@@ -1,70 +1,179 @@
 <section class="schedule-pickup-page">
+
   <header>
     <p class="eyebrow">VOLUNTEER PICKUP</p>
     <h1>Schedule Pickup</h1>
   </header>
 
   <mat-card class="pickup-card">
-    <form #pickupForm="ngForm" (ngSubmit)="submitPickup(pickupForm)" class="pickup-form">
+
+    <form
+      #pickupForm="ngForm"
+      (ngSubmit)="submitPickup(pickupForm)"
+      class="pickup-form">
+
+      <!-- Heading -->
+
       <div class="form-heading">
+
         <mat-icon>local_shipping</mat-icon>
+
         <div>
           <h2>Pickup Details</h2>
-          <p>Submit the waste details and preferred date for NGO review.</p>
+          <p>
+            Submit the waste details and preferred pickup schedule for NGO review.
+          </p>
         </div>
+
       </div>
 
+      <!-- Waste Type -->
+
       <mat-form-field appearance="outline">
+
         <mat-label>Waste Type</mat-label>
+
         <mat-select
           name="wasteType"
           [(ngModel)]="pickup.wasteType"
-          required
-        >
-          <mat-option *ngFor="let wasteType of wasteTypes" [value]="wasteType">
+          required>
+
+          <mat-option
+            *ngFor="let wasteType of wasteTypes"
+            [value]="wasteType">
+
             {{ wasteType }}
+
           </mat-option>
+
         </mat-select>
-        <mat-error>Waste type is required</mat-error>
+
       </mat-form-field>
 
+      <!-- Pickup Date -->
+
       <mat-form-field appearance="outline">
+
         <mat-label>Pickup Date</mat-label>
+
         <input
           matInput
           type="date"
           name="pickupDate"
           [(ngModel)]="pickup.pickupDate"
           [min]="minPickupDate"
-          required
-        />
-        <mat-error>Pickup date is required</mat-error>
+          required>
+
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="wide">
+      <!-- Pickup Time -->
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>Pickup Time</mat-label>
+
+        <input
+          matInput
+          type="time"
+          name="pickupTime"
+          [(ngModel)]="pickup.pickupTime"
+          required>
+
+      </mat-form-field>
+
+      <!-- State -->
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>State</mat-label>
+
+        <input
+          matInput
+          name="state"
+          [(ngModel)]="pickup.state"
+          placeholder="Andhra Pradesh"
+          required>
+
+      </mat-form-field>
+
+      <!-- City -->
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>City</mat-label>
+
+        <input
+          matInput
+          name="city"
+          [(ngModel)]="pickup.city"
+          placeholder="Nellore"
+          required>
+
+      </mat-form-field>
+
+      <!-- Area -->
+
+      <mat-form-field appearance="outline">
+
+        <mat-label>Area</mat-label>
+
+        <input
+          matInput
+          name="area"
+          [(ngModel)]="pickup.area"
+          placeholder="Balaji Nagar"
+          required>
+
+      </mat-form-field>
+
+      <!-- Pickup Address -->
+
+      <mat-form-field
+        appearance="outline"
+        class="wide">
+
         <mat-label>Pickup Address</mat-label>
+
         <textarea
           matInput
+          rows="4"
           name="pickupAddress"
           [(ngModel)]="pickup.pickupAddress"
-          rows="4"
-          required
-        ></textarea>
-        <mat-error>Pickup address is required</mat-error>
+          placeholder="Enter complete pickup address"
+          required>
+
+        </textarea>
+
       </mat-form-field>
 
+      <!-- Submit -->
+
       <div class="actions">
+
         <button
           mat-flat-button
           color="primary"
           type="submit"
-          [disabled]="submitting"
-        >
-          <mat-spinner *ngIf="submitting" diameter="18"></mat-spinner>
-          <mat-icon *ngIf="!submitting">send</mat-icon>
+          [disabled]="submitting">
+
+          <mat-spinner
+            *ngIf="submitting"
+            diameter="18">
+          </mat-spinner>
+
+          <mat-icon *ngIf="!submitting">
+            send
+          </mat-icon>
+
           {{ submitting ? 'Scheduling...' : 'Schedule Pickup' }}
+
         </button>
+
       </div>
+
     </form>
+
   </mat-card>
+
 </section>
+

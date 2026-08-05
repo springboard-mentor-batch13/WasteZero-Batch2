@@ -4,9 +4,14 @@ const router = express.Router();
 const {
   createPickup,
   getMyPickups,
+  getAssignedPickups,
   getPickupById,
   updatePickup,
+  acceptPickup,
+  rejectPickup,
+  completePickup,
   deletePickup,
+  matchPickup,
 } = require('../controllers/pickupController');
 
 // Protect middleware to ensure the user is authenticated
@@ -28,6 +33,16 @@ router.post('/', createPickup);
  * @access  Private
  */
 router.get('/', getMyPickups);
+/**
+ * @route   GET /api/pickups/assigned
+ * @desc    Get all pickup requests assigned to the logged-in NGO
+ * @access  Private (NGO)
+ */
+router.get('/assigned', getAssignedPickups);
+
+
+
+
 
 /**
  * @route   GET /api/pickups/:id
@@ -37,12 +52,39 @@ router.get('/', getMyPickups);
 router.get('/:id', getPickupById);
 
 /**
+ * @route   GET /api/pickups/:id/match
+ * @desc    Match a pickup with available NGOs
+ * @access  Private
+ */
+router.get('/:id/match', matchPickup);
+
+/**
  * @route   PUT /api/pickups/:id
  * @desc    Update a pickup by ID
  * @access  Private
  */
 router.put('/:id', updatePickup);
 
+/**
+ * @route   PATCH /api/pickups/:id/accept
+ * @desc    Accept a pickup request
+ * @access  Private (NGO)
+ */
+router.patch('/:id/accept', acceptPickup);
+
+/**
+ * @route   PATCH /api/pickups/:id/reject
+ * @desc    Reject a pickup request
+ * @access  Private (NGO)
+ */
+router.patch('/:id/reject', rejectPickup);
+
+/**
+ * @route   PATCH /api/pickups/:id/complete
+ * @desc    Mark a pickup request as completed
+ * @access  Private (NGO)
+ */
+router.patch('/:id/complete', completePickup);
 /**
  * @route   DELETE /api/pickups/:id
  * @desc    Delete a pickup by ID

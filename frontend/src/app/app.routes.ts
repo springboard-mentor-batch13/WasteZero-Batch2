@@ -28,6 +28,8 @@ import { SchedulePickup } from './pages/pickups/schedule-pickup/schedule-pickup'
 import { NotificationList } from './pages/notifications/notification-list/notification-list';
 import { NotificationDetail } from './pages/notifications/notification-detail/notification-detail';
 
+import { PickupDashboard } from './pages/pickups/pickup-dashboard/pickup-dashboard';
+
 
 export const routes: Routes = [
   {
@@ -134,7 +136,23 @@ export const routes: Routes = [
   component: SchedulePickup,
   title: 'Schedule Pickup | WasteZero'
 },
+{
+  path: 'schedule-pickup',
+  component: SchedulePickup,
+  title: 'Schedule Pickup | WasteZero'
+},
 
+{
+  path: 'my-pickups',
+  component: PickupDashboard,
+  title: 'My Pickups | WasteZero'
+},
+
+{
+  path: 'ngo/pickup-requests',
+  component: NgoPickupRequests,
+  title: 'NGO Pickup Requests | WasteZero'
+},
 {
   path: 'ngo/pickup-requests',
   component: NgoPickupRequests,

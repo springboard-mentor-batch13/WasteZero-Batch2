@@ -38,13 +38,11 @@
     </mat-form-field>
   </div>
 
-  @if (loading) {
-    <mat-card class="state-card">
-      <mat-spinner diameter="40"></mat-spinner>
-      <h2>Loading pickup requests...</h2>
-      <p>Please wait while assigned pickups are fetched.</p>
-    </mat-card>
-  } @else if (errorMessage) {
+  @if (loading && filteredRequests.length === 0) {
+  <div class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+} @else if (errorMessage) {
     <mat-card class="state-card error-state">
       <mat-icon>error_outline</mat-icon>
       <h2>Pickup requests could not be loaded.</h2>
