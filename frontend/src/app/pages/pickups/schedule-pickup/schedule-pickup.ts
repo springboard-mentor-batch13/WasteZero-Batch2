@@ -10,7 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { API_BASE_URL } from '../../../core/api/api-config';
 
 @Component({
@@ -25,6 +26,8 @@ import { API_BASE_URL } from '../../../core/api/api-config';
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatSelectModule,
     MatSnackBarModule,
   ],
@@ -58,73 +61,104 @@ export class SchedulePickup {
   ];
 
   readonly states = [
-    'Andhra Pradesh',
-    'Arunachal Pradesh',
-    'Assam',
-    'Bihar',
-    'Chhattisgarh',
-    'Goa',
-    'Gujarat',
-    'Haryana',
-    'Himachal Pradesh',
-    'Jharkhand',
-    'Karnataka',
-    'Kerala',
-    'Madhya Pradesh',
-    'Maharashtra',
-    'Manipur',
-    'Meghalaya',
-    'Mizoram',
-    'Nagaland',
-    'Odisha',
-    'Punjab',
-    'Rajasthan',
-    'Sikkim',
-    'Tamil Nadu',
-    'Telangana',
-    'Tripura',
-    'Uttar Pradesh',
-    'Uttarakhand',
-    'West Bengal'
-  ];
+  'Andhra Pradesh',
+  'Delhi',
+  'Gujarat',
+  'Karnataka',
+  'Kerala',
+  'Maharashtra',
+  'Rajasthan',
+  'Tamil Nadu',
+  'Telangana',
+  'Uttar Pradesh',
+  'West Bengal'
+];
+
+  
+   
 
   readonly cities: Record<string, string[]> = {
 
-    'Andhra Pradesh': [
-      'Nellore',
-      'Tirupati',
-      'Vijayawada',
-      'Visakhapatnam',
-      'Guntur'
-    ],
+  'Andhra Pradesh': [
+    'Guntur',
+    'Nellore',
+    'Vijayawada',
+    'Visakhapatnam'
+  ],
 
-    'Telangana': [
-      'Hyderabad',
-      'Warangal',
-      'Karimnagar',
-      'Nizamabad'
-    ],
+  'Delhi': [
+    'Delhi',
+    'New Delhi'
+  ],
 
-    'Tamil Nadu': [
-      'Chennai',
-      'Coimbatore',
-      'Madurai',
-      'Salem'
-    ],
+  'Gujarat': [
+    'Ahmedabad',
+    'Rajkot',
+    'Surat',
+    'Vadodara'
+  ],
 
-    'Karnataka': [
-      'Bengaluru',
-      'Mysuru',
-      'Hubballi',
-      'Mangaluru'
-    ]
+  'Karnataka': [
+    'Bengaluru',
+    'Hubballi',
+    'Mangaluru',
+    'Mysuru'
+  ],
 
-  };
+  'Kerala': [
+    'Kochi',
+    'Kozhikode',
+    'Thiruvananthapuram',
+    'Thrissur'
+  ],
+
+  'Maharashtra': [
+    'Mumbai',
+    'Nagpur',
+    'Nashik',
+    'Pune'
+  ],
+
+  'Rajasthan': [
+    'Jaipur',
+    'Jodhpur',
+    'Kota',
+    'Udaipur'
+  ],
+
+  'Tamil Nadu': [
+    'Chennai',
+    'Coimbatore',
+    'Madurai',
+    'Tiruchirappalli'
+  ],
+
+  'Telangana': [
+    'Hyderabad',
+    'Karimnagar',
+    'Nizamabad',
+    'Warangal'
+  ],
+
+  'Uttar Pradesh': [
+    'Kanpur',
+    'Lucknow',
+    'Noida',
+    'Varanasi'
+  ],
+
+  'West Bengal': [
+    'Durgapur',
+    'Howrah',
+    'Kolkata',
+    'Siliguri'
+  ]
+
+};
 
   currentCities: string[] = [];
 
-  readonly minPickupDate = new Date().toISOString().slice(0, 10);
-
+readonly minPickupDate = new Date();
   pickup = {
     wasteType: '',
     pickupAddress: '',

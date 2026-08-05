@@ -52,17 +52,28 @@
 
       <mat-form-field appearance="outline">
 
-        <mat-label>Pickup Date</mat-label>
+  <mat-label>Pickup Date</mat-label>
 
-        <input
-          matInput
-          type="date"
-          name="pickupDate"
-          [(ngModel)]="pickup.pickupDate"
-          [min]="minPickupDate"
-          required>
+  <input
+    matInput
+    [matDatepicker]="picker"
+    name="pickupDate"
+    [(ngModel)]="pickup.pickupDate"
+    [min]="minPickupDate"
+    required
+    readonly>
 
-      </mat-form-field>
+  <mat-datepicker-toggle
+    matIconSuffix
+    [for]="picker">
+  </mat-datepicker-toggle>
+
+  <mat-datepicker #picker></mat-datepicker>
+
+</mat-form-field>
+
+        
+       
 
       <!-- Pickup Time -->
 
