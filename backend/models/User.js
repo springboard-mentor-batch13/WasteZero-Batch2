@@ -58,9 +58,14 @@ const userSchema = new mongoose.Schema(
     },
 
     // Service areas covered by NGO
-serviceAreas: {
-  type: [String],
-  default: [],
+latitude: {
+  type: Number,
+  default: null,
+},
+
+longitude: {
+  type: Number,
+  default: null,
 },
 
     // Existing skills field
@@ -107,9 +112,9 @@ serviceAreas: {
 // Milestone 3 - supports volunteer and pickup matching
 userSchema.index({
   role: 1,
-  
   state: 1,
   city: 1,
-  serviceAreas: 1,
+  latitude: 1,
+  longitude: 1,
 });
 module.exports = mongoose.model('User', userSchema, 'Users');

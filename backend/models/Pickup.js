@@ -60,6 +60,10 @@ const pickupSchema = new mongoose.Schema(
       trim: true,
     },
 
+   
+
+
+
     // Pickup Date
     pickupDate: {
       type: Date,
@@ -92,11 +96,11 @@ const pickupSchema = new mongoose.Schema(
 
 // Index for faster NGO matching
 pickupSchema.index({
-  state: 1,
-  city: 1,
-  area: 1,
-  wasteType: 1,
-  status: 1,
+    state:1,
+    city:1,
+   
+    wasteType:1,
+    status:1
 });
 
 module.exports = mongoose.model('Pickup', pickupSchema);

@@ -1,0 +1,40 @@
+.pickup-dashboard {
+
+    padding: 30px;
+
+}
+
+.pickup-grid {
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fill,minmax(320px,1fr));
+
+    gap:20px;
+
+}
+
+.pickup-card{
+
+    border-radius:12px;
+
+}
+
+mat-card-title{
+
+    color:#2e7d32;
+
+}
+
+mat-card-content p{
+
+    margin:10px 0;
+
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}

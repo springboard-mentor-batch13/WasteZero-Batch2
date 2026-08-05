@@ -1,5 +1,11 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, Inject, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  inject,
+  ChangeDetectorRef
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -22,6 +28,7 @@ import {
   NgoPickupRequest,
   NgoPickupStatus,
 } from './ngo-pickup-request.model';
+
 import { NgoPickupRequestService } from './ngo-pickup-request.service';
 
 type PickupAction = 'accept' | 'reject';
@@ -48,18 +55,24 @@ type PickupAction = 'accept' | 'reject';
   styleUrl: './ngo-pickup-requests.css',
 })
 export class NgoPickupRequests implements OnInit {
+
   private readonly pickupService = inject(NgoPickupRequestService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   requests: NgoPickupRequest[] = [];
   filteredRequests: NgoPickupRequest[] = [];
-  loading = true;
+
+  loading = false;
   errorMessage = '';
+
   searchText = '';
   selectedStatus: NgoPickupStatus | 'All' = 'All';
   selectedWasteType = 'All';
+
   updatingRequestIds = new Set<string>();
+
   readonly statuses = NGO_PICKUP_STATUSES;
   readonly wasteTypes = NGO_PICKUP_WASTE_TYPES;
 
@@ -68,64 +81,114 @@ export class NgoPickupRequests implements OnInit {
   }
 
   loadRequests(): void {
+
     this.loading = true;
     this.errorMessage = '';
 
     this.pickupService.getAssignedRequests().subscribe({
+
       next: (requests) => {
+
         this.requests = requests;
         this.applyFilters();
+
         this.loading = false;
+
+        this.cdr.detectChanges();
+
       },
+
       error: (error: unknown) => {
+
         console.error('Failed to load NGO pickup requests:', error);
+
         this.requests = [];
         this.filteredRequests = [];
-        this.errorMessage = this.pickupService.getUserFriendlyError(error);
+
+        this.errorMessage =
+          this.pickupService.getUserFriendlyError(error);
+
         this.showMessage(this.errorMessage);
+
         this.loading = false;
-      },
+
+        this.cdr.detectChanges();
+
+      }
+
     });
+
   }
 
   applyFilters(): void {
+
     const search = this.searchText.trim().toLowerCase();
 
     this.filteredRequests = this.requests.filter((request) => {
+
       const matchesStatus =
-        this.selectedStatus === 'All' || request.status === this.selectedStatus;
+        this.selectedStatus === 'All' ||
+        request.status === this.selectedStatus;
+
       const matchesWasteType =
-        this.selectedWasteType === 'All' || request.wasteType === this.selectedWasteType;
+        this.selectedWasteType === 'All' ||
+        request.wasteType === this.selectedWasteType;
+
       const matchesSearch =
         !search ||
         request.volunteerName.toLowerCase().includes(search) ||
         request.id.toLowerCase().includes(search);
 
-      return matchesStatus && matchesWasteType && matchesSearch;
+      return (
+        matchesStatus &&
+        matchesWasteType &&
+        matchesSearch
+      );
+
     });
+
   }
 
   viewDetails(request: NgoPickupRequest): void {
+
     this.pickupService.getRequestById(request.id).subscribe({
+
       next: (details) => {
+
         this.dialog.open(NgoPickupDetailsDialog, {
           data: details,
           width: 'min(680px, 94vw)',
           panelClass: 'pickup-dialog-panel',
         });
+
       },
+
       error: (error: unknown) => {
-        this.showMessage(this.pickupService.getUserFriendlyError(error));
-      },
+
+        this.showMessage(
+          this.pickupService.getUserFriendlyError(error)
+        );
+
+      }
+
     });
+
   }
 
-  confirmAction(request: NgoPickupRequest, action: PickupAction): void {
-    if (request.status !== 'Pending' || this.isUpdating(request)) {
+  confirmAction(
+    request: NgoPickupRequest,
+    action: PickupAction
+  ): void {
+
+    if (
+      request.status !== 'Pending' ||
+      this.isUpdating(request)
+    ) {
       return;
     }
 
     this.updateStatus(request, action);
+
   }
 
   statusClass(status: NgoPickupStatus): string {
@@ -140,7 +203,11 @@ export class NgoPickupRequests implements OnInit {
     return this.updatingRequestIds.has(request.id);
   }
 
-  private updateStatus(request: NgoPickupRequest, action: PickupAction): void {
+  private updateStatus(
+    request: NgoPickupRequest,
+    action: PickupAction
+  ): void {
+
     const update$ =
       action === 'accept'
         ? this.pickupService.acceptRequest(request.id)
@@ -149,40 +216,78 @@ export class NgoPickupRequests implements OnInit {
     this.updatingRequestIds.add(request.id);
 
     update$.subscribe({
+
       next: (updatedRequest) => {
+
         this.replaceRequest(updatedRequest);
+
+        this.cdr.detectChanges();
+
         this.showMessage(
           action === 'accept'
             ? 'Pickup request accepted successfully.'
             : 'Pickup request rejected.'
         );
+
       },
+
       error: (error: unknown) => {
-        this.showMessage(this.pickupService.getUserFriendlyError(error));
+
+        this.showMessage(
+          this.pickupService.getUserFriendlyError(error)
+        );
+
         this.updatingRequestIds.delete(request.id);
+
+        this.cdr.detectChanges();
+
       },
+
       complete: () => {
+
         this.updatingRequestIds.delete(request.id);
-      },
+
+      }
+
     });
+
   }
 
-  private replaceRequest(updatedRequest: NgoPickupRequest): void {
+  private replaceRequest(
+    updatedRequest: NgoPickupRequest
+  ): void {
+
     this.requests = this.requests.map((request) =>
-      request.id === updatedRequest.id ? updatedRequest : request
+      request.id === updatedRequest.id
+        ? updatedRequest
+        : request
     );
+
     this.applyFilters();
+
+    this.cdr.detectChanges();
+
   }
 
   private showMessage(message: string): void {
-    this.snackBar.open(message, 'Close', { duration: 3500 });
-  }
-}
 
+    this.snackBar.open(message, 'Close', {
+      duration: 3500,
+    });
+
+  }
+
+}
 @Component({
   selector: 'app-ngo-pickup-details-dialog',
   standalone: true,
-  imports: [CommonModule, DatePipe, MatButtonModule, MatChipsModule, MatDialogModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    MatButtonModule,
+    MatChipsModule,
+    MatDialogModule
+  ],
   styles: [`
     .details-content {
       color: var(--wz-text-primary);
@@ -274,63 +379,90 @@ export class NgoPickupRequests implements OnInit {
     <h2 mat-dialog-title>Pickup Request Details</h2>
 
     <mat-dialog-content class="details-content">
+
       <div class="details-header">
+
         <div>
           <p class="details-kicker">{{ data.id }}</p>
           <h3>{{ data.volunteerName }}</h3>
         </div>
-        <mat-chip [class]="statusClass(data.status)">{{ data.status }}</mat-chip>
+
+        <mat-chip [class]="statusClass(data.status)">
+          {{ data.status }}
+        </mat-chip>
+
       </div>
 
       <dl class="details-grid">
+
         <div>
           <dt>Volunteer Contact</dt>
           <dd>{{ data.volunteerPhone || 'Not available' }}</dd>
         </div>
+
         <div>
           <dt>Waste Type</dt>
           <dd>{{ data.wasteType }}</dd>
         </div>
+
         <div>
           <dt>Preferred Date</dt>
           <dd>{{ data.pickupDate | date:'mediumDate' }}</dd>
         </div>
+
         <div>
           <dt>Preferred Time</dt>
           <dd>{{ data.pickupTime }}</dd>
         </div>
+
         <div>
           <dt>Area / Location</dt>
           <dd>{{ data.pickupArea }}</dd>
         </div>
+
         <div>
           <dt>Current Status</dt>
           <dd>{{ data.status }}</dd>
         </div>
+
         <div>
           <dt>Created Date</dt>
           <dd>{{ data.createdAt | date:'medium' }}</dd>
         </div>
+
         <div class="wide">
           <dt>Pickup Address</dt>
           <dd>{{ data.pickupAddress }}</dd>
         </div>
+
         <div class="wide">
           <dt>Additional Notes</dt>
           <dd>{{ data.notes || 'No additional notes.' }}</dd>
         </div>
+
       </dl>
+
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-flat-button mat-dialog-close>Close</button>
+      <button
+        mat-flat-button
+        mat-dialog-close>
+        Close
+      </button>
     </mat-dialog-actions>
   `,
 })
 export class NgoPickupDetailsDialog {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: NgoPickupRequest) {}
+
+  constructor(
+    @Inject(MAT_DIALOG_DATA)
+    public data: NgoPickupRequest
+  ) {}
 
   statusClass(status: NgoPickupStatus): string {
     return `status-chip status-${status.toLowerCase()}`;
   }
+
 }
+

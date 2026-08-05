@@ -38,7 +38,6 @@ const createPickup = async (req, res) => {
         message: 'Please provide all required fields.',
       });
     }
-
     const matchedNgos = await User.find({
   role: 'NGO',
   state,
@@ -46,24 +45,39 @@ const createPickup = async (req, res) => {
   serviceAreas: { $in: [area] },
 });
 
-if (matchedNgos.length === 0) {
-  return res.status(404).json({
-    success: false,
-    message: 'No NGO available for this location.',
+
+let matchedNgo =
+  matchedNgos[Math.floor(Math.random() * matchedNgos.length)];
+
+    // Step 1: Try exact State + City + Area match
+
+
+// Step 2: If not found, match by State + City
+if (!matchedNgo) {
+  matchedNgo = await User.findOne({
+    role: 'NGO',
+    state,
+    city,
   });
 }
 
-// Pick the nearest/best NGO.
-// For now, use the first match.
-// This can later be replaced with distance-based logic.
-const matchedNgo = matchedNgos[0];
+// Step 3: If still not found, match by State only
+if (!matchedNgo) {
+  matchedNgo = await User.findOne({
+    role: 'NGO',
+    state,
+  });
+}
 
+// Step 4: No NGO found
 if (!matchedNgo) {
   return res.status(404).json({
     success: false,
     message: 'No NGO available for this location.',
   });
 }
+
+
 
    
 
@@ -104,11 +118,15 @@ if (!matchedNgo) {
 const getMyPickups = async (req, res) => {
   try {
 
+    console.time("getMyPickups");
+
     const pickups = await Pickup.find({
       user: req.user._id,
     })
-      .populate('ngo', 'username fullName')
+      .populate("ngo", "username fullName")
       .sort({ createdAt: -1 });
+
+    console.timeEnd("getMyPickups");
 
     res.status(200).json({
       success: true,
@@ -117,14 +135,12 @@ const getMyPickups = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
     });
-
   }
 };
 
@@ -134,18 +150,22 @@ const getMyPickups = async (req, res) => {
 const getAssignedPickups = async (req, res) => {
   try {
 
-    if (req.user.role !== 'NGO') {
+    if (req.user.role !== "NGO") {
       return res.status(403).json({
         success: false,
-        message: 'Only NGOs can access assigned pickups.',
+        message: "Only NGOs can access assigned pickups.",
       });
     }
+
+    console.time("getAssignedPickups");
 
     const pickups = await Pickup.find({
       ngo: req.user._id,
     })
-      .populate('user', 'fullName username email')
+      .populate("user", "fullName username email")
       .sort({ createdAt: -1 });
+
+    console.timeEnd("getAssignedPickups");
 
     res.status(200).json({
       success: true,
@@ -154,14 +174,12 @@ const getAssignedPickups = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
     });
-
   }
 };
 
@@ -484,12 +502,27 @@ const matchPickup = async (req, res) => {
       });
     }
 
-    const ngo = await User.findOne({
-      role: 'NGO',
-      state: pickup.state,
-      city: pickup.city,
-      serviceAreas: pickup.area,
-    }).select('fullName email state city serviceAreas');
+    let ngo = await User.findOne({
+  role: 'NGO',
+  state: pickup.state,
+  city: pickup.city,
+  serviceAreas: { $in: [pickup.area] },
+}).select('fullName email state city serviceAreas');
+
+if (!ngo) {
+  ngo = await User.findOne({
+    role: 'NGO',
+    state: pickup.state,
+    city: pickup.city,
+  }).select('fullName email state city serviceAreas');
+}
+
+if (!ngo) {
+  ngo = await User.findOne({
+    role: 'NGO',
+    state: pickup.state,
+  }).select('fullName email state city serviceAreas');
+}
 
     res.status(200).json({
       success: true,

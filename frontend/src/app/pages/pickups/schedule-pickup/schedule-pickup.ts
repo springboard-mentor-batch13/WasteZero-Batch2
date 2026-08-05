@@ -32,18 +32,21 @@ import { API_BASE_URL } from '../../../core/api/api-config';
   styleUrl: './schedule-pickup.css',
 })
 export class SchedulePickup {
+
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
   private readonly snackBar = inject(MatSnackBar);
+
   private readonly pickupsUrl = `${this.apiBaseUrl}/pickups`;
 
   readonly wasteTypes = [
-    'Dry Waste',
-    'Wet Waste',
-    'Plastic Waste',
-    'E-waste',
-    'Organic Waste',
-    'Mixed Recyclables',
+    'Plastic',
+    'Paper',
+    'Glass',
+    'Metal',
+    'Organic',
+    'E-Waste',
+    'Mixed',
   ];
 
   readonly minPickupDate = new Date().toISOString().slice(0, 10);
@@ -51,14 +54,28 @@ export class SchedulePickup {
   pickup = {
     wasteType: '',
     pickupAddress: '',
+    state: '',
+    city: '',
+    area: '',
     pickupDate: '',
+    pickupTime: '',
   };
 
   submitting = false;
 
   submitPickup(form: NgForm): void {
+
     if (form.invalid || this.submitting) {
       form.control.markAllAsTouched();
+
+      this.snackBar.open(
+        'Please fill all required fields.',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
+
       return;
     }
 
@@ -71,38 +88,65 @@ export class SchedulePickup {
         this.httpOptions()
       )
       .subscribe({
+
         next: () => {
-          this.snackBar.open('Pickup scheduled. NGOs have been notified.', 'Close', {
-            duration: 3500,
-          });
+
+          this.snackBar.open(
+            'Pickup request submitted successfully.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+
           form.resetForm({
             wasteType: '',
             pickupAddress: '',
+            state: '',
+            city: '',
+            area: '',
             pickupDate: '',
+            pickupTime: '',
           });
-        },
-        error: (error: unknown) => {
-          this.snackBar.open(this.getUserFriendlyError(error), 'Close', {
-            duration: 4000,
-          });
-        },
-        complete: () => {
+
           this.submitting = false;
+
         },
+
+        error: (error: unknown) => {
+
+          this.submitting = false;
+
+          this.snackBar.open(
+            this.getUserFriendlyError(error),
+            'Close',
+            {
+              duration: 4000,
+            }
+          );
+
+        },
+
       });
+
   }
 
   private getUserFriendlyError(error: unknown): string {
+
     if (!(error instanceof HttpErrorResponse)) {
-      return 'Unable to schedule pickup. Please try again.';
+      return 'Unable to schedule pickup.';
     }
 
     if (error.status === 401) {
-      return 'Your session has expired. Please log in again.';
+      return 'Please login again.';
+    }
+
+    if (error.status === 404) {
+      return error.error?.message || 'No NGO available for this location.';
     }
 
     if (error.status >= 500) {
-      return 'Server error while scheduling pickup. Please try again later.';
+      return 'Server error. Please try again later.';
     }
 
     if (
@@ -114,17 +158,24 @@ export class SchedulePickup {
       return error.error.message;
     }
 
-    return 'Unable to schedule pickup. Please check the details and try again.';
+    return 'Unable to schedule pickup.';
   }
 
   private httpOptions(): { headers: HttpHeaders } {
+
     const token =
-      typeof localStorage === 'undefined' ? '' : localStorage.getItem('token');
+      typeof localStorage === 'undefined'
+        ? ''
+        : localStorage.getItem('token');
 
     return {
       headers: token
-        ? new HttpHeaders({ Authorization: `Bearer ${token}` })
+        ? new HttpHeaders({
+            Authorization: `Bearer ${token}`,
+          })
         : new HttpHeaders(),
     };
+
   }
+
 }
