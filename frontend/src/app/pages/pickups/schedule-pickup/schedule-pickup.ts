@@ -10,7 +10,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { API_BASE_URL } from '../../../core/api/api-config';
 
 @Component({
@@ -25,6 +26,8 @@ import { API_BASE_URL } from '../../../core/api/api-config';
     MatIconModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatSelectModule,
     MatSnackBarModule,
   ],
@@ -49,8 +52,113 @@ export class SchedulePickup {
     'Mixed',
   ];
 
-  readonly minPickupDate = new Date().toISOString().slice(0, 10);
+  readonly pickupTimes = [
+    '09:00 AM - 11:00 AM',
+    '11:00 AM - 01:00 PM',
+    '01:00 PM - 03:00 PM',
+    '03:00 PM - 05:00 PM',
+    '05:00 PM - 07:00 PM'
+  ];
 
+  readonly states = [
+  'Andhra Pradesh',
+  'Delhi',
+  'Gujarat',
+  'Karnataka',
+  'Kerala',
+  'Maharashtra',
+  'Rajasthan',
+  'Tamil Nadu',
+  'Telangana',
+  'Uttar Pradesh',
+  'West Bengal'
+];
+
+  
+   
+
+  readonly cities: Record<string, string[]> = {
+
+  'Andhra Pradesh': [
+    'Guntur',
+    'Nellore',
+    'Vijayawada',
+    'Visakhapatnam'
+  ],
+
+  'Delhi': [
+    'Delhi',
+    'New Delhi'
+  ],
+
+  'Gujarat': [
+    'Ahmedabad',
+    'Rajkot',
+    'Surat',
+    'Vadodara'
+  ],
+
+  'Karnataka': [
+    'Bengaluru',
+    'Hubballi',
+    'Mangaluru',
+    'Mysuru'
+  ],
+
+  'Kerala': [
+    'Kochi',
+    'Kozhikode',
+    'Thiruvananthapuram',
+    'Thrissur'
+  ],
+
+  'Maharashtra': [
+    'Mumbai',
+    'Nagpur',
+    'Nashik',
+    'Pune'
+  ],
+
+  'Rajasthan': [
+    'Jaipur',
+    'Jodhpur',
+    'Kota',
+    'Udaipur'
+  ],
+
+  'Tamil Nadu': [
+    'Chennai',
+    'Coimbatore',
+    'Madurai',
+    'Tiruchirappalli'
+  ],
+
+  'Telangana': [
+    'Hyderabad',
+    'Karimnagar',
+    'Nizamabad',
+    'Warangal'
+  ],
+
+  'Uttar Pradesh': [
+    'Kanpur',
+    'Lucknow',
+    'Noida',
+    'Varanasi'
+  ],
+
+  'West Bengal': [
+    'Durgapur',
+    'Howrah',
+    'Kolkata',
+    'Siliguri'
+  ]
+
+};
+
+  currentCities: string[] = [];
+
+readonly minPickupDate = new Date();
   pickup = {
     wasteType: '',
     pickupAddress: '',
@@ -128,6 +236,15 @@ export class SchedulePickup {
         },
 
       });
+
+  }
+
+  onStateChange(): void {
+
+    this.currentCities =
+      this.cities[this.pickup.state] || [];
+
+    this.pickup.city = '';
 
   }
 
