@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Message = require('../models/Message');
+const { encrypt, decrypt } = require('../utils/encryption');
 const onlineUsers = new Map();
 
 const registerChatSocket = (io) => {
@@ -56,9 +57,13 @@ const registerChatSocket = (io) => {
                 const message = await Message.create({
                     senderId: socket.user._id,
                     receiverId,
-                    content: content.trim(),
+                    content: encrypt(content.trim()),
                     status: 'sent'
                 });
+                const messageToSend = {
+                    ...message.toObject(),
+                    content: content.trim()
+                };
 
                 const receiverSocketId = onlineUsers.get(receiverId);
 
@@ -67,7 +72,7 @@ const registerChatSocket = (io) => {
                     message.status = 'delivered';
                     await message.save();
 
-                    io.to(receiverSocketId).emit('receiveMessage', message);
+                    io.to(receiverSocketId).emit('receiveMessage', messageToSend);
 
                     socket.emit('messageDelivered', {
                         messageId: message._id,
@@ -75,7 +80,7 @@ const registerChatSocket = (io) => {
                     });
                 }
 
-                socket.emit('messageSent', message);
+                socket.emit('messageSent', messageToSend);
 
             } catch (error) {
                 socket.emit('messageError', {

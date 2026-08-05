@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Message = require('../models/Message');
+const { encrypt, decrypt } = require('../utils/encryption');
 
 const getUsersByRole = async (req, res) => {
     try {
@@ -37,12 +38,17 @@ const sendMessage = async (req, res) => {
         const message = await Message.create({
             senderId: req.user._id,
             receiverId,
-            content: content.trim()
+            content: encrypt(content.trim())
         });
+
+        const responseMessage = {
+            ...message.toObject(),
+            content: content.trim()
+        };
 
         res.status(201).json({
             success: true,
-            data: message
+            data: responseMessage
         });
     } catch (error) {
         res.status(500).json({
@@ -71,9 +77,14 @@ const getConversation = async (req, res) => {
             .populate('receiverId', '_id fullName username')
             .sort({ createdAt: 1 });
 
+        const decryptedMessages = messages.map(message => ({
+            ...message.toObject(),
+            content: decrypt(message.content)
+        }));
+
         res.json({
             success: true,
-            data: messages
+            data: decryptedMessages
         });
     } catch (error) {
         res.status(500).json({
