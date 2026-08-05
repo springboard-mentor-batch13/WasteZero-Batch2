@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 
-// Fetch user profile
+// =========================
+// Fetch User Profile
+// =========================
 const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
@@ -28,7 +30,9 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Update user profile
+// =========================
+// Update User Profile
+// =========================
 const updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -41,47 +45,27 @@ const updateProfile = async (req, res) => {
     }
 
     const {
-  fullName,
-  location,
-  skills,
-  bio,
-  profileImage,
-  city,
-  state,
-  preferredWasteTypes,
-} = req.body;
-
-
-
+      fullName,
+      location,
+      skills,
+      bio,
+      profileImage,
+      city,
+      state,
+      preferredWasteTypes,
+    } = req.body;
 
     user.fullName = fullName ?? user.fullName;
-
     user.location = location ?? user.location;
-
     user.skills = skills ?? user.skills;
-
     user.bio = bio ?? user.bio;
-
     user.profileImage = profileImage ?? user.profileImage;
-
     user.city = city ?? user.city;
-
     user.state = state ?? user.state;
-
     user.preferredWasteTypes =
-        preferredWasteTypes ?? user.preferredWasteTypes;
-
-
-
-
-
+      preferredWasteTypes ?? user.preferredWasteTypes;
 
     const updatedUser = await user.save();
-
-
-
-
-
 
     const userObj = updatedUser.toObject();
     delete userObj.password;
@@ -101,7 +85,90 @@ const updateProfile = async (req, res) => {
   }
 };
 
+// =========================
+// Get NGO Service Areas
+// =========================
+const getServiceAreas = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select(
+      'state city serviceAreas role'
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (user.role !== 'NGO') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only NGOs can access service areas.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
+};
+
+// =========================
+// Update NGO Service Areas
+// =========================
+const updateServiceAreas = async (req, res) => {
+  try {
+    const { state, city, serviceAreas } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    if (user.role !== 'NGO') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only NGOs can update service areas.',
+      });
+    }
+
+    user.state = state ?? user.state;
+    user.city = city ?? user.city;
+    user.serviceAreas = serviceAreas ?? user.serviceAreas;
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Service areas updated successfully.',
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
+};
+
+// =========================
 // Change Password
+// =========================
 const changePassword = async (req, res) => {
   try {
     const {
@@ -163,5 +230,7 @@ const changePassword = async (req, res) => {
 module.exports = {
   getProfile,
   updateProfile,
+  getServiceAreas,
+  updateServiceAreas,
   changePassword,
 };

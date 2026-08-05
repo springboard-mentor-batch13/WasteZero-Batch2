@@ -1,0 +1,136 @@
+<section class="pickup-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">NGO PICKUPS</p>
+      <h1>Pickup requests</h1>
+      <p>Review assigned volunteer pickup requests and update their status.</p>
+    </div>
+  </header>
+
+  <div class="filter-row">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search pickups</mat-label>
+      <input
+        matInput
+        type="text"
+        placeholder="Volunteer name or pickup ID"
+        [(ngModel)]="searchText"
+        (input)="applyFilters()">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="selectedStatus" (selectionChange)="applyFilters()">
+        @for (status of statuses; track status) {
+          <mat-option [value]="status">{{ status }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Waste Type</mat-label>
+      <mat-select [(ngModel)]="selectedWasteType" (selectionChange)="applyFilters()">
+        @for (wasteType of wasteTypes; track wasteType) {
+          <mat-option [value]="wasteType">{{ wasteType }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  @if (loading && filteredRequests.length === 0) {
+  <div class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+} @else if (errorMessage) {
+    <mat-card class="state-card error-state">
+      <mat-icon>error_outline</mat-icon>
+      <h2>Pickup requests could not be loaded.</h2>
+      <p>{{ errorMessage }}</p>
+      <button mat-flat-button type="button" (click)="loadRequests()">Retry</button>
+    </mat-card>
+  } @else if (filteredRequests.length === 0) {
+    <mat-card class="state-card">
+      <mat-icon>local_shipping</mat-icon>
+      <h2>No pickup requests assigned.</h2>
+      <p>No assigned pickup requests match the current search or filter.</p>
+    </mat-card>
+  } @else {
+    <div class="pickup-grid">
+      @for (request of filteredRequests; track trackById($index, request)) {
+        <mat-card class="pickup-card mat-elevation-z2">
+          <mat-card-header>
+            <div mat-card-avatar class="pickup-avatar">
+              <mat-icon>recycling</mat-icon>
+            </div>
+            <mat-card-title>{{ request.volunteerName }}</mat-card-title>
+            <mat-card-subtitle>{{ request.id }}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div class="status-row">
+              <span>Current Status</span>
+              <mat-chip [class]="statusClass(request.status)">
+                {{ request.status }}
+              </mat-chip>
+            </div>
+
+            <div class="info-grid">
+              <div>
+                <span>Volunteer Contact</span>
+                <strong>{{ request.volunteerPhone || 'Not provided' }}</strong>
+              </div>
+              <div>
+                <span>Waste Type</span>
+                <strong>{{ request.wasteType }}</strong>
+              </div>
+              <div>
+                <span>Pickup Date</span>
+                <strong>{{ request.pickupDate | date:'mediumDate' }}</strong>
+              </div>
+              <div>
+                <span>Pickup Time</span>
+                <strong>{{ request.pickupTime }}</strong>
+              </div>
+              <div>
+                <span>Area / Location</span>
+                <strong>{{ request.pickupArea }}</strong>
+              </div>
+              <div>
+                <span>Created Date</span>
+                <strong>{{ request.createdAt | date:'mediumDate' }}</strong>
+              </div>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-flat-button class="details-button" type="button" (click)="viewDetails(request)">
+              View Details
+            </button>
+
+            @if (request.status === 'Pending') {
+              <button
+                mat-flat-button
+                class="accept-button"
+                type="button"
+                [disabled]="isUpdating(request)"
+                (click)="confirmAction(request, 'accept')">
+                <mat-icon>check</mat-icon>
+                Accept
+              </button>
+              <button
+                mat-stroked-button
+                class="reject-button"
+                type="button"
+                [disabled]="isUpdating(request)"
+                (click)="confirmAction(request, 'reject')">
+                <mat-icon>close</mat-icon>
+                Reject
+              </button>
+            }
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  }
+</section>

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Message = require('../models/Message');
 const { encrypt, decrypt } = require('../utils/encryption');
+const Notification = require('../models/Notification'); // 👈 Import Notification Model
 const onlineUsers = new Map();
 
 const registerChatSocket = (io) => {
@@ -52,6 +53,7 @@ const registerChatSocket = (io) => {
         });
 
         console.log(`${socket.user.fullName} connected`);
+
         socket.on('sendMessage', async ({ receiverId, content }) => {
             try {
                 const message = await Message.create({
@@ -64,6 +66,23 @@ const registerChatSocket = (io) => {
                     ...message.toObject(),
                     content: content.trim()
                 };
+
+                // ----------------------------------------------------
+                // 🔔 TRIGGER NOTIFICATION FOR MESSAGE RECEIVER
+                // ----------------------------------------------------
+                const receiverUser = await User.findById(receiverId).select('role');
+                if (receiverUser) {
+                    const senderName = socket.user.fullName || socket.user.username || 'A user';
+                    await Notification.create({
+                        recipientId: receiverId,          // Receiver only
+                        recipientRole: receiverUser.role,  // Volunteer, NGO, or Admin
+                        sourceRole: socket.user.role,
+                        title: 'New Message',
+                        message: `You received a new message from ${senderName}.`,
+                        type: 'Message',
+                        redirectUrl: '/messages'
+                    });
+                }
 
                 const receiverSocketId = onlineUsers.get(receiverId);
 
@@ -113,6 +132,7 @@ const registerChatSocket = (io) => {
                 });
             }
         });
+
         socket.on('disconnect', () => {
 
             io.emit('userOffline', {

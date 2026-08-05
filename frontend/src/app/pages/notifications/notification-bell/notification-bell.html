@@ -1,0 +1,166 @@
+<div class="notification-bell" [class.open]="isOpen">
+
+  <!-- Bell Button with Badge -->
+  <button
+    class="bell-button"
+    (click)="togglePanel()"
+    [attr.aria-label]="'Notifications (' + unreadCount + ' unread)'"
+    [attr.aria-expanded]="isOpen"
+    type="button"
+  >
+    <mat-icon class="bell-icon">notifications</mat-icon>
+
+    @if (unreadCount > 0) {
+      <span class="badge">{{ unreadBadgeLabel }}</span>
+    }
+  </button>
+
+  <!-- Dropdown Panel -->
+  @if (isOpen) {
+    <div
+      class="panel"
+      (click)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="false"
+      [attr.aria-label]="'Notifications popup'"
+    >
+
+      <!-- Panel Header -->
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <mat-icon class="header-icon">notifications</mat-icon>
+          Notifications
+        </h3>
+
+        @if (unreadCount > 0) {
+          <button
+            class="mark-all-read"
+            (click)="markAllAsRead($event)"
+            type="button"
+            matTooltip="Mark all as read"
+          >
+            <mat-icon>done_all</mat-icon>
+            Mark all read
+          </button>
+        }
+      </div>
+
+      <!-- Loading State -->
+      @if (loading) {
+        <div class="panel-loading">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      }
+
+      <!-- Error State -->
+      @if (!loading && error) {
+        <div class="panel-error">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <p class="error-message">{{ error }}</p>
+          <button
+            class="retry-btn"
+            (click)="retry($event)"
+            type="button"
+            mat-stroked-button
+          >
+            <mat-icon>refresh</mat-icon>
+            Retry
+          </button>
+        </div>
+      }
+
+      <!-- Notification List -->
+      @if (!loading && !error && recentNotifications.length > 0) {
+        <div class="notification-list">
+
+          @for (notification of recentNotifications; track notification.id) {
+            <div
+              class="notification-item"
+              [class.unread]="!notification.isRead"
+              (click)="openNotification(notification)"
+            >
+
+              <!-- Type Icon -->
+              <div
+                class="type-icon"
+                [style.color]="getNotificationColor(notification)"
+              >
+                <mat-icon>{{ getNotificationIcon(notification) }}</mat-icon>
+              </div>
+
+              <!-- Content -->
+              <div class="notification-content">
+                <div class="notification-header-row">
+                  <div class="notification-title">
+                    {{ notification.title }}
+                  </div>
+
+                  <span
+                    class="type-badge"
+                    [style.background-color]="getNotificationColor(notification) + '15'"
+                    [style.color]="getNotificationColor(notification)"
+                  >
+                    {{ getNotificationLabel(notification) }}
+                  </span>
+                </div>
+
+                <div class="notification-message">
+                  {{ notification.message }}
+                </div>
+
+                <div class="notification-meta">
+                  <span class="notification-time">
+                    {{ formatTime(notification.createdAt) }}
+                  </span>
+
+                  @if (!notification.isRead) {
+                    <span class="mark-read-link" (click)="markAsRead($event, notification)">
+                      Mark read
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <!-- Read/Unread Indicator -->
+              <div
+                class="read-indicator"
+                [class.unread-status]="!notification.isRead"
+                [matTooltip]="notification.isRead ? 'Read' : 'Unread'"
+              >
+                @if (notification.isRead) {
+                  <mat-icon>drafts</mat-icon>
+                } @else {
+                  <mat-icon>markunread</mat-icon>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Empty State -->
+      @if (!loading && !error && recentNotifications.length === 0) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">notifications_off</mat-icon>
+          <p class="empty-title">You're all caught up!</p>
+          <p class="empty-message">
+            No new notifications at the moment.
+          </p>
+        </div>
+      }
+
+      <!-- Panel Footer -->
+      @if (!loading && !error) {
+        <div class="panel-footer">
+          <button
+            class="view-all"
+            (click)="viewAll($event)"
+            type="button"
+          >
+            View All Notifications
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
