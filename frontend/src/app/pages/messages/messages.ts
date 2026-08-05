@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef,  ViewChild,ElementRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessagesService } from './messages.service';
@@ -30,6 +30,9 @@ export class Messages implements OnInit {
   // Current logged-in user
   currentUserId = '';
   currentUserRole = '';
+
+  @ViewChild('messagesContainer')
+ messagesContainer!: ElementRef;
 
   ngOnInit(): void {
 
@@ -125,19 +128,21 @@ export class Messages implements OnInit {
     data = data.filter(role => role.role !== 'NGO');
   }
 
-      console.log('After Filter:', data);
+      //console.log('After Filter:', data);
 
       this.roles = data;
        this.cdr.detectChanges();
 
-     console.log('Users by role:', this.roles);
+     //console.log('Users by role:', this.roles);
 
+     
       this.roles.forEach((role: any) => {
         role.members.forEach((member: any) => {
 
           this.messageService.getConversation(member._id).subscribe({
             next: (res: any) => {
 
+              console.log(member.username, res.data);
            member.messages = res.data || [];
 
        role.members.sort((a: any, b: any) => {
@@ -172,6 +177,8 @@ export class Messages implements OnInit {
   });
 }
 
+
+
   // =========================
   // SELECT MEMBER
   // =========================
@@ -179,6 +186,7 @@ export class Messages implements OnInit {
      console.log('Selected Member:', member);
 
     this.selectedMember = member;
+     localStorage.setItem('lastChatUser', member._id);
 
     this.messageService.getConversation(member._id).subscribe({
       next: (res: any) => {
@@ -195,6 +203,7 @@ export class Messages implements OnInit {
         // When user opens chat,
         // received messages should become read.
         this.markMessagesAsRead();
+        this.scrollToBottom();
       },
 
       error: (err) => {
@@ -214,10 +223,41 @@ export class Messages implements OnInit {
         : roleName;
   }
 
-  // =========================
-  // SEND MESSAGE
-  // =========================
- sendMessage(): void {
+ getUnreadCount(member: any): number {
+
+  console.log(member.username, member.messages);
+
+  if (!member.messages) {
+    return 0;
+  }
+
+  const count = member.messages.filter((message: any) =>
+
+    !this.isMyMessage(message) &&
+    message.status !== 'read'
+
+  ).length;
+
+  console.log('Unread Count:', member.username, count);
+
+  return count;
+}
+
+  scrollToBottom(): void {
+
+  setTimeout(() => {
+
+    if (this.messagesContainer) {
+
+      const element = this.messagesContainer.nativeElement;
+      element.scrollTop = element.scrollHeight;
+
+    }
+
+  }, 100);
+
+}
+sendMessage(): void {
 
   if (!this.selectedMember || !this.newMessage.trim()) {
     return;
@@ -225,47 +265,56 @@ export class Messages implements OnInit {
 
   const text = this.newMessage.trim();
 
-  this.messageService
-    .sendMessage(this.selectedMember._id, text)
-    .subscribe({
+  // Input immediately clear karo
+  this.newMessage = '';
 
-      next: (response: any) => {
+  this.messageService.sendMessage(this.selectedMember._id, text).subscribe({
 
-        console.log('Send Response:', response);
+    next: () => {
 
-        this.messageService
-          .getConversation(this.selectedMember._id)
-          .subscribe({
+      this.messageService.getConversation(this.selectedMember._id).subscribe({
 
-            next: (res: any) => {
+        next: (res: any) => {
 
-              console.log('Conversation Response:', res);
+          const messages = res.data || [];
 
-                this.newMessage = '';
+          // Selected chat update
+          this.selectedMember.messages = [...messages];
 
-              this.selectedMember.messages = [...(res.data || [])];
+          // Left side member list bhi update
+          this.roles.forEach(role => {
+            role.members.forEach((member: any) => {
 
-              console.log(
-                'Messages updated:',
-                this.selectedMember.messages
-              );
+              if (member._id === this.selectedMember._id) {
+                member.messages = [...messages];
+              }
 
-              this.newMessage = '';
-            },
-
-            error: (err) => {
-              console.error('Error refreshing messages:', err);
-            }
-
+            });
           });
 
-      },
+          // UI refresh
+          this.cdr.detectChanges();
 
-      error: (err) => {
-        console.error('Error sending message:', err);
-      }
+          // Scroll latest message
+          this.scrollToBottom();
 
-    });
+        },
+
+        error: (err) => {
+          console.error(err);
+        }
+
+      });
+
+    },
+
+    error: (err) => {
+      console.error(err);
+    }
+
+  });
+
+
 }
   // =========================
   // SEARCH
@@ -521,7 +570,13 @@ export class Messages implements OnInit {
         this.selectedMember.messages = [];
       }
 
-      this.selectedMember.messages.push(message);
+      this.selectedMember.messages = [
+  ...this.selectedMember.messages,
+  message
+];
+
+this.cdr.detectChanges();
+this.scrollToBottom();
 
       this.markMessagesAsRead();
 
@@ -634,5 +689,6 @@ updateMessageStatus(
   });
 
 }
+
 
 }

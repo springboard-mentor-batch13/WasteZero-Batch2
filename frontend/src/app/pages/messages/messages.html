@@ -56,6 +56,8 @@
                       {{ member.username }}
              </span>
 
+
+
                 <!-- Last message time -->
                 @if (getLastMessage(member)) {
                   <span class="chat-time">
@@ -87,11 +89,17 @@
 
                   } @else {
 
-                    No messages yet
+                    <span class="no-message">Start a conversation</span>
 
                   }
 
                 </span>
+
+                @if (getUnreadCount(member) > 0) {
+  <span class="unread-badge">
+    {{ getUnreadCount(member) }}
+  </span>
+}
 
               </div>
 
@@ -164,7 +172,7 @@
 
 
     <!-- ================= CHAT BODY ================= -->
-    <div class="chat-body">
+    <div class="chat-body" #messagesContainer>
 
       @if (selectedMember) {
 
