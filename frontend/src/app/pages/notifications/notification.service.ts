@@ -47,9 +47,7 @@ export class NotificationService {
   private isLoading = false;
   private pollSubscription?: Subscription;
 
-  private readonly notificationsSubject = new BehaviorSubject<Notification[]>(
-    []
-  );
+  private readonly notificationsSubject = new BehaviorSubject<Notification[]>([]);
 
   readonly notifications$ = this.notificationsSubject.asObservable();
   readonly visibleNotifications$ = this.notifications$.pipe(
@@ -62,22 +60,25 @@ export class NotificationService {
   );
 
   constructor() {
-    if (this.authService.isLoggedIn()) {
-      this.loadNotificationsOnce();
-      this.startPolling();
-    }
-
     this.authService.currentUser$.subscribe((user) => {
-      if (user) {
-        this.hasLoaded = false;
-        this.loadNotificationsOnce();
-        this.startPolling();
+      if (user && this.authService.isLoggedIn()) {
+        this.clearAndReload();
       } else {
         this.stopPolling();
         this.notificationsSubject.next([]);
         this.hasLoaded = false;
+        this.isLoading = false;
       }
     });
+  }
+
+  clearAndReload(): void {
+    this.hasLoaded = false;
+    this.isLoading = false;
+    this.refreshNotifications().subscribe({
+      error: (err) => console.error('Failed to load notifications on login:', err),
+    });
+    this.startPolling();
   }
 
   loadNotificationsOnce(): void {
@@ -202,12 +203,19 @@ export class NotificationService {
   }
 
   private fetchNotifications(): Observable<Notification[]> {
+    if (!this.authService.isLoggedIn()) {
+      return of([]);
+    }
+
     return this.http
       .get<NotificationApiResponse<BackendNotification[]>>(
         this.notificationsUrl,
         this.getHttpOptions()
       )
-      .pipe(map((response) => this.mapNotifications(response.data)));
+      .pipe(
+        map((response) => this.mapNotifications(response.data || [])),
+        catchError(() => of([]))
+      );
   }
 
   private patchNotification(url: string): Observable<Notification> {
@@ -258,6 +266,7 @@ export class NotificationService {
   }
 
   private mapNotifications(notifications: BackendNotification[]): Notification[] {
+    if (!Array.isArray(notifications)) return [];
     return this.sortNotifications(
       notifications.map((notification) => this.mapNotification(notification))
     );
@@ -286,15 +295,17 @@ export class NotificationService {
   ): Notification[] {
     const role = this.getUserRole(user);
 
-    if (!this.isRoleNotificationRecipient(role)) {
+    if (!this.isRoleNotificationRecipient(role) || !this.authService.isLoggedIn()) {
       return [];
     }
+
+    const currentUserId = user?.id || (user as any)?._id;
 
     return notifications.filter((notification) => {
       const displayType =
         notification.displayType ?? this.resolveDisplayType(notification);
 
-      if (!ROLE_NOTIFICATION_DISPLAY_TYPES[role].includes(displayType)) {
+      if (!ROLE_NOTIFICATION_DISPLAY_TYPES[role]?.includes(displayType)) {
         return false;
       }
 
@@ -313,7 +324,7 @@ export class NotificationService {
         return false;
       }
 
-      return !notification.recipientId || notification.recipientId === user?.id;
+      return !notification.recipientId || notification.recipientId === currentUserId;
     });
   }
 

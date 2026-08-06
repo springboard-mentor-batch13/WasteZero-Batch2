@@ -1,4 +1,4 @@
-import { Component, DestroyRef, HostListener, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectorRef, DestroyRef, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -16,6 +16,7 @@ import {
 } from '../notification.model';
 import { NotificationService } from '../notification.service';
 import { NotificationToastService } from '../notification-toast.service';
+import { AuthService, AuthResponse } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-notification-bell',
@@ -33,10 +34,12 @@ import { NotificationToastService } from '../notification-toast.service';
 })
 export class NotificationBellComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
-  // Inject to initialize the toast service singleton
+  private readonly cdr = inject(ChangeDetectorRef);
+  
   private readonly _toastService = inject(NotificationToastService);
 
   isOpen = false;
@@ -44,82 +47,64 @@ export class NotificationBellComponent implements OnInit {
   unreadCount = 0;
   loading = false;
   error: string | null = null;
-  private hasSubscribed = false;
 
   readonly maxPanelItems = 8;
 
   ngOnInit(): void {
-    this.loadNotifications();
-  }
-
-  /* ==========================================================
-     LOAD NOTIFICATIONS
-     Uses the shared NotificationService as the single source of
-     truth. Both the bell popup and the Notifications page read
-     from the same BehaviorSubject-backed service.
-
-     Notifications are loaded ONCE on init. The popup does NOT
-     reload every time it opens — it uses the cached data.
-     ========================================================== */
-
-  loadNotifications(): void {
-    this.loading = true;
-    this.error = null;
-    this.notificationService.loadNotificationsOnce();
-
-    if (this.hasSubscribed) {
-      this.loading = false;
-      return;
-    }
-
-    this.hasSubscribed = true;
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user: AuthResponse['user'] | null) => {
+        if (!user) {
+          this.notifications = [];
+          this.unreadCount = 0;
+          this.loading = false;
+          this.error = null;
+          this.cdr.markForCheck();
+        } else {
+          this.notificationService.clearAndReload();
+        }
+      });
 
     this.notificationService.visibleNotifications$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-      next: (notifications) => {
-        this.notifications = notifications;
-        this.loading = false;
-      },
-      error: (err: unknown) => {
-        this.loading = false;
-        this.error =
-          err instanceof Error
-            ? err.message
-            : 'Unable to load notifications. Please try again.';
-      },
-    });
+        next: (notifications) => {
+          this.notifications = notifications;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.loading = false;
+          this.error =
+            err instanceof Error
+              ? err.message
+              : 'Unable to load notifications. Please try again.';
+          this.cdr.markForCheck();
+        },
+      });
 
     this.notificationService.unreadCount$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((count) => {
         this.unreadCount = count;
+        this.cdr.markForCheck();
       });
   }
 
-  /* ==========================================================
-     TOGGLE PANEL
-     Does NOT reload notifications — uses cached data from
-     the shared NotificationService.
-     ========================================================== */
-
   togglePanel(): void {
     this.isOpen = !this.isOpen;
-    // Notifications are already loaded on init.
-    // Do NOT reload — use cached data to avoid spinner flash.
+    this.cdr.markForCheck();
   }
 
   closePanel(): void {
     this.isOpen = false;
+    this.cdr.markForCheck();
   }
-
-  /* ==========================================================
-     CLICK OUTSIDE TO CLOSE
-     ========================================================== */
 
   @HostListener('document:keydown.escape')
   onKeydownHandler(): void {
     this.isOpen = false;
+    this.cdr.markForCheck();
   }
 
   @HostListener('document:click', ['$event'])
@@ -128,48 +113,29 @@ export class NotificationBellComponent implements OnInit {
 
     if (this.isOpen && !target.closest('.notification-bell')) {
       this.isOpen = false;
+      this.cdr.markForCheck();
     }
   }
-
-  /* ==========================================================
-     UNREAD COUNT
-     ========================================================== */
-
-  /* ==========================================================
-     RECENT NOTIFICATIONS (for panel)
-     Unread notifications first, then by date (newest first).
-     ========================================================== */
 
   get recentNotifications(): Notification[] {
     return this.notifications.slice(0, this.maxPanelItems);
   }
 
-  /* ==========================================================
-     OPEN NOTIFICATION
-     ========================================================== */
-
   openNotification(notification: Notification): void {
-    // Mark as read immediately for badge sync
     if (!notification.isRead) {
       this.notificationService.markAsRead(notification.id).subscribe({
-        next: () => undefined,
+        next: () => this.cdr.markForCheck(),
       });
     }
 
-    // Close panel
     this.isOpen = false;
 
-    // Navigate to detail or redirect URL
     if (notification.redirectUrl) {
       this.router.navigate([notification.redirectUrl]);
     } else {
       this.router.navigate(['/notifications', notification.id]);
     }
   }
-
-  /* ==========================================================
-     MARK ALL AS READ
-     ========================================================== */
 
   markAllAsRead(event: Event): void {
     event.stopPropagation();
@@ -179,35 +145,30 @@ export class NotificationBellComponent implements OnInit {
         this.snackBar.open('All notifications marked as read', 'Close', {
           duration: 2000,
         });
+        this.cdr.markForCheck();
       },
       error: () => {
         this.snackBar.open('Failed to mark all as read', 'Close', {
           duration: 3000,
         });
+        this.cdr.markForCheck();
       },
     });
   }
-
-  /* ==========================================================
-     MARK READ (single, from popup)
-     ========================================================== */
 
   markAsRead(event: Event, notification: Notification): void {
     event.stopPropagation();
 
     this.notificationService.markAsRead(notification.id).subscribe({
-      next: () => undefined,
+      next: () => this.cdr.markForCheck(),
       error: () => {
         this.snackBar.open('Failed to mark as read', 'Close', {
           duration: 3000,
         });
+        this.cdr.markForCheck();
       },
     });
   }
-
-  /* ==========================================================
-     VIEW ALL
-     ========================================================== */
 
   viewAll(event: Event): void {
     event.stopPropagation();
@@ -216,30 +177,18 @@ export class NotificationBellComponent implements OnInit {
     this.router.navigate(['/notifications']);
   }
 
-  /* ==========================================================
-     RETRY
-     ========================================================== */
-
   retry(event: Event): void {
     event.stopPropagation();
-    this.loadNotifications();
+    this.notificationService.clearAndReload();
   }
 
   get unreadBadgeLabel(): string {
     return this.unreadCount > 99 ? '99+' : String(this.unreadCount);
   }
 
-  /* ==========================================================
-     HELPER: TYPE ICON
-     ========================================================== */
-
   getNotificationIcon(notification: Notification): string {
     return this.getNotificationConfig(notification).icon;
   }
-
-  /* ==========================================================
-     HELPER: TYPE COLOR
-     ========================================================== */
 
   getNotificationColor(notification: Notification): string {
     return this.getNotificationConfig(notification).color;
@@ -254,10 +203,6 @@ export class NotificationBellComponent implements OnInit {
       ? NOTIFICATION_DISPLAY_TYPE_CONFIG[notification.displayType]
       : NOTIFICATION_TYPE_CONFIG[notification.type];
   }
-
-  /* ==========================================================
-     HELPER: FORMAT TIME
-     ========================================================== */
 
   formatTime(createdAt: string): string {
     const date = new Date(createdAt);
@@ -283,7 +228,6 @@ export class NotificationBellComponent implements OnInit {
       return `${diffDays}d ago`;
     }
 
-    // Format older dates as "MMM d"
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
