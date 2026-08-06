@@ -2,76 +2,395 @@
 
   <h1>My Pickup Requests</h1>
 
-  @if (loading && pickups.length === 0) {
+  @if (loading) {
 
     <div class="loading-container">
-      <mat-spinner diameter="40"></mat-spinner>
+      <mat-spinner diameter="45"></mat-spinner>
     </div>
 
   } @else {
+
+    <!-- =========================
+         Dashboard Summary
+    ========================== -->
+
+    <h2 class="section-title">
+      Dashboard Summary
+    </h2>
+
+    <div class="summary-grid">
+
+      <mat-card class="summary-card">
+        <div class="summary-icon total">
+          <mat-icon>inventory_2</mat-icon>
+        </div>
+
+        <div>
+          <p>Total Pickups</p>
+          <h2>{{ totalPickups }}</h2>
+        </div>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <div class="summary-icon pending">
+          <mat-icon>schedule</mat-icon>
+        </div>
+
+        <div>
+          <p>Pending</p>
+          <h2>{{ pendingPickups }}</h2>
+        </div>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <div class="summary-icon accepted">
+          <mat-icon>verified</mat-icon>
+        </div>
+
+        <div>
+          <p>Accepted</p>
+          <h2>{{ acceptedPickups }}</h2>
+        </div>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <div class="summary-icon completed">
+          <mat-icon>task_alt</mat-icon>
+        </div>
+
+        <div>
+          <p>Completed</p>
+          <h2>{{ completedPickups }}</h2>
+        </div>
+      </mat-card>
+
+    </div>
+
+    <!-- =========================
+         Pickup Requests
+    ========================== -->
+
+    <h2 class="section-title">
+
+      My Pickup Requests
+
+    </h2>
 
     <div class="pickup-grid">
 
       @for (pickup of pickups; track pickup._id) {
 
-        <mat-card class="pickup-card">
+      <mat-card class="pickup-card">
 
-          <mat-card-header>
+        <!-- Header -->
 
-            <mat-card-title>
-              {{ pickup.wasteType }}
-            </mat-card-title>
+        <div class="card-header">
 
-            <mat-card-subtitle>
-              {{ pickup.status }}
-            </mat-card-subtitle>
+          <div class="title-section">
 
-          </mat-card-header>
+            <div class="waste-icon">
+              <mat-icon>
+                {{ getWasteIcon(pickup.wasteType) }}
+              </mat-icon>
+            </div>
 
-          <mat-card-content>
+            <div>
 
-            <p>
-              <strong>Address:</strong><br>
-              {{ pickup.pickupAddress }}
-            </p>
+              <h3>{{ pickup.wasteType }}</h3>
 
-            <p>
-              <strong>Location:</strong><br>
-              {{ pickup.area }},
-              {{ pickup.city }},
-              {{ pickup.state }}
-            </p>
+              <small>Pickup Request</small>
 
-            <p>
-              <strong>Date:</strong>
-              {{ pickup.pickupDate | date:'mediumDate' }}
-            </p>
+            </div>
 
-            <p>
-              <strong>Time:</strong>
-              {{ pickup.pickupTime }}
-            </p>
+          </div>
 
-            <p>
-              <strong>Assigned NGO:</strong><br>
-              {{ pickup.ngo?.fullName || pickup.ngo?.username || 'Not Assigned' }}
-            </p>
+          <span
+            class="status-chip"
+            [ngClass]="getStatusClass(pickup.status)">
 
-          </mat-card-content>
+            {{ pickup.status }}
 
-        </mat-card>
+          </span>
 
-      } @empty {
+        </div>
 
-        <mat-card>
+        <!-- Card Body -->
 
-          <mat-card-content>
+        <div class="card-body">
 
-            No Pickup Requests Found.
+          <div class="info-row">
 
-          </mat-card-content>
+            <mat-icon>location_on</mat-icon>
 
-        </mat-card>
+            <div>
+
+              <label>Location</label>
+
+              <p>
+
+                {{ pickup.pickupAddress }}
+
+                <br>
+
+                {{ pickup.area }},
+                {{ pickup.city }},
+                {{ pickup.state }}
+
+              </p>
+
+            </div>
+
+          </div>
+
+          <div class="info-row">
+
+            <mat-icon>calendar_month</mat-icon>
+
+            <div>
+
+              <label>Pickup Date</label>
+
+              <p>
+
+                {{ pickup.pickupDate | date:'mediumDate' }}
+
+              </p>
+
+            </div>
+
+          </div>
+
+          <div class="info-row">
+
+            <mat-icon>schedule</mat-icon>
+
+            <div>
+
+              <label>Pickup Time</label>
+
+              <p>
+
+                {{ pickup.pickupTime }}
+
+              </p>
+
+            </div>
+
+          </div>
+
+          <div class="info-row">
+
+            <mat-icon>business</mat-icon>
+
+            <div>
+
+              <label>Assigned NGO</label>
+
+              <p>
+
+                {{ pickup.ngo?.fullName || pickup.ngo?.username || 'Awaiting Assignment' }}
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+                <!-- =========================
+             Card Footer
+        ========================== -->
+
+        <div class="card-footer">
+
+          <!-- View Details -->
+
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="viewDetails(pickup)">
+
+            <mat-icon>visibility</mat-icon>
+
+            View Details
+
+          </button>
+
+          <!-- More Menu -->
+
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="pickupMenu">
+
+            <mat-icon>more_vert</mat-icon>
+
+          </button>
+
+        </div>
+
+        <!-- =========================
+             More Menu
+        ========================== -->
+
+        <mat-menu #pickupMenu="matMenu">
+
+          <!-- Pending -->
+
+          @if (pickup.status === 'Pending') {
+
+            <button
+              mat-menu-item
+              disabled>
+
+              <mat-icon>hourglass_empty</mat-icon>
+
+              <span>
+
+                Waiting for NGO Approval
+
+              </span>
+
+            </button>
+
+          }
+
+          <!-- Accepted -->
+
+          @if (pickup.status === 'Accepted') {
+
+            <button
+              mat-menu-item
+              [disabled]="!canStartPickup(pickup)"
+              (click)="startPickup(pickup._id)">
+
+              <mat-icon>play_arrow</mat-icon>
+
+              <span>
+
+                {{ canStartPickup(pickup)
+                  ? 'Start Pickup'
+                  : 'Available on Pickup Date' }}
+
+              </span>
+
+            </button>
+
+          }
+
+          <!-- In Progress -->
+
+          @if (pickup.status === 'In Progress') {
+
+            <button
+              mat-menu-item
+              (click)="completePickup(pickup._id)">
+
+              <mat-icon>task_alt</mat-icon>
+
+              <span>
+
+                Mark Completed
+
+              </span>
+
+            </button>
+
+          }
+
+          <!-- Completed -->
+
+          @if (pickup.status === 'Completed') {
+
+            <button
+              mat-menu-item
+              disabled>
+
+              <mat-icon>check_circle</mat-icon>
+
+              <span>
+
+                Pickup Completed
+
+              </span>
+
+            </button>
+
+          }
+
+          <mat-divider></mat-divider>
+
+          <!-- Withdraw -->
+
+          @if (pickup.status === 'Pending' || pickup.status === 'Accepted') {
+
+            <button
+              mat-menu-item
+              (click)="withdrawPickup(pickup._id)">
+
+              <mat-icon>undo</mat-icon>
+
+              <span>
+
+                Withdraw Request
+
+              </span>
+
+            </button>
+
+          }
+
+          <!-- Delete -->
+
+          @if (pickup.status === 'Rejected') {
+
+            <button
+              mat-menu-item
+              (click)="deletePickup(pickup._id)">
+
+              <mat-icon>delete</mat-icon>
+
+              <span>
+
+                Delete Request
+
+              </span>
+
+            </button>
+
+          }
+
+        </mat-menu>
+
+      </mat-card>
+
+      }
+            @empty {
+
+      <mat-card class="empty-card">
+
+        <mat-card-content>
+
+          <mat-icon class="empty-icon">
+
+            local_shipping
+
+          </mat-icon>
+
+          <h2>
+
+            No Pickup Requests Found
+
+          </h2>
+
+          <p>
+
+            You haven't created any pickup requests yet.
+
+          </p>
+
+        </mat-card-content>
+
+      </mat-card>
 
       }
 

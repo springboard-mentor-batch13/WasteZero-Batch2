@@ -39,7 +39,10 @@ export class PickupService {
   }
 
   getMyPickups(): Observable<any> {
-    return this.http.get(this.apiUrl, this.getHeaders());
+    return this.http.get(
+      this.apiUrl,
+      this.getHeaders()
+    );
   }
 
   getAssignedPickups(): Observable<any> {
@@ -49,7 +52,7 @@ export class PickupService {
     );
   }
 
-  acceptPickup(id: string) {
+  acceptPickup(id: string): Observable<any> {
     return this.http.patch(
       `${this.apiUrl}/${id}/accept`,
       {},
@@ -57,7 +60,7 @@ export class PickupService {
     );
   }
 
-  rejectPickup(id: string) {
+  rejectPickup(id: string): Observable<any> {
     return this.http.patch(
       `${this.apiUrl}/${id}/reject`,
       {},
@@ -65,11 +68,40 @@ export class PickupService {
     );
   }
 
-  completePickup(id: string) {
+  startPickup(id: string): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}/${id}/start`,
+      {},
+      this.getHeaders()
+    );
+  }
+
+  completePickup(id: string): Observable<any> {
     return this.http.patch(
       `${this.apiUrl}/${id}/complete`,
       {},
       this.getHeaders()
     );
   }
+
+  withdrawPickup(id: string): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}/${id}/withdraw`,
+      {},
+      this.getHeaders()
+    );
+  }
+
+  deletePickup(id: string): Observable<any> {
+    return this.http.delete(
+      `${this.apiUrl}/${id}`,
+      this.getHeaders()
+    );
+  }
+getPickupById(id: string): Observable<any> {
+  return this.http.get(
+    `${this.apiUrl}/${id}`,
+    this.getHeaders()
+  );
+}
 }

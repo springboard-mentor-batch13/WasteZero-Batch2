@@ -1,40 +1,303 @@
 .pickup-dashboard {
-
-    padding: 30px;
-
+  padding: 30px;
+  background: var(--wz-page-bg);
+  min-height: 100vh;
 }
+
+.pickup-dashboard h1 {
+  margin-bottom: 24px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--wz-text-primary);
+}
+
+.section-title {
+  margin: 20px 0 16px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--wz-primary);
+}
+
+/* ===========================
+   Dashboard Summary
+=========================== */
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 18px;
+  background: var(--wz-surface);
+  border: 1px solid var(--wz-border);
+  box-shadow: var(--wz-shadow-md);
+  transition: all .25s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+
+.summary-card p {
+  margin: 0;
+  color: var(--wz-text-secondary);
+  font-size: .95rem;
+}
+
+.summary-card h2 {
+  margin: 6px 0 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--wz-text-primary);
+}
+
+.summary-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.summary-icon mat-icon {
+  color: #fff;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.summary-icon.total {
+  background: var(--wz-primary);
+}
+
+.summary-icon.pending {
+  background: var(--wz-warning);
+}
+
+.summary-icon.accepted {
+  background: var(--wz-success);
+}
+
+.summary-icon.completed {
+  background: #02897b;
+}
+
+/* ===========================
+   Pickup Grid
+=========================== */
 
 .pickup-grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(auto-fill,minmax(320px,1fr));
-
-    gap:20px;
-
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px,1fr));
+  gap: 24px;
 }
 
-.pickup-card{
+/* ===========================
+   Pickup Card
+=========================== */
 
-    border-radius:12px;
-
+.pickup-card {
+  background: var(--wz-surface);
+  border: 1px solid var(--wz-border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--wz-shadow-md);
+  transition: all .25s ease;
 }
 
-mat-card-title{
-
-    color:#2e7d32;
-
+.pickup-card:hover {
+  transform: translateY(-6px);
 }
 
-mat-card-content p{
-
-    margin:10px 0;
-
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
 }
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.waste-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--wz-primary-soft);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.waste-icon mat-icon {
+  color: var(--wz-primary);
+  font-size: 28px;
+}
+
+.title-section h3 {
+  margin: 0;
+  color: var(--wz-text-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.title-section small {
+  color: var(--wz-text-secondary);
+}
+
+/* ===========================
+   Status Chips
+=========================== */
+
+.status-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: .82rem;
+  font-weight: 600;
+  min-width: 95px;
+  text-align: center;
+}
+
+.pending {
+  background: rgba(229,154,24,.15);
+  color: var(--wz-warning);
+}
+
+.accepted {
+  background: rgba(22,128,61,.15);
+  color: var(--wz-success);
+}
+
+.assigned {
+  background: rgba(25,118,210,.15);
+  color: #1976d2;
+}
+
+.completed {
+  background: rgba(22,128,61,.15);
+  color: var(--wz-success);
+}
+
+/* ===========================
+   Information
+=========================== */
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.info-row mat-icon {
+  color: var(--wz-primary);
+  margin-top: 2px;
+}
+
+.info-row label {
+  display: block;
+  color: var(--wz-text-secondary);
+  font-size: .82rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.info-row p {
+  margin: 0;
+  color: var(--wz-text-primary);
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* ===========================
+   Footer
+=========================== */
+
+.card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.card-footer button {
+  border-radius: 24px;
+  padding: 4px 18px;
+}
+
+.card-footer mat-icon {
+  margin-right: 6px;
+}
+
+/* ===========================
+   Empty State
+=========================== */
+
+.empty-card {
+  background: var(--wz-surface);
+  border: 1px solid var(--wz-border);
+  border-radius: 18px;
+  padding: 50px;
+  text-align: center;
+  box-shadow: var(--wz-shadow-md);
+}
+
+.empty-icon {
+  font-size: 60px;
+  width: 60px;
+  height: 60px;
+  color: var(--wz-primary);
+  margin-bottom: 16px;
+}
+
+/* ===========================
+   Loading
+=========================== */
 
 .loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
+  min-height: 220px;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width:768px){
+
+  .pickup-dashboard{
+    padding:18px;
+  }
+
+  .summary-grid{
+    grid-template-columns:1fr;
+  }
+
+  .pickup-grid{
+    grid-template-columns:1fr;
+  }
+
+  .card-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+  }
+
 }
