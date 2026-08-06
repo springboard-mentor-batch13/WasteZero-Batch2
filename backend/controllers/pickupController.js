@@ -1,5 +1,6 @@
 const Pickup = require('../models/Pickup');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 
 /**
  * Create Pickup Request
@@ -92,6 +93,16 @@ if (!matchedNgo) {
       pickupDate,
       pickupTime,
       status: 'Pending',
+    });
+
+    await Notification.create({
+      recipientId: matchedNgo._id,
+      recipientRole: 'NGO',
+      sourceRole: 'Volunteer',
+      title: 'Pickup Scheduled',
+      message: `${req.user.fullName || req.user.username || 'A volunteer'} scheduled a pickup for ${wasteType} waste in ${area}, ${city}.`,
+      type: 'System',
+      redirectUrl: '/ngo/pickup-requests',
     });
 
     res.status(201).json({
