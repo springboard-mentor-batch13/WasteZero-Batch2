@@ -151,7 +151,35 @@ export class Messages implements OnInit {
         //console.log('After Filter:', data);
 
         this.roles = data;
+        const lastChatUserId = localStorage.getItem('lastChatUser');
 
+        if (lastChatUserId) {
+          for (const role of this.roles) {
+            const member = role.members.find(
+              (m: any) => String(m._id) === String(lastChatUserId)
+            );
+
+            if (member) {
+              this.selectedMember = member;
+
+              this.messageService.getConversation(member._id).subscribe({
+                next: (res: any) => {
+                  this.selectedMember.messages = res.data || [];
+                  member.messages = res.data || [];
+
+                  this.cdr.detectChanges();
+                  this.scrollToBottom();
+                },
+                error: (err) => {
+                  console.error('Error restoring conversation:', err);
+                  member.messages = [];
+                }
+              });
+
+              break;
+            }
+          }
+        }
         // Apply online status after users are loaded
         this.roles.forEach(role => {
           role.members.forEach((member: any) => {
@@ -603,11 +631,23 @@ export class Messages implements OnInit {
 
     });
     this.socketService.onOnlineUsers((users: string[]) => {
-
       console.log('ONLINE USERS:', users);
 
       this.onlineUsers = new Set(users);
 
+      this.roles.forEach(role => {
+        role.members.forEach((member: any) => {
+          member.online = this.onlineUsers.has(String(member._id));
+        });
+      });
+
+      if (this.selectedMember) {
+        this.selectedMember.online = this.onlineUsers.has(
+          String(this.selectedMember._id)
+        );
+      }
+
+      this.cdr.detectChanges();
     });
     this.socketService.onUserOnline((data: any) => {
 
