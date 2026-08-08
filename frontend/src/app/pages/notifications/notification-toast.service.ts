@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NotificationService } from './notification.service';
 import { Notification } from './notification.model';
@@ -21,6 +22,7 @@ export class NotificationToastService {
   private readonly snackBar = inject(MatSnackBar);
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   private previousIds = new Set<string>();
   private initialized = false;
@@ -39,6 +41,16 @@ export class NotificationToastService {
         return;
       }
       if (!this.notificationService.loaded || notifications.length === 0) {
+    // Watch current user state to clear active toasts on logout
+    this.authService.currentUser$.subscribe((user) => {
+      if (!user || !this.authService.isLoggedIn() || this.isAuthPage()) {
+        this.resetState();
+      }
+    });
+
+    this.notificationService.visibleNotifications$.subscribe((notifications) => {
+      if (!this.authService.isLoggedIn() || this.isAuthPage()) {
+        this.resetState();
         return;
       }
       if (!this.initialized) {
@@ -75,6 +87,11 @@ export class NotificationToastService {
      ========================================================== */
 
   showToast(notification: Notification): void {
+    if (!this.authService.isLoggedIn() || this.isAuthPage()) {
+      this.resetState();
+      return;
+    }
+
     const ref = this.snackBar.openFromComponent(NotificationToastComponent, {
       data: notification,
       duration: 5000,
@@ -90,11 +107,20 @@ export class NotificationToastService {
   }
 
   private enqueueToast(notification: Notification): void {
+    if (!this.authService.isLoggedIn() || this.isAuthPage()) {
+      return;
+    }
+
     this.queue.push(notification);
     this.showNext();
   }
 
   private showNext(): void {
+    if (!this.authService.isLoggedIn() || this.isAuthPage()) {
+      this.resetState();
+      return;
+    }
+
     if (this.isShowing || this.queue.length === 0) {
       return;
     }
@@ -107,5 +133,23 @@ export class NotificationToastService {
 
     this.isShowing = true;
     this.showToast(next);
+  }
+
+  private resetState(): void {
+    this.isInitialized = false;
+    this.seenIds.clear();
+    this.queue = [];
+    this.isShowing = false;
+    this.snackBar.dismiss(); // Instantly dismisses active toast from screen when logged out
+  }
+
+  private isAuthPage(): boolean {
+    const currentUrl = this.router.url.toLowerCase();
+    return (
+      currentUrl.includes('/login') ||
+      currentUrl.includes('/register') ||
+      currentUrl.includes('/forgot-password') ||
+      currentUrl === '/'
+    );
   }
 }
