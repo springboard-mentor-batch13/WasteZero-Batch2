@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Message = require('../models/Message');
+const { encrypt, decrypt } = require('../utils/encryption');
 const Notification = require('../models/Notification'); // 👈 Import Notification Model
 const onlineUsers = new Map();
 
@@ -33,6 +34,9 @@ const registerChatSocket = (io) => {
     io.on('connection', (socket) => {
 
         onlineUsers.set(socket.user._id.toString(), socket.id);
+        console.log("Online Users:", Array.from(onlineUsers.keys()));
+
+        socket.emit("onlineUsers", Array.from(onlineUsers.keys()));
         console.log("Socket User:", {
             id: socket.user._id.toString(),
             username: socket.user.username,
@@ -58,9 +62,13 @@ const registerChatSocket = (io) => {
                 const message = await Message.create({
                     senderId: socket.user._id,
                     receiverId,
-                    content: content.trim(),
+                    content: encrypt(content.trim()),
                     status: 'sent'
                 });
+                const messageToSend = {
+                    ...message.toObject(),
+                    content: content.trim()
+                };
 
                 // ----------------------------------------------------
                 // 🔔 TRIGGER NOTIFICATION FOR MESSAGE RECEIVER
@@ -79,14 +87,21 @@ const registerChatSocket = (io) => {
                     });
                 }
 
-                const receiverSocketId = onlineUsers.get(receiverId);
+                const receiverIdStr = receiverId.toString();
+
+                console.log("Receiver ID:", receiverIdStr);
+                console.log("Online Users:", Array.from(onlineUsers.keys()));
+
+                const receiverSocketId = onlineUsers.get(receiverIdStr);
+
+                console.log("Receiver Socket:", receiverSocketId);
 
                 if (receiverSocketId) {
 
                     message.status = 'delivered';
                     await message.save();
 
-                    io.to(receiverSocketId).emit('receiveMessage', message);
+                    io.to(receiverSocketId).emit('receiveMessage', messageToSend);
 
                     socket.emit('messageDelivered', {
                         messageId: message._id,
@@ -94,7 +109,7 @@ const registerChatSocket = (io) => {
                     });
                 }
 
-                socket.emit('messageSent', message);
+                socket.emit('messageSent', messageToSend);
 
             } catch (error) {
                 socket.emit('messageError', {
@@ -135,6 +150,8 @@ const registerChatSocket = (io) => {
             });
 
             onlineUsers.delete(socket.user._id.toString());
+
+            console.log("Online Users:", Array.from(onlineUsers.keys()));
 
             console.log(`${socket.user.fullName} disconnected`);
         });

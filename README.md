@@ -604,7 +604,7 @@ npm start
 The backend runs on:
 
 ```text
-http://localhost:5000
+http://localhost:5001
 ```
 
 ## 3. Frontend Setup

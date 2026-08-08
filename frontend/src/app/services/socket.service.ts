@@ -16,7 +16,7 @@ export class SocketService {
 
     const token = localStorage.getItem('token');
 
-    this.socket = io('http://localhost:5000', {
+    this.socket = io('http://localhost:5001', {
       auth: {
         token
       }
@@ -85,6 +85,12 @@ export class SocketService {
   onUserOffline(callback: (data: any) => void): void {
 
     this.socket.on('userOffline', callback);
+
+  }
+
+  onOnlineUsers(callback: (users: string[]) => void): void {
+
+    this.socket.on('onlineUsers', callback);
 
   }
 
