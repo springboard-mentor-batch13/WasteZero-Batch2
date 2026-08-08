@@ -1,0 +1,42 @@
+.header-icon{
+  vertical-align: middle;
+  margin-right: 10px;
+  color: #2e7d32;
+}
+
+.subtitle{
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+.upload-section{
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.preview-container{
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.preview-container img{
+  width: 100%;
+  max-width: 380px;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  box-shadow: 0 6px 16px rgba(0,0,0,.15);
+}
+
+.full-width{
+  width:100%;
+}
+
+mat-dialog-actions{
+  padding:18px 24px;
+}

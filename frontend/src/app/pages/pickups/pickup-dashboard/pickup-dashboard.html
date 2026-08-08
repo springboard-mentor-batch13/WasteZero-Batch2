@@ -54,15 +54,48 @@
       </mat-card>
 
       <mat-card class="summary-card">
-        <div class="summary-icon completed">
-          <mat-icon>task_alt</mat-icon>
-        </div>
 
-        <div>
-          <p>Completed</p>
-          <h2>{{ completedPickups }}</h2>
-        </div>
-      </mat-card>
+  <div class="summary-icon rescheduled">
+
+    <mat-icon>
+
+      event_repeat
+
+    </mat-icon>
+
+  </div>
+
+  <div>
+
+    <p>Rescheduled</p>
+
+    <h2>{{ rescheduledPickups }}</h2>
+
+  </div>
+
+</mat-card>
+
+<mat-card class="summary-card">
+
+  <div class="summary-icon completed">
+
+    <mat-icon>
+
+      task_alt
+
+    </mat-icon>
+
+  </div>
+
+  <div>
+
+    <p>Completed</p>
+
+    <h2>{{ completedPickups }}</h2>
+
+  </div>
+
+</mat-card>
 
     </div>
 
@@ -234,132 +267,114 @@
 
         <mat-menu #pickupMenu="matMenu">
 
-          <!-- Pending -->
+  <!-- Pending -->
 
-          @if (pickup.status === 'Pending') {
+  @if (pickup.status === 'Pending') {
 
-            <button
-              mat-menu-item
-              disabled>
+    <button mat-menu-item disabled>
 
-              <mat-icon>hourglass_empty</mat-icon>
+      <mat-icon>hourglass_empty</mat-icon>
 
-              <span>
+      <span>Waiting for NGO Approval</span>
 
-                Waiting for NGO Approval
+    </button>
 
-              </span>
+  }
 
-            </button>
+  <!-- Accepted / Rescheduled -->
 
-          }
+  @if (
+    pickup.status === 'Accepted' ||
+    pickup.status === 'Rescheduled'
+  ) {
 
-          <!-- Accepted -->
+    <button
+      mat-menu-item
+      [disabled]="!canStartPickup(pickup)"
+      (click)="startPickup(pickup._id)">
 
-          @if (pickup.status === 'Accepted') {
+      <mat-icon>play_arrow</mat-icon>
 
-            <button
-              mat-menu-item
-              [disabled]="!canStartPickup(pickup)"
-              (click)="startPickup(pickup._id)">
+      <span>
 
-              <mat-icon>play_arrow</mat-icon>
+        {{ canStartPickup(pickup)
+            ? 'Start Pickup'
+            : 'Available on Pickup Date' }}
 
-              <span>
+      </span>
 
-                {{ canStartPickup(pickup)
-                  ? 'Start Pickup'
-                  : 'Available on Pickup Date' }}
+    </button>
 
-              </span>
+  }
 
-            </button>
+  <!-- In Progress -->
 
-          }
+  @if (pickup.status === 'In Progress') {
 
-          <!-- In Progress -->
+    <button
+      mat-menu-item
+      (click)="openPickupAction(pickup)">
 
-          @if (pickup.status === 'In Progress') {
+      <mat-icon>local_shipping</mat-icon>
 
-            <button
-              mat-menu-item
-              (click)="completePickup(pickup._id)">
+      <span>Pickup Action</span>
 
-              <mat-icon>task_alt</mat-icon>
+    </button>
 
-              <span>
+  }
 
-                Mark Completed
+  <!-- Completed -->
 
-              </span>
+  @if (pickup.status === 'Completed') {
 
-            </button>
+    <button mat-menu-item disabled>
 
-          }
+      <mat-icon>check_circle</mat-icon>
 
-          <!-- Completed -->
+      <span>Pickup Completed</span>
 
-          @if (pickup.status === 'Completed') {
+    </button>
 
-            <button
-              mat-menu-item
-              disabled>
+  }
 
-              <mat-icon>check_circle</mat-icon>
+  <mat-divider></mat-divider>
 
-              <span>
+  <!-- Withdraw -->
 
-                Pickup Completed
+  @if (
+    pickup.status === 'Pending' ||
+    pickup.status === 'Accepted'
+  ) {
 
-              </span>
+    <button
+      mat-menu-item
+      (click)="withdrawPickup(pickup._id)">
 
-            </button>
+      <mat-icon>undo</mat-icon>
 
-          }
+      <span>Withdraw Request</span>
 
-          <mat-divider></mat-divider>
+    </button>
 
-          <!-- Withdraw -->
+  }
 
-          @if (pickup.status === 'Pending' || pickup.status === 'Accepted') {
+  <!-- Delete -->
 
-            <button
-              mat-menu-item
-              (click)="withdrawPickup(pickup._id)">
+  @if (pickup.status === 'Rejected') {
 
-              <mat-icon>undo</mat-icon>
+    <button
+      mat-menu-item
+      (click)="deletePickup(pickup._id)">
 
-              <span>
+      <mat-icon>delete</mat-icon>
 
-                Withdraw Request
+      <span>Delete Request</span>
 
-              </span>
+    </button>
 
-            </button>
+  }
 
-          }
-
-          <!-- Delete -->
-
-          @if (pickup.status === 'Rejected') {
-
-            <button
-              mat-menu-item
-              (click)="deletePickup(pickup._id)">
-
-              <mat-icon>delete</mat-icon>
-
-              <span>
-
-                Delete Request
-
-              </span>
-
-            </button>
-
-          }
-
-        </mat-menu>
+</mat-menu>
 
       </mat-card>
 

@@ -74,20 +74,75 @@ const pickupSchema = new mongoose.Schema(
 
     // Pickup Status
     status: {
-      type: String,
-      enum: [
-        'Pending',
-        'Accepted',
-        'In Progress',
-        'Completed',
-        'Rejected',
-        'Withdrawn',
-        'Unable to Complete',
-        'Rescheduled',
-        'Cancelled'
-      ],
-      default: 'Pending',
-    },
+  type: String,
+  enum: [
+    'Pending',
+    'Accepted',
+    'Rejected',
+    'In Progress',
+    'Completed',
+    'Cancelled',
+    'Rescheduled'
+  ],
+  default: 'Pending',
+},
+
+// Proof image uploaded after successful pickup
+proofImage: {
+  type: String,
+  default: '',
+},
+
+// Volunteer remarks after completion
+completionRemarks: {
+  type: String,
+  trim: true,
+  default: '',
+},
+
+// Reason when pickup couldn't be completed
+completionReason: {
+  type: String,
+  trim: true,
+  default: '',
+},
+
+// Date when pickup was completed
+completedAt: {
+  type: Date,
+  default: null,
+},
+
+// Date selected after rescheduling
+rescheduledDate: {
+  type: Date,
+  default: null,
+},
+
+// Time selected after rescheduling
+rescheduledTime: {
+  type: String,
+  default: '',
+},
+
+issueReason: {
+  type: String,
+  default: ''
+},
+
+issueRemarks: {
+  type: String,
+  default: ''
+},
+
+rescheduledDate: {
+  type: Date
+},
+
+rescheduledTime: {
+  type: String,
+  default: ''
+},
 
     // Volunteer started pickup at
     startedAt: {

@@ -1,0 +1,86 @@
+<h2 mat-dialog-title>
+
+  <mat-icon class="header-icon">
+
+    local_shipping
+
+  </mat-icon>
+
+  Pickup Action
+
+</h2>
+
+<mat-dialog-content>
+
+  <p class="subtitle">
+
+    Choose what you would like to do for this pickup.
+
+  </p>
+
+  <div class="action-container">
+
+    <mat-card
+      class="action-card proof"
+      (click)="submitProof()">
+
+      <mat-icon>
+
+        verified
+
+      </mat-icon>
+
+      <h3>
+
+        Submit Pickup Proof
+
+      </h3>
+
+      <p>
+
+        Upload a proof image and mark this pickup as completed.
+
+      </p>
+
+    </mat-card>
+
+    <mat-card
+      class="action-card unable"
+      (click)="unableToComplete()">
+
+      <mat-icon>
+
+        warning
+
+      </mat-icon>
+
+      <h3>
+
+        Unable to Complete Pickup
+
+      </h3>
+
+      <p>
+
+        Report the reason and reschedule this pickup request.
+
+      </p>
+
+    </mat-card>
+
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+
+  <button
+    mat-stroked-button
+    color="primary"
+    (click)="cancel()">
+
+    Cancel
+
+  </button>
+
+</mat-dialog-actions>

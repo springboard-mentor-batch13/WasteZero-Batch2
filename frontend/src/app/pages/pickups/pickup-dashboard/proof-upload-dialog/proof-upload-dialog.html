@@ -1,0 +1,62 @@
+<h2 mat-dialog-title>
+  <mat-icon class="header-icon">verified</mat-icon>
+  Submit Pickup Proof
+</h2>
+
+<mat-dialog-content>
+  <p class="subtitle">
+    Upload an image as proof that the pickup has been completed.
+  </p>
+
+  <!-- Upload Section -->
+  <div class="upload-section">
+    <input
+      #fileInput
+      type="file"
+      accept="image/*"
+      hidden
+      (change)="onFileSelected($event)">
+
+    <button
+      mat-raised-button
+      color="primary"
+      type="button"
+      (click)="fileInput.click()">
+      <mat-icon>cloud_upload</mat-icon>
+      Choose Image
+    </button>
+  </div>
+
+  <!-- Image Preview -->
+  @if (imagePreview) {
+    <div class="preview-container">
+      <img [src]="imagePreview" alt="Pickup Proof">
+    </div>
+  }
+
+  <!-- Remarks -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Remarks (Optional)</mat-label>
+    <textarea
+      matInput
+      rows="4"
+      [(ngModel)]="remarks"
+      placeholder="Enter any remarks regarding the pickup...">
+    </textarea>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cancel()">
+    Cancel
+  </button>
+
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="!selectedFile || uploading"
+    (click)="submit()">
+    <mat-icon>check_circle</mat-icon>
+    {{ uploading ? 'Uploading...' : 'Submit' }}
+  </button>
+</mat-dialog-actions>

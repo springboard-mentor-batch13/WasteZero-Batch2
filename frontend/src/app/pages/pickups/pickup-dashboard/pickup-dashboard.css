@@ -301,3 +301,17 @@
   }
 
 }
+.status-chip.rescheduled {
+
+  background: #fff3cd;
+
+  color: #b26a00;
+
+  border: 1px solid #ffd966;
+
+}
+.summary-icon.rescheduled {
+
+  background: #f59e0b;
+
+}

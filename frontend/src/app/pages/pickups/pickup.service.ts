@@ -83,6 +83,28 @@ export class PickupService {
       this.getHeaders()
     );
   }
+  submitPickupProof(
+  id: string,
+  formData: FormData
+): Observable<any> {
+
+  const token = localStorage.getItem('token');
+
+  return this.http.patch(
+
+    `${this.apiUrl}/${id}/submit-proof`,
+
+    formData,
+
+    {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`
+      })
+    }
+
+  );
+
+}
 
   withdrawPickup(id: string): Observable<any> {
     return this.http.patch(
@@ -103,5 +125,22 @@ getPickupById(id: string): Observable<any> {
     `${this.apiUrl}/${id}`,
     this.getHeaders()
   );
+
+}
+reportPickupIssue(
+  id: string,
+  data: any
+): Observable<any> {
+
+  return this.http.patch(
+
+    `${this.apiUrl}/${id}/report-issue`,
+
+    data,
+
+    this.getHeaders()
+
+  );
+
 }
 }

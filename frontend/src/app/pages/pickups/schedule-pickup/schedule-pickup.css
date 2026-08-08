@@ -101,3 +101,30 @@ h1 {
     width: 100%;
   }
 }
+/* ======================================
+   Fix Input Text Visibility (Dark Mode)
+====================================== */
+
+:host ::ng-deep .mat-mdc-input-element {
+  color: var(--wz-text-primary) !important;
+}
+
+:host ::ng-deep textarea.mat-mdc-input-element {
+  color: var(--wz-text-primary) !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field textarea {
+  color: var(--wz-text-primary) !important;
+}
+
+:host ::ng-deep .mat-mdc-form-field input {
+  color: var(--wz-text-primary) !important;
+}
+
+:host ::ng-deep .mat-mdc-floating-label {
+  color: var(--wz-text-secondary) !important;
+}
+
+:host ::ng-deep .mat-mdc-select-value {
+  color: var(--wz-text-primary) !important;
+}

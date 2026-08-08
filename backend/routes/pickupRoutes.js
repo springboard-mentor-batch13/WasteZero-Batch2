@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const upload = require('../middleware/uploadMiddleware');
 const {
   createPickup,
   getMyPickups,
@@ -14,6 +14,8 @@ const {
   withdrawPickup,
   deletePickup,
   matchPickup,
+  submitPickupProof,
+  reportPickupIssue,
 } = require('../controllers/pickupController');
 
 // Protect middleware to ensure the user is authenticated
@@ -90,7 +92,18 @@ router.patch('/:id/start', startPickup);
  * @access  Private (Volunteer)
  */
 router.patch('/:id/complete', completePickup);
+router.patch(
+  '/:id/submit-proof',
+  upload.single('proofImage'),
+  submitPickupProof
+);
 
+/**
+ * @route   PATCH /api/pickups/:id/report-issue
+ * @desc    Volunteer reports pickup issue
+ * @access  Private (Volunteer)
+ */
+router.patch('/:id/report-issue', reportPickupIssue);
 /**
  * @route   PATCH /api/pickups/:id/withdraw
  * @desc    Volunteer withdraws a pickup request
