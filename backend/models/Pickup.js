@@ -16,7 +16,7 @@ const pickupSchema = new mongoose.Schema(
       default: null,
     },
 
-    // Waste type
+    // Waste Type
     wasteType: {
       type: String,
       enum: [
@@ -32,7 +32,7 @@ const pickupSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Complete pickup address
+    // Pickup Address
     pickupAddress: {
       type: String,
       required: [true, 'Pickup address is required'],
@@ -53,16 +53,12 @@ const pickupSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Area (used for NGO matching)
+    // Area
     area: {
       type: String,
       required: [true, 'Area is required'],
       trim: true,
     },
-
-   
-
-
 
     // Pickup Date
     pickupDate: {
@@ -78,16 +74,126 @@ const pickupSchema = new mongoose.Schema(
 
     // Pickup Status
     status: {
-      type: String,
-      enum: [
-  'Pending',
-  'Accepted',
-  'Rejected',
-  'Completed',
-  'Cancelled'
-],
-      default: 'Pending',
+  type: String,
+  enum: [
+    'Pending',
+    'Accepted',
+    'Rejected',
+    'In Progress',
+    'Completed',
+    'Cancelled',
+    'Rescheduled'
+  ],
+  default: 'Pending',
+},
+
+// Proof image uploaded after successful pickup
+proofImage: {
+  type: String,
+  default: '',
+},
+
+// Volunteer remarks after completion
+completionRemarks: {
+  type: String,
+  trim: true,
+  default: '',
+},
+
+// Reason when pickup couldn't be completed
+completionReason: {
+  type: String,
+  trim: true,
+  default: '',
+},
+
+// Date when pickup was completed
+completedAt: {
+  type: Date,
+  default: null,
+},
+
+// Date selected after rescheduling
+rescheduledDate: {
+  type: Date,
+  default: null,
+},
+
+// Time selected after rescheduling
+rescheduledTime: {
+  type: String,
+  default: '',
+},
+
+issueReason: {
+  type: String,
+  default: ''
+},
+
+issueRemarks: {
+  type: String,
+  default: ''
+},
+
+rescheduledDate: {
+  type: Date
+},
+
+rescheduledTime: {
+  type: String,
+  default: ''
+},
+
+    // Volunteer started pickup at
+    startedAt: {
+      type: Date,
+      default: null,
     },
+
+    // Volunteer completed pickup at
+    completedAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Image uploaded after completion
+    completionProof: {
+      type: String,
+      default: '',
+    },
+
+    // Optional notes after completion
+    completionNotes: {
+      type: String,
+      default: '',
+    },
+
+    // Reason for unable to complete
+    failureReason: {
+      type: String,
+      default: '',
+    },
+
+    // Custom reason if "Other"
+    failureDescription: {
+      type: String,
+      default: '',
+    },
+
+    // Reference to previous pickup if rescheduled
+    rescheduledFrom: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Pickup',
+      default: null,
+    },
+
+    // Reference to new pickup
+    rescheduledTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Pickup',
+      default: null,
+    },
+
   },
   {
     timestamps: true,
@@ -96,11 +202,10 @@ const pickupSchema = new mongoose.Schema(
 
 // Index for faster NGO matching
 pickupSchema.index({
-    state:1,
-    city:1,
-   
-    wasteType:1,
-    status:1
+  state: 1,
+  city: 1,
+  wasteType: 1,
+  status: 1,
 });
 
 module.exports = mongoose.model('Pickup', pickupSchema);

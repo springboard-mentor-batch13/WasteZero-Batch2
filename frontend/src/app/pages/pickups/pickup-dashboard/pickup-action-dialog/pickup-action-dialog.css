@@ -1,0 +1,81 @@
+.header-icon {
+  vertical-align: middle;
+  margin-right: 10px;
+  color: #2e7d32;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+.action-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: stretch;
+  margin: 10px 0 20px;
+  flex-wrap: wrap;
+}
+
+.action-card {
+  flex: 1;
+  min-width: 240px;
+  max-width: 300px;
+  cursor: pointer;
+  text-align: center;
+  padding: 28px 20px;
+  border-radius: 16px;
+  transition: all 0.25s ease;
+  border: 2px solid transparent;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}
+
+.action-card mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+}
+
+.action-card h3 {
+  margin: 10px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.action-card p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Submit Proof Card */
+
+.proof {
+  border-color: #2e7d32;
+}
+
+.proof mat-icon {
+  color: #2e7d32;
+}
+
+/* Unable Card */
+
+.unable {
+  border-color: #ef6c00;
+}
+
+.unable mat-icon {
+  color: #ef6c00;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+}

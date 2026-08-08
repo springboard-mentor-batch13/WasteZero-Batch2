@@ -1,0 +1,155 @@
+<h2 mat-dialog-title>
+
+  <mat-icon class="header-icon">
+
+    report_problem
+
+  </mat-icon>
+
+  Report Pickup Issue
+
+</h2>
+
+<mat-dialog-content>
+
+  <p class="subtitle">
+
+    Unable to complete this pickup? Please tell us the reason and schedule a new pickup date.
+
+  </p>
+
+  <!-- Reason -->
+
+  <mat-form-field
+    appearance="outline"
+    class="full-width">
+
+    <mat-label>
+
+      Reason
+
+    </mat-label>
+
+    <mat-select [(ngModel)]="reason">
+
+      @for (item of reasons; track item) {
+
+        <mat-option [value]="item">
+
+          {{ item }}
+
+        </mat-option>
+
+      }
+
+    </mat-select>
+
+  </mat-form-field>
+
+  <!-- Remarks -->
+
+  <mat-form-field
+    appearance="outline"
+    class="full-width">
+
+    <mat-label>
+
+      Additional Remarks
+
+    </mat-label>
+
+    <textarea
+      matInput
+      rows="4"
+      [(ngModel)]="remarks"
+      placeholder="Provide more details...">
+
+    </textarea>
+
+  </mat-form-field>
+
+  <!-- New Pickup Date -->
+
+  <mat-form-field
+    appearance="outline"
+    class="full-width">
+
+    <mat-label>
+
+      New Pickup Date
+
+    </mat-label>
+
+    <input
+      matInput
+      [matDatepicker]="picker"
+      [(ngModel)]="newPickupDate"
+      readonly>
+
+    <mat-datepicker-toggle
+      matIconSuffix
+      [for]="picker">
+
+    </mat-datepicker-toggle>
+
+    <mat-datepicker #picker></mat-datepicker>
+
+  </mat-form-field>
+
+  <!-- New Pickup Time -->
+
+  <mat-form-field
+    appearance="outline"
+    class="full-width">
+
+    <mat-label>
+
+      New Pickup Time
+
+    </mat-label>
+
+    <mat-select [(ngModel)]="newPickupTime">
+
+      @for (slot of timeSlots; track slot) {
+
+        <mat-option [value]="slot">
+
+          {{ slot }}
+
+        </mat-option>
+
+      }
+
+    </mat-select>
+
+  </mat-form-field>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+
+  <button
+    mat-stroked-button
+    (click)="cancel()">
+
+    Cancel
+
+  </button>
+
+  <button
+    mat-raised-button
+    color="warn"
+    [disabled]="!reason || !newPickupDate || !newPickupTime"
+    (click)="submit()">
+
+    <mat-icon>
+
+      event_repeat
+
+    </mat-icon>
+
+    Reschedule Pickup
+
+  </button>
+
+</mat-dialog-actions>

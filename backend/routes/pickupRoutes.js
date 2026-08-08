@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const upload = require('../middleware/uploadMiddleware');
 const {
   createPickup,
   getMyPickups,
@@ -9,9 +9,13 @@ const {
   updatePickup,
   acceptPickup,
   rejectPickup,
+  startPickup,
   completePickup,
+  withdrawPickup,
   deletePickup,
   matchPickup,
+  submitPickupProof,
+  reportPickupIssue,
 } = require('../controllers/pickupController');
 
 // Protect middleware to ensure the user is authenticated
@@ -39,10 +43,6 @@ router.get('/', getMyPickups);
  * @access  Private (NGO)
  */
 router.get('/assigned', getAssignedPickups);
-
-
-
-
 
 /**
  * @route   GET /api/pickups/:id
@@ -80,11 +80,37 @@ router.patch('/:id/accept', acceptPickup);
 router.patch('/:id/reject', rejectPickup);
 
 /**
+ * @route   PATCH /api/pickups/:id/start
+ * @desc    Volunteer starts pickup
+ * @access  Private (Volunteer)
+ */
+router.patch('/:id/start', startPickup);
+
+/**
  * @route   PATCH /api/pickups/:id/complete
- * @desc    Mark a pickup request as completed
- * @access  Private (NGO)
+ * @desc    Volunteer completes pickup
+ * @access  Private (Volunteer)
  */
 router.patch('/:id/complete', completePickup);
+router.patch(
+  '/:id/submit-proof',
+  upload.single('proofImage'),
+  submitPickupProof
+);
+
+/**
+ * @route   PATCH /api/pickups/:id/report-issue
+ * @desc    Volunteer reports pickup issue
+ * @access  Private (Volunteer)
+ */
+router.patch('/:id/report-issue', reportPickupIssue);
+/**
+ * @route   PATCH /api/pickups/:id/withdraw
+ * @desc    Volunteer withdraws a pickup request
+ * @access  Private (Volunteer)
+ */
+router.patch('/:id/withdraw', withdrawPickup);
+
 /**
  * @route   DELETE /api/pickups/:id
  * @desc    Delete a pickup by ID
