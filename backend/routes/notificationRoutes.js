@@ -7,6 +7,7 @@ const {
   markAsRead,
   markAsUnread,
   markAllAsRead,
+  markMessageNotificationsAsRead,
   deleteNotification,
   createNotification
 } = require('../controllers/notificationController');
@@ -24,7 +25,7 @@ router.post('/', createNotification);
 // Utility / Batch routes
 router.get('/unread-count', getUnreadCount);
 router.patch('/mark-all-read', markAllAsRead);
-
+router.patch('/mark-message-read', markMessageNotificationsAsRead);
 // Item routes by ID
 router.get('/:id', getNotificationById);
 router.patch('/:id/read', markAsRead);

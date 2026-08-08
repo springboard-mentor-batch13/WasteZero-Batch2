@@ -19,16 +19,44 @@ const encrypt = (text) => {
 };
 
 const decrypt = (encryptedText) => {
+
+    // Old messages are plain text
+    if (!encryptedText.includes(':')) {
+        return encryptedText;
+    }
+
     const parts = encryptedText.split(':');
-    const iv = Buffer.from(parts.shift(), 'hex');
-    const encrypted = parts.join(':');
 
-    const decipher = crypto.createDecipheriv(ALGORITHM, SECRET_KEY, iv);
+    // Invalid encrypted format
+    if (parts.length !== 2) {
+        return encryptedText;
+    }
 
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
+    try {
+        const iv = Buffer.from(parts[0], 'hex');
 
-    return decrypted;
+        if (iv.length !== IV_LENGTH) {
+            return encryptedText;
+        }
+
+        const encrypted = parts[1];
+
+        const decipher = crypto.createDecipheriv(
+            ALGORITHM,
+            SECRET_KEY,
+            iv
+        );
+
+        let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+        decrypted += decipher.final('utf8');
+
+        return decrypted;
+
+    } catch (err) {
+        // If decryption fails, just return the original text
+        return encryptedText;
+    }
+
 };
 
 module.exports = { encrypt, decrypt };

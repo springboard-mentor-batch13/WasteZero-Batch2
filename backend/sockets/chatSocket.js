@@ -34,6 +34,9 @@ const registerChatSocket = (io) => {
     io.on('connection', (socket) => {
 
         onlineUsers.set(socket.user._id.toString(), socket.id);
+        console.log("Online Users:", Array.from(onlineUsers.keys()));
+
+        socket.emit("onlineUsers", Array.from(onlineUsers.keys()));
         console.log("Socket User:", {
             id: socket.user._id.toString(),
             username: socket.user.username,
@@ -84,7 +87,14 @@ const registerChatSocket = (io) => {
                     });
                 }
 
-                const receiverSocketId = onlineUsers.get(receiverId);
+                const receiverIdStr = receiverId.toString();
+
+                console.log("Receiver ID:", receiverIdStr);
+                console.log("Online Users:", Array.from(onlineUsers.keys()));
+
+                const receiverSocketId = onlineUsers.get(receiverIdStr);
+
+                console.log("Receiver Socket:", receiverSocketId);
 
                 if (receiverSocketId) {
 
@@ -140,6 +150,8 @@ const registerChatSocket = (io) => {
             });
 
             onlineUsers.delete(socket.user._id.toString());
+
+            console.log("Online Users:", Array.from(onlineUsers.keys()));
 
             console.log(`${socket.user.fullName} disconnected`);
         });

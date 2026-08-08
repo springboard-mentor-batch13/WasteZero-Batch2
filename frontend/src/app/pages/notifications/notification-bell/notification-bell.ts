@@ -15,7 +15,6 @@ import {
   NOTIFICATION_TYPE_CONFIG,
 } from '../notification.model';
 import { NotificationService } from '../notification.service';
-import { NotificationToastService } from '../notification-toast.service';
 
 @Component({
   selector: 'app-notification-bell',
@@ -37,7 +36,6 @@ export class NotificationBellComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
   // Inject to initialize the toast service singleton
-  private readonly _toastService = inject(NotificationToastService);
 
   isOpen = false;
   notifications: Notification[] = [];
@@ -77,18 +75,18 @@ export class NotificationBellComponent implements OnInit {
     this.notificationService.visibleNotifications$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-      next: (notifications) => {
-        this.notifications = notifications;
-        this.loading = false;
-      },
-      error: (err: unknown) => {
-        this.loading = false;
-        this.error =
-          err instanceof Error
-            ? err.message
-            : 'Unable to load notifications. Please try again.';
-      },
-    });
+        next: (notifications) => {
+          this.notifications = notifications;
+          this.loading = false;
+        },
+        error: (err: unknown) => {
+          this.loading = false;
+          this.error =
+            err instanceof Error
+              ? err.message
+              : 'Unable to load notifications. Please try again.';
+        },
+      });
 
     this.notificationService.unreadCount$
       .pipe(takeUntilDestroyed(this.destroyRef))

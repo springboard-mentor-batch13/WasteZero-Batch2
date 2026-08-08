@@ -12,7 +12,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class MyProfile implements OnInit {
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   activeTab: 'profile' | 'password' = 'profile';
 
@@ -64,7 +64,7 @@ export class MyProfile implements OnInit {
   loadProfile() {
 
     this.http.get(
-      'http://localhost:5000/api/profile',
+      'http://localhost:5001/api/profile',
       { headers: this.getHeaders() }
     ).subscribe({
 
@@ -120,13 +120,13 @@ export class MyProfile implements OnInit {
 
 
     this.http.put(
-      'http://localhost:5000/api/profile',
+      'http://localhost:5001/api/profile',
       body,
       { headers: this.getHeaders() }
     ).subscribe({
 
 
-      next: (response:any) => {
+      next: (response: any) => {
 
 
         console.log('Profile Updated:', response);
@@ -178,7 +178,7 @@ export class MyProfile implements OnInit {
 
 
     this.http.put(
-      'http://localhost:5000/api/profile/change-password',
+      'http://localhost:5001/api/profile/change-password',
       this.password,
       { headers: this.getHeaders() }
     ).subscribe({
@@ -231,7 +231,7 @@ export class MyProfile implements OnInit {
 
 
 
-  onFileSelected(event:any) {
+  onFileSelected(event: any) {
 
 
     if (event.target.files.length > 0) {

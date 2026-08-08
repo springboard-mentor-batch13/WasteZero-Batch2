@@ -22,37 +22,50 @@ export class NotificationToastService {
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
 
-  private seenIds = new Set<string>();
-  private isInitialized = false;
+  private previousIds = new Set<string>();
+  private initialized = false;
   private queue: Notification[] = [];
   private isShowing = false;
-
   constructor() {
+
     this.notificationService.visibleNotifications$.subscribe((notifications) => {
+
+
       if (!this.authService.isLoggedIn()) {
-        this.isInitialized = false;
-        this.seenIds.clear();
+        this.previousIds.clear();
         this.queue = [];
+        this.isShowing = false;
+        this.initialized = false;
+        return;
+      }
+      if (!this.notificationService.loaded || notifications.length === 0) {
+        return;
+      }
+      if (!this.initialized) {
+        this.previousIds = new Set(
+          notifications.map(n => n.id)
+        );
+
+        this.initialized = true;
         return;
       }
 
-      if (!this.isInitialized) {
-        // First logged-in emission: record existing IDs, don't show toasts.
-        notifications.forEach((n) => this.seenIds.add(n.id));
-        this.isInitialized = true;
-        return;
-      }
-
-      // Detect new notifications
-      const newNotifications = notifications.filter(
-        (n) => !this.seenIds.has(n.id)
+      const currentIds = new Set(
+        notifications.map(n => n.id)
       );
 
-      newNotifications.forEach((n) => {
-        this.seenIds.add(n.id);
+      const newNotifications = notifications.filter(
+        n => !this.previousIds.has(n.id)
+      );
+
+      this.previousIds = currentIds;
+
+      newNotifications.forEach(n => {
         this.enqueueToast(n);
       });
+
     });
+
   }
 
   /* ==========================================================

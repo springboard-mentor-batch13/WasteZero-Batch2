@@ -95,10 +95,19 @@ const getConversation = async (req, res) => {
             .populate('receiverId', '_id fullName username')
             .sort({ createdAt: 1 });
 
-        const decryptedMessages = messages.map(message => ({
-            ...message.toObject(),
-            content: decrypt(message.content)
-        }));
+        const decryptedMessages = messages.map(message => {
+            const obj = message.toObject();
+
+            try {
+                obj.content = decrypt(obj.content);
+            } catch (err) {
+                console.log("Skipping decryption:", obj._id);
+                // Old plain-text message
+                obj.content = obj.content;
+            }
+
+            return obj;
+        });
 
         res.json({
             success: true,
