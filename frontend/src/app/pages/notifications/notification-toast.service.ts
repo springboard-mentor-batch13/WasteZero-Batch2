@@ -1,19 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NotificationService } from './notification.service';
-import { Notification } from './notification.model';
+import type { Notification } from './notification.model';
 import { NotificationToastComponent } from './notification-toast/notification-toast.component';
 import { AuthService } from '../../auth/auth.service';
-
-/* ==========================================================
-   NOTIFICATION TOAST SERVICE
-   Listens to the shared NotificationService and shows
-   toast popups when new notifications arrive.
-
-   Uses MatSnackBar for queuing — multiple toasts
-   are displayed one after another automatically.
-   ========================================================== */
 
 @Injectable({
   providedIn: 'root',
@@ -22,83 +12,69 @@ export class NotificationToastService {
   private readonly snackBar = inject(MatSnackBar);
   private readonly notificationService = inject(NotificationService);
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
 
   private previousIds = new Set<string>();
   private initialized = false;
   private queue: Notification[] = [];
   private isShowing = false;
+
   constructor() {
+    this.notificationService.visibleNotifications$.subscribe(
+      (notifications) => {
+        if (!this.authService.isLoggedIn()) {
+          this.previousIds.clear();
+          this.queue = [];
+          this.isShowing = false;
+          this.initialized = false;
+          return;
+        }
 
-    this.notificationService.visibleNotifications$.subscribe((notifications) => {
+        if (
+          !this.notificationService.loaded ||
+          notifications.length === 0
+        ) {
+          return;
+        }
 
+        // First real notification list:
+        // remember existing notifications but don't show them as popups.
+        if (!this.initialized) {
+          this.previousIds = new Set(
+            notifications.map((n) => n.id)
+          );
 
-      if (!this.authService.isLoggedIn()) {
-        this.previousIds.clear();
-        this.queue = [];
-        this.isShowing = false;
-        this.initialized = false;
-        return;
-      }
-      if (!this.notificationService.loaded || notifications.length === 0) {
-    // Watch current user state to clear active toasts on logout
-    this.authService.currentUser$.subscribe((user) => {
-      if (!user || !this.authService.isLoggedIn() || this.isAuthPage()) {
-        this.resetState();
-      }
-    });
+          this.initialized = true;
+          return;
+        }
 
-    this.notificationService.visibleNotifications$.subscribe((notifications) => {
-      if (!this.authService.isLoggedIn() || this.isAuthPage()) {
-        this.resetState();
-        return;
-      }
-      if (!this.initialized) {
-        this.previousIds = new Set(
-          notifications.map(n => n.id)
+        const currentIds = new Set(
+          notifications.map((n) => n.id)
         );
 
-        this.initialized = true;
-        return;
+        const newNotifications = notifications.filter(
+          (n) => !this.previousIds.has(n.id)
+        );
+
+        this.previousIds = currentIds;
+
+        newNotifications.forEach((notification) => {
+          this.enqueueToast(notification);
+        });
       }
-
-      const currentIds = new Set(
-        notifications.map(n => n.id)
-      );
-
-      const newNotifications = notifications.filter(
-        n => !this.previousIds.has(n.id)
-      );
-
-      this.previousIds = currentIds;
-
-      newNotifications.forEach(n => {
-        this.enqueueToast(n);
-      });
-
-    });
-
+    );
   }
 
-  /* ==========================================================
-     SHOW TOAST
-     Auto-closes after 5 seconds.
-     Manual close button available.
-     ========================================================== */
-
   showToast(notification: Notification): void {
-    if (!this.authService.isLoggedIn() || this.isAuthPage()) {
-      this.resetState();
-      return;
-    }
-
-    const ref = this.snackBar.openFromComponent(NotificationToastComponent, {
-      data: notification,
-      duration: 5000,
-      horizontalPosition: 'right',
-      verticalPosition: 'top',
-      panelClass: 'notification-toast-panel',
-    });
+    const ref = this.snackBar.openFromComponent(
+      NotificationToastComponent,
+      {
+        data: notification,
+        duration: 5000,
+        horizontalPosition: 'right',
+        verticalPosition: 'top',
+        panelClass: 'notification-toast-panel',
+      }
+    );
 
     ref.afterDismissed().subscribe(() => {
       this.isShowing = false;
@@ -107,20 +83,11 @@ export class NotificationToastService {
   }
 
   private enqueueToast(notification: Notification): void {
-    if (!this.authService.isLoggedIn() || this.isAuthPage()) {
-      return;
-    }
-
     this.queue.push(notification);
     this.showNext();
   }
 
   private showNext(): void {
-    if (!this.authService.isLoggedIn() || this.isAuthPage()) {
-      this.resetState();
-      return;
-    }
-
     if (this.isShowing || this.queue.length === 0) {
       return;
     }
@@ -133,23 +100,5 @@ export class NotificationToastService {
 
     this.isShowing = true;
     this.showToast(next);
-  }
-
-  private resetState(): void {
-    this.isInitialized = false;
-    this.seenIds.clear();
-    this.queue = [];
-    this.isShowing = false;
-    this.snackBar.dismiss(); // Instantly dismisses active toast from screen when logged out
-  }
-
-  private isAuthPage(): boolean {
-    const currentUrl = this.router.url.toLowerCase();
-    return (
-      currentUrl.includes('/login') ||
-      currentUrl.includes('/register') ||
-      currentUrl.includes('/forgot-password') ||
-      currentUrl === '/'
-    );
   }
 }
