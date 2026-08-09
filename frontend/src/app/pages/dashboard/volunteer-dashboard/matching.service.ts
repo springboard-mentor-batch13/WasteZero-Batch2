@@ -78,10 +78,10 @@ export class MatchingService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'http://localhost:5000/api/matches';
+    'http://localhost:5001/api/matches';
 
   private readonly profileApiUrl =
-  'http://localhost:5000/api/profile';
+    'http://localhost:5001/api/profile';
 
   getMatches(): Observable<MatchedOpportunity[]> {
 
@@ -94,53 +94,53 @@ export class MatchingService {
       )
       .pipe(
         map(response =>
-  response.data
-    .map(opportunity =>
-      this.fromApi(opportunity)
-    )
-    .sort((a, b) => b.matchScore - a.matchScore)
-)
+          response.data
+            .map(opportunity =>
+              this.fromApi(opportunity)
+            )
+            .sort((a, b) => b.matchScore - a.matchScore)
+        )
       );
   }
 
   getPreferences(): Observable<MatchingPreferences> {
-  return this.http
-    .get<ProfileResponse>(
-      this.profileApiUrl,
-      {
-        headers: this.headers()
-      }
-    )
-    .pipe(
-      map(response => ({
-        city: response.data.city || '',
-        state: response.data.state || '',
-        preferredWasteTypes:
-          response.data.preferredWasteTypes || []
-      }))
-    );
-}
+    return this.http
+      .get<ProfileResponse>(
+        this.profileApiUrl,
+        {
+          headers: this.headers()
+        }
+      )
+      .pipe(
+        map(response => ({
+          city: response.data.city || '',
+          state: response.data.state || '',
+          preferredWasteTypes:
+            response.data.preferredWasteTypes || []
+        }))
+      );
+  }
 
-savePreferences(
-  preferences: MatchingPreferences
-): Observable<MatchingPreferences> {
-  return this.http
-    .put<ProfileResponse>(
-      this.profileApiUrl,
-      preferences,
-      {
-        headers: this.headers()
-      }
-    )
-    .pipe(
-      map(response => ({
-        city: response.data.city || '',
-        state: response.data.state || '',
-        preferredWasteTypes:
-          response.data.preferredWasteTypes || []
-      }))
-    );
-}
+  savePreferences(
+    preferences: MatchingPreferences
+  ): Observable<MatchingPreferences> {
+    return this.http
+      .put<ProfileResponse>(
+        this.profileApiUrl,
+        preferences,
+        {
+          headers: this.headers()
+        }
+      )
+      .pipe(
+        map(response => ({
+          city: response.data.city || '',
+          state: response.data.state || '',
+          preferredWasteTypes:
+            response.data.preferredWasteTypes || []
+        }))
+      );
+  }
 
   private headers(): HttpHeaders {
 
@@ -152,8 +152,8 @@ savePreferences(
     return new HttpHeaders(
       token
         ? {
-            Authorization: `Bearer ${token}`
-          }
+          Authorization: `Bearer ${token}`
+        }
         : {}
     );
   }

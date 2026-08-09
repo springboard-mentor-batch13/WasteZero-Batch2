@@ -12,7 +12,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 })
 export class ManageServiceAreas implements OnInit {
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   state = '';
   city = '';
@@ -37,7 +37,7 @@ export class ManageServiceAreas implements OnInit {
   loadServiceAreas() {
 
     this.http.get(
-      'http://localhost:5000/api/profile/service-areas',
+      'http://localhost:5001/api/profile/service-areas',
       { headers: this.getHeaders() }
     ).subscribe({
 
@@ -95,7 +95,7 @@ export class ManageServiceAreas implements OnInit {
     };
 
     this.http.put(
-      'http://localhost:5000/api/profile/service-areas',
+      'http://localhost:5001/api/profile/service-areas',
       body,
       { headers: this.getHeaders() }
     ).subscribe({

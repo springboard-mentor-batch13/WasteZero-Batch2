@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef,  ViewChild,ElementRef} from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessagesService } from './messages.service';
 import { SocketService } from '../../services/socket.service';
+import { NotificationService } from '../notifications/notification.service';
 
 
 @Component({
@@ -15,12 +16,14 @@ import { SocketService } from '../../services/socket.service';
 export class Messages implements OnInit {
 
   constructor(
-  private messageService: MessagesService,
-  private socketService: SocketService,
-  private cdr: ChangeDetectorRef
-) {}
+    private messageService: MessagesService,
+    private socketService: SocketService,
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   roles: any[] = [];
+  private onlineUsers = new Set<string>();
 
   selectedMember: any = null;
   newMessage = '';
@@ -32,7 +35,7 @@ export class Messages implements OnInit {
   currentUserRole = '';
 
   @ViewChild('messagesContainer')
- messagesContainer!: ElementRef;
+  messagesContainer!: ElementRef;
 
   ngOnInit(): void {
 
@@ -59,123 +62,179 @@ export class Messages implements OnInit {
     // Load users
     this.socketService.connect();
 
-     this.registerSocketEvents();
+    this.registerSocketEvents();
 
-     this.loadUsers();
+    // Mark all message notifications as read
+    this.notificationService
+      .markMessageNotificationsAsRead()
+      .subscribe({
+        next: () => {
+          this.notificationService.refreshNotifications().subscribe();
+        },
+        error: (err) => {
+          console.error('Failed to mark message notifications as read', err);
+        }
+      });
 
-     this.roles.forEach((role: any) => {
-     role.members.forEach((member: any) => {
-     console.log(
-      member.username,
-      member._id,
-      member.online
-    );
-  });
-});
+    this.loadUsers();
+
+    this.roles.forEach((role: any) => {
+      role.members.forEach((member: any) => {
+        console.log(
+          member.username,
+          member._id,
+          member.online
+        );
+      });
+    });
   }
 
   updateUserStatus(userId: string, online: boolean): void {
 
-  this.roles.forEach(role => {
+    console.log("Updating:", userId, online);
 
-    role.members.forEach((member: any) => {
+    this.roles.forEach(role => {
+      role.members.forEach((member: any) => {
 
-      if (member._id === userId) {
+        console.log("Compare:", member._id, userId);
 
-        console.log('MATCH FOUND');
-        member.online = online;
+        if (String(member._id) === String(userId)) {
 
-        if (this.selectedMember?._id === userId) {
-          this.selectedMember.online = online;
+          console.log("MATCH FOUND");
+
+          member.online = online;
+          console.log("ONLINE CHANGED:", member.fullName, member.online);
+
+          console.log("After update:", member.username, member.online);
+
+          if (this.selectedMember?._id === userId) {
+            this.selectedMember.online = online;
+          }
+
         }
 
-        console.log('Member online value:', member.online);
-        console.log('Selected online:', this.selectedMember?.online);
-
-      }
-
+      });
     });
 
-  });
+    this.cdr.detectChanges();
+  }
 
-}
 
   // =========================
   // LOAD USERS
   // =========================
   loadUsers(): void {
 
-  this.messageService.getUsersByRole().subscribe({
-    next: (data: any[]) => {
+    this.messageService.getUsersByRole().subscribe({
+      next: (data: any[]) => {
 
-       console.log('API Response:', data);
+        console.log('API Response:', data);
 
-      // Volunteer can message only Admin and NGO
-      if (this.currentUserRole === 'Volunteer') {
-        data = data.filter(role =>
-          role.role === 'Admin' || role.role === 'NGO'
-        );
-      }
+        // Volunteer can message only Admin and NGO
+        if (this.currentUserRole === 'Volunteer') {
+          data = data.filter(role =>
+            role.role === 'Admin' || role.role === 'NGO'
+          );
+        }
 
-      // Admin should not see Admin role
-      if (this.currentUserRole === 'Admin') {
-        data = data.filter(role =>
-          role.role !== 'Admin'
-        );
-      }
+        // Admin should not see Admin role
+        if (this.currentUserRole === 'Admin') {
+          data = data.filter(role =>
+            role.role !== 'Admin'
+          );
+        }
 
-      if (this.currentUserRole === 'NGO') {
-    data = data.filter(role => role.role !== 'NGO');
-  }
+        if (this.currentUserRole === 'NGO') {
+          data = data.filter(role => role.role !== 'NGO');
+        }
 
-      //console.log('After Filter:', data);
+        //console.log('After Filter:', data);
 
-      this.roles = data;
-       this.cdr.detectChanges();
+        this.roles = data;
+        const lastChatUserId = localStorage.getItem('lastChatUser');
 
-     //console.log('Users by role:', this.roles);
+        if (lastChatUserId) {
+          for (const role of this.roles) {
+            const member = role.members.find(
+              (m: any) => String(m._id) === String(lastChatUserId)
+            );
 
-     
-      this.roles.forEach((role: any) => {
-        role.members.forEach((member: any) => {
+            if (member) {
+              this.selectedMember = member;
 
-          this.messageService.getConversation(member._id).subscribe({
-            next: (res: any) => {
+              this.messageService.getConversation(member._id).subscribe({
+                next: (res: any) => {
+                  this.selectedMember.messages = res.data || [];
+                  member.messages = res.data || [];
 
-              console.log(member.username, res.data);
-           member.messages = res.data || [];
+                  this.cdr.detectChanges();
+                  this.scrollToBottom();
+                },
+                error: (err) => {
+                  console.error('Error restoring conversation:', err);
+                  member.messages = [];
+                }
+              });
 
-       role.members.sort((a: any, b: any) => {
-
-          const aTime = a.messages?.length
-            ? new Date(a.messages[a.messages.length - 1].createdAt).getTime()
-            : 0;
-
-          const bTime = b.messages?.length
-            ? new Date(b.messages[b.messages.length - 1].createdAt).getTime()
-            : 0;
-
-          return bTime - aTime;
-        });
-
-      },
-          
-            error: () => {
-              member.messages = [];
+              break;
             }
+          }
+        }
+        // Apply online status after users are loaded
+        this.roles.forEach(role => {
+          role.members.forEach((member: any) => {
+            member.online = this.onlineUsers.has(String(member._id));
           });
-
         });
-      });
 
-      console.log('Users by role:', this.roles);
-    },
+        console.log("Users after applying online status:", this.roles);
 
-    error: (err) => {
-      console.error('Error loading users:', err);
-    }
-  });
-}
+        this.cdr.detectChanges();
+        //console.log('Users by role:', this.roles);
+        setTimeout(() => {
+          console.log("Current Roles:", this.roles);
+        }, 3000);
+
+        this.roles.forEach((role: any) => {
+          role.members.forEach((member: any) => {
+
+            this.messageService.getConversation(member._id).subscribe({
+              next: (res: any) => {
+
+                console.log(member.username, res.data);
+                member.messages = res.data || [];
+
+                role.members.sort((a: any, b: any) => {
+
+                  const aTime = a.messages?.length
+                    ? new Date(a.messages[a.messages.length - 1].createdAt).getTime()
+                    : 0;
+
+                  const bTime = b.messages?.length
+                    ? new Date(b.messages[b.messages.length - 1].createdAt).getTime()
+                    : 0;
+
+                  return bTime - aTime;
+                });
+
+              },
+
+              error: () => {
+                member.messages = [];
+              }
+            });
+
+          });
+        });
+
+        console.log('Users by role:', this.roles);
+      },
+
+      error: (err) => {
+        console.error('Error loading users:', err);
+      }
+    });
+  }
 
 
 
@@ -183,17 +242,17 @@ export class Messages implements OnInit {
   // SELECT MEMBER
   // =========================
   selectMember(member: any): void {
-     console.log('Selected Member:', member);
+    console.log('Selected Member:', member);
 
     this.selectedMember = member;
-     localStorage.setItem('lastChatUser', member._id);
+    localStorage.setItem('lastChatUser', member._id);
 
     this.messageService.getConversation(member._id).subscribe({
       next: (res: any) => {
 
         this.selectedMember.messages = res.data || [];
 
-         member.messages = res.data || [];
+        member.messages = res.data || [];
 
         console.log(
           'Conversation:',
@@ -223,99 +282,59 @@ export class Messages implements OnInit {
         : roleName;
   }
 
- getUnreadCount(member: any): number {
+  getUnreadCount(member: any): number {
 
-  console.log(member.username, member.messages);
+    console.log(member.username, member.messages);
 
-  if (!member.messages) {
-    return 0;
+    if (!member.messages) {
+      return 0;
+    }
+
+    const count = member.messages.filter((message: any) =>
+
+      !this.isMyMessage(message) &&
+      message.status !== 'read'
+
+    ).length;
+
+    console.log('Unread Count:', member.username, count);
+
+    return count;
   }
-
-  const count = member.messages.filter((message: any) =>
-
-    !this.isMyMessage(message) &&
-    message.status !== 'read'
-
-  ).length;
-
-  console.log('Unread Count:', member.username, count);
-
-  return count;
-}
 
   scrollToBottom(): void {
 
-  setTimeout(() => {
+    setTimeout(() => {
 
-    if (this.messagesContainer) {
+      if (this.messagesContainer) {
 
-      const element = this.messagesContainer.nativeElement;
-      element.scrollTop = element.scrollHeight;
+        const element = this.messagesContainer.nativeElement;
+        element.scrollTop = element.scrollHeight;
 
+      }
+
+    }, 100);
+
+  }
+  sendMessage(): void {
+
+    if (!this.selectedMember || !this.newMessage.trim()) {
+      return;
     }
 
-  }, 100);
+    const text = this.newMessage.trim();
 
-}
-sendMessage(): void {
+    // Clear input
+    this.newMessage = '';
 
-  if (!this.selectedMember || !this.newMessage.trim()) {
-    return;
+    // Send message using Socket.IO
+    this.socketService.sendMessage(
+      this.selectedMember._id,
+      text
+    );
+
   }
 
-  const text = this.newMessage.trim();
-
-  // Input immediately clear karo
-  this.newMessage = '';
-
-  this.messageService.sendMessage(this.selectedMember._id, text).subscribe({
-
-    next: () => {
-
-      this.messageService.getConversation(this.selectedMember._id).subscribe({
-
-        next: (res: any) => {
-
-          const messages = res.data || [];
-
-          // Selected chat update
-          this.selectedMember.messages = [...messages];
-
-          // Left side member list bhi update
-          this.roles.forEach(role => {
-            role.members.forEach((member: any) => {
-
-              if (member._id === this.selectedMember._id) {
-                member.messages = [...messages];
-              }
-
-            });
-          });
-
-          // UI refresh
-          this.cdr.detectChanges();
-
-          // Scroll latest message
-          this.scrollToBottom();
-
-        },
-
-        error: (err) => {
-          console.error(err);
-        }
-
-      });
-
-    },
-
-    error: (err) => {
-      console.error(err);
-    }
-
-  });
-
-
-}
   // =========================
   // SEARCH
   // =========================
@@ -448,16 +467,16 @@ sendMessage(): void {
   // =========================
   // ONLINE STATUS
   // =========================
- isMemberOnline(member: any): boolean {
+  isMemberOnline(member: any): boolean {
 
-  console.log('Checking member:', member.username, member.online);
+    console.log('Checking member:', member.username, member.online);
 
-  return (
-    member?.online === true ||
-    member?.isOnline === true ||
-    member?.status === 'online'
-  );
-}
+    return (
+      member?.online === true ||
+      member?.isOnline === true ||
+      member?.status === 'online'
+    );
+  }
 
   // =========================
   // USER STATUS TEXT
@@ -531,164 +550,209 @@ sendMessage(): void {
   // =========================
 
   registerSocketEvents(): void {
+    this.socketService.onMessageSent((message: any) => {
 
-  this.socketService.onReceiveMessage((message: any) => {
+      console.log("Message Sent:", message);
 
-    console.log('Receive Message:', message);
+      if (!this.selectedMember) {
+        return;
+      }
+
+      const receiverId =
+        message.receiverId?._id ||
+        message.receiverId;
+
+      if (String(receiverId) === String(this.selectedMember._id)) {
+
+        if (!this.selectedMember.messages) {
+          this.selectedMember.messages = [];
+        }
+
+        this.selectedMember.messages = [
+          ...this.selectedMember.messages,
+          message
+        ];
+
+        this.cdr.detectChanges();
+        this.scrollToBottom();
+      }
+
+    });
+
+    this.socketService.onReceiveMessage((message: any) => {
+
+      console.log('Receive Message:', message);
+
+      this.roles.forEach(role => {
+
+        role.members.forEach((member: any) => {
+
+          const senderId =
+            message.senderId?._id ||
+            message.senderId;
+
+          if (member._id === senderId) {
+
+            if (!member.messages) {
+              member.messages = [];
+            }
+
+            member.messages.push(message);
+
+          }
+
+        });
+
+      });
+
+      if (
+        this.selectedMember &&
+        (
+          this.selectedMember._id ===
+          (message.senderId?._id || message.senderId)
+        )
+      ) {
+
+        if (!this.selectedMember.messages) {
+          this.selectedMember.messages = [];
+        }
+
+        this.selectedMember.messages = [
+          ...this.selectedMember.messages,
+          message
+        ];
+
+        this.cdr.detectChanges();
+        this.scrollToBottom();
+
+        this.markMessagesAsRead();
+
+      }
+
+    });
+    this.socketService.onOnlineUsers((users: string[]) => {
+      console.log('ONLINE USERS:', users);
+
+      this.onlineUsers = new Set(users);
+
+      this.roles.forEach(role => {
+        role.members.forEach((member: any) => {
+          member.online = this.onlineUsers.has(String(member._id));
+        });
+      });
+
+      if (this.selectedMember) {
+        this.selectedMember.online = this.onlineUsers.has(
+          String(this.selectedMember._id)
+        );
+      }
+
+      this.cdr.detectChanges();
+    });
+    this.socketService.onUserOnline((data: any) => {
+
+      console.log('ONLINE', data);
+
+      this.updateUserStatus(data.userId, true);
+
+    });
+
+    this.socketService.onUserOffline((data: any) => {
+
+      console.log('OFFLINE', data);
+
+      this.updateUserStatus(data.userId, false);
+
+    });
+
+    this.socketService.onMessageDelivered((data: any) => {
+
+      console.log('Delivered', data);
+
+      this.updateMessageStatus(
+        data.messageId,
+        data.status
+      );
+
+    });
+
+    this.socketService.onMessageRead((data: any) => {
+
+      console.log('Read', data);
+
+      this.updateMessageStatus(
+        data.messageId,
+        data.status
+      );
+
+    });
+
+  }
+  // =========================
+  // MARK AS READ
+  // =========================
+  markMessagesAsRead(): void {
+
+    if (!this.selectedMember) {
+      return;
+    }
+
+    this.selectedMember.messages.forEach((message: any) => {
+
+      if (
+        !this.isMyMessage(message) &&
+        message.status !== 'read'
+      ) {
+
+        this.socketService.markAsRead(message._id);
+
+      }
+
+    });
+
+  }
+
+  updateMessageStatus(
+    messageId: string,
+    status: string
+  ): void {
 
     this.roles.forEach(role => {
 
       role.members.forEach((member: any) => {
 
-        const senderId =
-          message.senderId?._id ||
-          message.senderId;
+        if (!member.messages) {
+          return;
+        }
 
-        if (member._id === senderId) {
+        member.messages.forEach((msg: any) => {
 
-          if (!member.messages) {
-            member.messages = [];
+          if (msg._id === messageId) {
+
+            msg.status = status;
+
           }
 
-          member.messages.push(message);
-
-        }
+        });
 
       });
 
     });
 
-    if (
-      this.selectedMember &&
-      (
-        this.selectedMember._id ===
-        (message.senderId?._id || message.senderId)
-      )
-    ) {
-
-      if (!this.selectedMember.messages) {
-        this.selectedMember.messages = [];
-      }
-
-      this.selectedMember.messages = [
-  ...this.selectedMember.messages,
-  message
-];
-
-this.cdr.detectChanges();
-this.scrollToBottom();
-
-      this.markMessagesAsRead();
-
+    if (!this.selectedMember) {
+      return;
     }
 
-  });
+    this.selectedMember.messages.forEach((msg: any) => {
 
-  this.socketService.onUserOnline((data: any) => {
+      if (msg._id === messageId) {
 
-    console.log('ONLINE', data);
+        msg.status = status;
 
-    this.updateUserStatus(data.userId, true);
-
-  });
-
-  this.socketService.onUserOffline((data: any) => {
-
-    console.log('OFFLINE', data);
-
-    this.updateUserStatus(data.userId, false);
-
-  });
-
-  this.socketService.onMessageDelivered((data: any) => {
-
-    console.log('Delivered', data);
-
-    this.updateMessageStatus(
-      data.messageId,
-      data.status
-    );
-
-  });
-
-  this.socketService.onMessageRead((data: any) => {
-
-    console.log('Read', data);
-
-    this.updateMessageStatus(
-      data.messageId,
-      data.status
-    );
-
-  });
-
-}
-  // =========================
-// MARK AS READ
-// =========================
-markMessagesAsRead(): void {
-
-  if (!this.selectedMember) {
-    return;
-  }
-
-  this.selectedMember.messages.forEach((message: any) => {
-
-    if (
-      !this.isMyMessage(message) &&
-      message.status !== 'read'
-    ) {
-
-      this.socketService.markAsRead(message._id);
-
-    }
-
-  });
-
-}
-
-updateMessageStatus(
-  messageId: string,
-  status: string
-): void {
-
-  this.roles.forEach(role => {
-
-    role.members.forEach((member: any) => {
-
-      if (!member.messages) {
-        return;
       }
-
-      member.messages.forEach((msg: any) => {
-
-        if (msg._id === messageId) {
-
-          msg.status = status;
-
-        }
-
-      });
 
     });
 
-  });
-
-  if (!this.selectedMember) {
-    return;
   }
-
-  this.selectedMember.messages.forEach((msg: any) => {
-
-    if (msg._id === messageId) {
-
-      msg.status = status;
-
-    }
-
-  });
-
-}
-
 
 }

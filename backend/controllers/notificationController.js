@@ -173,7 +173,9 @@ const markAllAsRead = async (req, res, next) => {
           { recipientRole: 'All' }
         ]
       };
+
     }
+
 
     await Notification.updateMany(query, { isRead: true });
 
@@ -188,7 +190,37 @@ const markAllAsRead = async (req, res, next) => {
     next(error);
   }
 };
+const markMessageNotificationsAsRead = async (req, res, next) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const userRole = req.user.role;
 
+    let query = {
+      type: 'Message',
+      isRead: false
+    };
+
+    if (userRole !== 'Admin') {
+      query.$or = [
+        { recipientId: userId },
+        { recipientRole: userRole },
+        { recipientRole: 'All' }
+      ];
+    }
+
+    await Notification.updateMany(query, {
+      isRead: true
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Message notifications marked as read'
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
 /**
  * @desc    Delete notification
  * @route   DELETE /api/notifications/:id
@@ -252,6 +284,7 @@ module.exports = {
   markAsRead,
   markAsUnread,
   markAllAsRead,
+  markMessageNotificationsAsRead,
   deleteNotification,
   createNotification
 };

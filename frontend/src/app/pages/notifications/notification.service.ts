@@ -44,6 +44,9 @@ export class NotificationService {
   private readonly pollIntervalMs = 15000;
 
   private hasLoaded = false;
+  public get loaded(): boolean {
+    return this.hasLoaded;
+  }
   private isLoading = false;
   private pollSubscription?: Subscription;
 
@@ -143,6 +146,14 @@ export class NotificationService {
         map((response) => this.mapNotifications(response.data)),
         tap((notifications) => this.notificationsSubject.next(notifications))
       );
+  }
+
+  markMessageNotificationsAsRead(): Observable<any> {
+    return this.http.patch(
+      `${this.notificationsUrl}/mark-message-read`,
+      {},
+      this.getHttpOptions()
+    );
   }
 
   deleteNotification(id: string): Observable<void> {
