@@ -78,10 +78,10 @@ export class MatchingService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'http://localhost:5001/api/matches';
+    'http://localhost:5000/api/matches';
 
   private readonly profileApiUrl =
-    'http://localhost:5001/api/profile';
+    'http://localhost:5000/api/profile';
 
   getMatches(): Observable<MatchedOpportunity[]> {
 

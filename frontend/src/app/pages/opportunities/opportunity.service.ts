@@ -63,7 +63,7 @@ export class OpportunityService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'http://localhost:5001/api/opportunities';
+    'http://localhost:5000/api/opportunities';
 
   private dashboardStatsCache$?: Observable<DashboardStats>;
   private dashboardStatsCache?: DashboardStats;

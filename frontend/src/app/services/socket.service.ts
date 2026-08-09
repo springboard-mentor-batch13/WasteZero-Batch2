@@ -16,7 +16,7 @@ export class SocketService {
 
     const token = localStorage.getItem('token');
 
-    this.socket = io('http://localhost:5001', {
+    this.socket = io('http://localhost:5000', {
       auth: {
         token
       }

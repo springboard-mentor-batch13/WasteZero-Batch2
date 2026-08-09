@@ -63,7 +63,7 @@ export class EditProfile implements OnInit {
     this.errorMessage = '';
 
     this.http.get<any>(
-      'http://localhost:5001/api/profile',
+      'http://localhost:5000/api/profile',
       {
         headers: this.getHeaders()
       }
@@ -138,7 +138,7 @@ export class EditProfile implements OnInit {
     };
 
     this.http.put<any>(
-      'http://localhost:5001/api/profile',
+      'http://localhost:5000/api/profile',
       body,
       {
         headers: this.getHeaders()

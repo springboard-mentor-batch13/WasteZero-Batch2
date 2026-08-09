@@ -24,7 +24,7 @@ export interface Pickup {
 })
 export class PickupService {
 
-  private apiUrl = 'http://localhost:5001/api/pickups';
+  private apiUrl = 'http://localhost:5000/api/pickups';
 
   constructor(private http: HttpClient) { }
 

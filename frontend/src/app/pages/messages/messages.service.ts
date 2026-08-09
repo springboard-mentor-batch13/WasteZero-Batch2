@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 })
 export class MessagesService {
 
-  private apiUrl = 'http://localhost:5001/api/messages';
+  private apiUrl = 'http://localhost:5000/api/messages';
 
   constructor(private http: HttpClient) {}
 
