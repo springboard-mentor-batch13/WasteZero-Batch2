@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema(
       default: 'Volunteer',
     },
 
+    status: {
+      type: String,
+      enum: ['Active', 'Suspended'],
+      default: 'Active',
+},
+
     // Existing profile location field
     // Kept for backward compatibility with Milestones 1 and 2
     location: {
