@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
 
 import { AuthService } from '../../auth/auth.service';
@@ -7,6 +8,7 @@ import { AuthService } from '../../auth/auth.service';
 interface SidebarMenuItem {
   label: string;
   icon: string;
+  materialIcon?: string;
   route?: string;
   exact?: boolean;
 }
@@ -14,7 +16,7 @@ interface SidebarMenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, MatIconModule, RouterModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css'
 })
@@ -89,6 +91,12 @@ export class Sidebar implements OnInit {
         { label: 'Users', icon: 'bi-people' },
         { label: 'Opportunities', icon: 'bi-recycle', route: '/opportunities' },
         { label: 'Applications', icon: 'bi-file-earmark-text', route: '/admin/applications' },
+        {
+          label: 'Admin Controls',
+          icon: '',
+          materialIcon: 'admin_panel_settings',
+          route: '/admin/controls'
+        },
         { label: 'Reports / Analytics', icon: 'bi-bar-chart' },
        { label: 'Messages', icon: 'bi-chat-left-text', route: '/messages' },
         { label: 'Admin Panel', icon: 'bi-shield-lock' },

@@ -48,10 +48,11 @@ export const NGO_PICKUP_STATUSES: Array<NgoPickupStatus | 'All'> = [
 
 export const NGO_PICKUP_WASTE_TYPES = [
   'All',
-  'Dry Waste',
-  'Wet Waste',
-  'Plastic Waste',
-  'E-waste',
-  'Organic Waste',
-  'Mixed Recyclables',
+  'Plastic',
+  'Paper',
+  'Glass',
+  'Metal',
+  'Organic',
+  'E-Waste',
+  'Mixed',
 ];

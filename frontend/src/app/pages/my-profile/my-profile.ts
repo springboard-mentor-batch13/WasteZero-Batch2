@@ -105,7 +105,6 @@ export class MyProfile implements OnInit {
   // Update profile
   saveProfile() {
 
-
     const body = {
 
       fullName: this.user.fullName,
