@@ -1,3 +1,4 @@
+// backend/middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -32,6 +33,18 @@ const protect = async (req, res, next) => {
   }
 };
 
+/**
+ * Restrict access to Admin users only.
+ */
+const adminOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'Admin') {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied: Admin role required',
+    });
+  }
+};
 
-
-module.exports = { protect };
+module.exports = { protect, adminOnly };

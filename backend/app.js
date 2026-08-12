@@ -23,6 +23,7 @@ const matchingRoutes = require('./routes/matchingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
+const adminReportRoutes = require('./routes/adminReportRoutes');
 // Error Middleware
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
@@ -85,6 +86,7 @@ app.use('/api/notifications', notificationRoutes);
 
 app.use('/api/admin', adminRoutes);
 
+app.use('/api/admin', adminReportRoutes);
 // =========================
 // Error Handlers
 // =========================
