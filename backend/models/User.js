@@ -69,15 +69,15 @@ const userSchema = new mongoose.Schema(
       default: [],
     },
 
-latitude: {
-  type: Number,
-  default: null,
-},
+    latitude: {
+      type: Number,
+      default: null,
+    },
 
-longitude: {
-  type: Number,
-  default: null,
-},
+    longitude: {
+      type: Number,
+      default: null,
+    },
 
     // Existing skills field
     skills: {
@@ -119,7 +119,6 @@ longitude: {
   }
 );
 
-// Milestone 3 - supports volunteer geographic matching
 // Milestone 3 - supports volunteer and pickup matching
 userSchema.index({
   role: 1,
@@ -129,4 +128,5 @@ userSchema.index({
   latitude: 1,
   longitude: 1,
 });
+
 module.exports = mongoose.model('User', userSchema, 'Users');

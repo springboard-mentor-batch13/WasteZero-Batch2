@@ -7,7 +7,9 @@ const {
     getAdminUsers,
     suspendUser,
     activateUser,
-    getAdminLogs
+    updateUserStatus,
+    getAdminLogs,
+    removeOpportunity
 } = require('../controllers/adminController');
 
 const {
@@ -17,7 +19,6 @@ const {
 const {
     authorizeRoles
 } = require('../middleware/roleMiddleware');
-
 
 // Admin dashboard statistics
 router.get(
@@ -48,11 +49,25 @@ router.patch(
     activateUser
 );
 
+router.patch(
+    '/users/:id/status',
+    protect,
+    authorizeRoles('Admin'),
+    updateUserStatus
+);
+
 router.get(
     '/logs',
     protect,
     authorizeRoles('Admin'),
     getAdminLogs
+);
+
+router.patch(
+    '/opportunities/:id/remove',
+    protect,
+    authorizeRoles('Admin'),
+    removeOpportunity
 );
 
 module.exports = router;

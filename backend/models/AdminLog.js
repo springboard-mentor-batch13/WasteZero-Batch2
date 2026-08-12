@@ -4,17 +4,21 @@ const adminLogSchema = new mongoose.Schema(
   {
     action: {
       type: String,
-      required: true,
+      required: [true, 'Admin action is required'],
       trim: true,
     },
+
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      required: [true, 'User ID is required'],
     },
+
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+
     timestamp: {
       type: Date,
       default: Date.now,

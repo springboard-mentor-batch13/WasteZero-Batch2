@@ -93,7 +93,7 @@ const getAdminUsers = async (req, res) => {
     }
 };
 
-const updateUserStatus = async (req, res, status, action) => {
+const setUserStatus = async (req, res, status, action, successMessage) => {
     try {
         const user = await User.findById(req.params.id);
 
@@ -101,6 +101,13 @@ const updateUserStatus = async (req, res, status, action) => {
             return res.status(404).json({
                 success: false,
                 message: 'User not found'
+            });
+        }
+
+        if (user.role === 'Admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Admin user cannot be suspended'
             });
         }
 
@@ -115,7 +122,7 @@ const updateUserStatus = async (req, res, status, action) => {
 
         res.status(200).json({
             success: true,
-            message: action,
+            message: successMessage || action,
             data: toAdminUser(user)
         });
     } catch (error) {
@@ -124,11 +131,27 @@ const updateUserStatus = async (req, res, status, action) => {
 };
 
 const suspendUser = async (req, res) => {
-    return updateUserStatus(req, res, 'Suspended', 'User suspended');
+    return setUserStatus(req, res, 'Suspended', 'User suspended');
 };
 
 const activateUser = async (req, res) => {
-    return updateUserStatus(req, res, 'Active', 'User activated');
+    return setUserStatus(req, res, 'Active', 'User activated');
+};
+
+const updateUserStatus = async (req, res) => {
+    const { status } = req.body;
+
+    if (!['Active', 'Suspended'].includes(status)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid status'
+        });
+    }
+
+    const action = `User ${status === 'Suspended' ? 'suspended' : 'activated'}`;
+    const successMessage = `User ${status.toLowerCase()} successfully`;
+
+    return setUserStatus(req, res, status, action, successMessage);
 };
 
 const getAdminLogs = async (req, res) => {
@@ -151,6 +174,7 @@ const getAdminLogs = async (req, res) => {
 
         const [logs, total] = await Promise.all([
             AdminLog.find(filter)
+                .populate('userId', 'fullName username role')
                 .sort({ timestamp: -1 })
                 .skip(skip)
                 .limit(limit)
@@ -175,8 +199,6 @@ const getAdminLogs = async (req, res) => {
 
 const getAdminDashboardStats = async (req, res) => {
     try {
-
-        // Run independent queries in parallel
         const [
             totalUsers,
             totalOpportunities,
@@ -185,13 +207,10 @@ const getAdminDashboardStats = async (req, res) => {
         ] = await Promise.all([
             User.countDocuments(),
             Opportunity.countDocuments(),
-
             User.find({ role: 'Admin' }).distinct('_id'),
-
             User.find({ role: 'NGO' }).distinct('_id')
         ]);
 
-        // Count opportunities based on the role of the creator
         const [
             adminOpportunities,
             ngoOpportunities
@@ -199,7 +218,6 @@ const getAdminDashboardStats = async (req, res) => {
             Opportunity.countDocuments({
                 postedBy: { $in: adminUsers }
             }),
-
             Opportunity.countDocuments({
                 postedBy: { $in: ngoUsers }
             })
@@ -214,10 +232,39 @@ const getAdminDashboardStats = async (req, res) => {
                 ngoOpportunities
             }
         });
-
     } catch (error) {
-
         sendServerError(res, error, 'Admin dashboard statistics error:');
+    }
+};
+
+const removeOpportunity = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const opportunity = await Opportunity.findById(id);
+
+        if (!opportunity) {
+            return res.status(404).json({
+                success: false,
+                message: 'Opportunity not found'
+            });
+        }
+
+        opportunity.status = 'Removed';
+        await opportunity.save();
+
+        await createAdminLog({
+            action: 'Opportunity removed',
+            userId: opportunity.postedBy,
+            adminId: req.user._id
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Opportunity removed successfully',
+            data: opportunity
+        });
+    } catch (error) {
+        sendServerError(res, error, 'Remove opportunity error:');
     }
 };
 
@@ -226,6 +273,8 @@ module.exports = {
     getAdminUsers,
     suspendUser,
     activateUser,
+    updateUserStatus,
     getAdminLogs,
+    removeOpportunity,
     createAdminLog
 };

@@ -83,7 +83,7 @@ wasteTypes: {
     },
     status: {
       type: String,
-      enum: ['Open', 'Closed', 'In Progress'],
+      enum: ['Open', 'Closed', 'In Progress','Removed'],
       default: 'Open',
     },
   },
