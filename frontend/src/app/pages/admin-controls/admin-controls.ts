@@ -8,13 +8,14 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 
-import { Opportunity } from '../opportunities/opportunity.model';
+import { Opportunity, OpportunityStatus } from '../opportunities/opportunity.model';
 import {
   AdminControlsService,
   AdminLogEntry,
@@ -36,6 +37,7 @@ import { AdminConfirmDialog, AdminConfirmDialogData } from './admin-confirm-dial
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    MatPaginatorModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSnackBarModule,
@@ -57,7 +59,7 @@ export class AdminControls implements OnInit {
 
   usersLoading = true;
   opportunitiesLoading = true;
-  logsLoading = true;
+  logsLoading = false;
 
   usersError = '';
   opportunitiesError = '';
@@ -67,87 +69,119 @@ export class AdminControls implements OnInit {
   userRoleFilter = '';
   userStatusFilter: AdminUserStatus | '' = '';
   opportunitySearchText = '';
-  opportunityStatusFilter = '';
+  opportunityStatusFilter: OpportunityStatus | '' = '';
   logSearchText = '';
-  logStatusFilter = '';
+  logActionFilter = '';
 
   updatingUserId = '';
   removingOpportunityId = '';
+  private logsLoaded = false;
+
+  userPageIndex = 0;
+  userPageSize = 10;
+  userTotal = 0;
+  opportunityPageIndex = 0;
+  opportunityPageSize = 10;
+  opportunityTotal = 0;
+  logPageIndex = 0;
+  logPageSize = 10;
+  logTotal = 0;
 
   readonly userColumns = ['name', 'email', 'role', 'status', 'actions'];
   readonly opportunityColumns = ['title', 'owner', 'status', 'createdAt', 'details', 'actions'];
-  readonly logColumns = ['timestamp', 'actor', 'action', 'target', 'description', 'status'];
+  readonly logColumns = ['timestamp', 'action', 'userId', 'adminId'];
   readonly userStatuses: AdminUserStatus[] = ['Active', 'Suspended'];
-  readonly opportunityStatuses = ['Open', 'In Progress', 'Closed'];
+  readonly userRoleOptions = ['Admin', 'NGO', 'Volunteer'];
+  readonly opportunityStatuses: OpportunityStatus[] = ['Open', 'In Progress', 'Closed'];
+  readonly pageSizeOptions = [5, 10, 25, 50];
 
   ngOnInit(): void {
     this.loadUsers();
     this.loadOpportunities();
-    this.loadLogs();
+  }
+
+  onTabIndexChange(index: number): void {
+    if (index === 2 && !this.logsLoaded) {
+      this.loadLogs();
+    }
+  }
+
+  refreshCurrentData(): void {
+    this.loadUsers();
+    this.loadOpportunities();
+
+    if (this.logsLoaded) {
+      this.loadLogs();
+    }
   }
 
   get filteredUsers(): AdminManagedUser[] {
-    const search = this.userSearchText.toLowerCase().trim();
-
-    return this.users.filter((user) => {
-      const matchesSearch = !search ||
-        user.fullName.toLowerCase().includes(search) ||
-        user.email.toLowerCase().includes(search) ||
-        user.role.toLowerCase().includes(search);
-      const matchesRole = !this.userRoleFilter || user.role === this.userRoleFilter;
-      const matchesStatus = !this.userStatusFilter || user.status === this.userStatusFilter;
-
-      return matchesSearch && matchesRole && matchesStatus;
-    });
+    return this.users;
   }
 
   get filteredOpportunities(): Opportunity[] {
-    const search = this.opportunitySearchText.toLowerCase().trim();
-
-    return this.opportunities.filter((opportunity) => {
-      const owner = this.ownerName(opportunity).toLowerCase();
-      const matchesSearch = !search ||
-        opportunity.title.toLowerCase().includes(search) ||
-        owner.includes(search) ||
-        opportunity.category.toLowerCase().includes(search) ||
-        opportunity.location.toLowerCase().includes(search);
-      const matchesStatus = !this.opportunityStatusFilter ||
-        opportunity.status === this.opportunityStatusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
+    return this.opportunities;
   }
 
   get filteredLogs(): AdminLogEntry[] {
-    const search = this.logSearchText.toLowerCase().trim();
-
-    return this.logs.filter((log) => {
-      const matchesSearch = !search ||
-        log.actor.toLowerCase().includes(search) ||
-        log.action.toLowerCase().includes(search) ||
-        log.target.toLowerCase().includes(search) ||
-        log.description.toLowerCase().includes(search);
-      const matchesStatus = !this.logStatusFilter || log.status === this.logStatusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
+    return this.logs;
   }
 
   get userRoles(): string[] {
-    return [...new Set(this.users.map((user) => user.role).filter(Boolean))].sort();
+    return this.userRoleOptions;
   }
 
-  get logStatuses(): string[] {
-    return [...new Set(this.logs.map((log) => log.status || '').filter(Boolean))].sort();
+  get logActions(): string[] {
+    return [...new Set(this.logs.map((log) => log.action).filter(Boolean))].sort();
+  }
+
+  onUserFiltersChanged(): void {
+    this.userPageIndex = 0;
+    this.loadUsers();
+  }
+
+  onOpportunityFiltersChanged(): void {
+    this.opportunityPageIndex = 0;
+    this.loadOpportunities();
+  }
+
+  onLogFiltersChanged(): void {
+    this.logPageIndex = 0;
+    this.loadLogs();
+  }
+
+  onUserPage(event: PageEvent): void {
+    this.userPageIndex = event.pageIndex;
+    this.userPageSize = event.pageSize;
+    this.loadUsers();
+  }
+
+  onOpportunityPage(event: PageEvent): void {
+    this.opportunityPageIndex = event.pageIndex;
+    this.opportunityPageSize = event.pageSize;
+    this.loadOpportunities();
+  }
+
+  onLogPage(event: PageEvent): void {
+    this.logPageIndex = event.pageIndex;
+    this.logPageSize = event.pageSize;
+    this.loadLogs();
   }
 
   loadUsers(): void {
     this.usersLoading = true;
     this.usersError = '';
 
-    this.adminControlsService.getUsers().subscribe({
-      next: (users) => {
-        this.users = users;
+    this.adminControlsService.getUsers({
+      page: this.userPageIndex + 1,
+      limit: this.userPageSize,
+      search: this.userSearchText,
+      role: this.userRoleFilter,
+      status: this.userStatusFilter
+    }).subscribe({
+      next: (result) => {
+        this.users = result.data;
+        this.userTotal = result.total;
         this.usersLoading = false;
         this.cdr.detectChanges();
       },
@@ -155,7 +189,7 @@ export class AdminControls implements OnInit {
         console.error('Failed to load admin users:', error);
         this.users = [];
         this.usersLoading = false;
-        this.usersError = error.error?.message || error.message || 'Unable to load users.';
+        this.usersError = this.userFriendlyError(error, 'Unable to load users.');
         this.cdr.detectChanges();
       }
     });
@@ -165,9 +199,15 @@ export class AdminControls implements OnInit {
     this.opportunitiesLoading = true;
     this.opportunitiesError = '';
 
-    this.adminControlsService.getOpportunities().subscribe({
-      next: (opportunities) => {
-        this.opportunities = opportunities;
+    this.adminControlsService.getOpportunities({
+      page: this.opportunityPageIndex + 1,
+      limit: this.opportunityPageSize,
+      search: this.opportunitySearchText,
+      status: this.opportunityStatusFilter
+    }).subscribe({
+      next: (result) => {
+        this.opportunities = result.data;
+        this.opportunityTotal = result.total;
         this.opportunitiesLoading = false;
         this.cdr.detectChanges();
       },
@@ -175,7 +215,7 @@ export class AdminControls implements OnInit {
         console.error('Failed to load admin opportunities:', error);
         this.opportunities = [];
         this.opportunitiesLoading = false;
-        this.opportunitiesError = error.error?.message || 'Unable to load opportunities.';
+        this.opportunitiesError = this.userFriendlyError(error, 'Unable to load opportunities.');
         this.cdr.detectChanges();
       }
     });
@@ -184,10 +224,17 @@ export class AdminControls implements OnInit {
   loadLogs(): void {
     this.logsLoading = true;
     this.logsError = '';
+    this.logsLoaded = true;
 
-    this.adminControlsService.getLogs().subscribe({
-      next: (logs) => {
-        this.logs = logs;
+    this.adminControlsService.getLogs({
+      page: this.logPageIndex + 1,
+      limit: this.logPageSize,
+      search: this.logSearchText,
+      action: this.logActionFilter
+    }).subscribe({
+      next: (result) => {
+        this.logs = result.data;
+        this.logTotal = result.total;
         this.logsLoading = false;
         this.cdr.detectChanges();
       },
@@ -195,7 +242,7 @@ export class AdminControls implements OnInit {
         console.error('Failed to load admin logs:', error);
         this.logs = [];
         this.logsLoading = false;
-        this.logsError = error.error?.message || error.message || 'Unable to load admin logs.';
+        this.logsError = this.userFriendlyError(error, 'Unable to load admin logs.');
         this.cdr.detectChanges();
       }
     });
@@ -233,14 +280,22 @@ export class AdminControls implements OnInit {
       this.adminControlsService.removeOpportunity(opportunity.id).subscribe({
         next: () => {
           this.opportunities = this.opportunities.filter((item) => item.id !== opportunity.id);
+          this.opportunityTotal = Math.max(this.opportunityTotal - 1, 0);
           this.removingOpportunityId = '';
           this.snackBar.open('Opportunity removed successfully.', 'Close', { duration: 3500 });
+          if (!this.opportunities.length && this.opportunityPageIndex > 0) {
+            this.opportunityPageIndex -= 1;
+            this.loadOpportunities();
+          }
+          if (this.logsLoaded) {
+            this.loadLogs();
+          }
           this.cdr.detectChanges();
         },
         error: (error) => {
           console.error('Failed to remove opportunity:', error);
           this.removingOpportunityId = '';
-          this.snackBar.open(error.error?.message || 'Unable to remove opportunity.', 'Close', { duration: 4500 });
+          this.snackBar.open(this.userFriendlyError(error, 'Unable to remove opportunity.'), 'Close', { duration: 4500 });
           this.cdr.detectChanges();
         }
       });
@@ -282,15 +337,45 @@ export class AdminControls implements OnInit {
         );
         this.updatingUserId = '';
         this.snackBar.open(`User ${status.toLowerCase()} successfully.`, 'Close', { duration: 3500 });
+        if (this.logsLoaded) {
+          this.loadLogs();
+        }
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to update user status:', error);
         this.updatingUserId = '';
-        this.snackBar.open(error.error?.message || error.message || 'Unable to update user status.', 'Close', { duration: 4500 });
+        this.snackBar.open(this.userFriendlyError(error, 'Unable to update user status.'), 'Close', { duration: 4500 });
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private userFriendlyError(error: unknown, fallback: string): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    const httpError = error as {
+      status?: number;
+      error?: { message?: string };
+      message?: string;
+    };
+
+    switch (httpError.status) {
+      case 400:
+        return httpError.error?.message || 'Please check the request and try again.';
+      case 401:
+        return 'Please log in again to continue.';
+      case 403:
+        return 'You do not have permission to perform this action.';
+      case 404:
+        return httpError.error?.message || 'The requested record was not found.';
+      case 500:
+        return 'The server could not complete the request. Please try again later.';
+      default:
+        return httpError.error?.message || httpError.message || fallback;
+    }
   }
 
   private confirm(data: AdminConfirmDialogData, action: () => void): void {

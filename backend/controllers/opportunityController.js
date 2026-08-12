@@ -1,6 +1,7 @@
 const Opportunity = require('../models/Opportunity');
 const Application = require('../models/Application');
 const User = require('../models/User');
+const AdminLog = require('../models/AdminLog');
 const Notification = require('../models/Notification'); // 👈 Import Notification Model
 
 const parseRequiredSkills = (requiredSkills) => {
@@ -39,6 +40,19 @@ const sendServerError = (res, error) => {
     message: 'Server Error',
     error: error.message,
   });
+};
+
+const parsePagination = (query) => {
+  const hasPagination = query.page !== undefined || query.limit !== undefined;
+  const page = Math.max(parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(query.limit, 10) || 10, 1), 50);
+
+  return {
+    hasPagination,
+    page,
+    limit,
+    skip: (page - 1) * limit,
+  };
 };
 
 const canManageOpportunity = (user, opportunity) => (
@@ -172,8 +186,50 @@ const createOpportunity = async (req, res) => {
   }
 };
 
-const getAllOpportunities = async (_req, res) => {
+const getAllOpportunities = async (req, res) => {
   try {
+    const { hasPagination, page, limit, skip } = parsePagination(req.query);
+    const { search = '', status = '' } = req.query;
+    const filter = {};
+
+    if (search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      filter.$or = [
+        { title: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex },
+        { location: searchRegex },
+        { city: searchRegex },
+        { state: searchRegex },
+      ];
+    }
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (hasPagination || search.trim() || status) {
+      const [opportunities, total] = await Promise.all([
+        Opportunity.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        Opportunity.countDocuments(filter),
+      ]);
+
+      return res.status(200).json({
+        success: true,
+        data: opportunities,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    }
+
     const opportunities = await Opportunity.find().sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -498,6 +554,13 @@ const deleteOpportunity = async (req, res) => {
     }
 
     await existingOpportunity.deleteOne();
+
+    await AdminLog.create({
+      action: 'Opportunity removed',
+      userId: req.user._id,
+      adminId: req.user._id,
+      timestamp: new Date(),
+    });
 
     res.status(200).json({
       success: true,

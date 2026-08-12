@@ -1,7 +1,8 @@
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
-import { Opportunity } from '../opportunities/opportunity.model';
+import { Opportunity, OpportunityStatus } from '../opportunities/opportunity.model';
 import { OpportunityService } from '../opportunities/opportunity.service';
 
 export type AdminUserStatus = 'Active' | 'Suspended';
@@ -9,6 +10,7 @@ export type AdminUserStatus = 'Active' | 'Suspended';
 export interface AdminManagedUser {
   id: string;
   fullName: string;
+  username?: string;
   email: string;
   role: 'Volunteer' | 'NGO' | 'Admin' | string;
   status: AdminUserStatus;
@@ -16,11 +18,66 @@ export interface AdminManagedUser {
 
 export interface AdminLogEntry {
   id: string;
+  userId?: string;
+  adminId?: string;
   timestamp: string;
-  actor: string;
   action: string;
-  target: string;
-  description: string;
+  status?: string;
+}
+
+export interface AdminPaginationQuery {
+  page: number;
+  limit: number;
+  search?: string;
+  role?: string;
+  status?: string;
+  action?: string;
+}
+
+export interface AdminOpportunityPaginationQuery {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: OpportunityStatus | '';
+}
+
+export interface AdminPagedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface AdminApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+interface AdminUserApiModel {
+  id?: string;
+  _id?: string;
+  fullName?: string;
+  username?: string;
+  email?: string;
+  role?: string;
+  status?: AdminUserStatus;
+}
+
+interface AdminLogApiModel {
+  id?: string;
+  _id?: string;
+  action?: string;
+  userId?: string | { _id?: string };
+  adminId?: string | { _id?: string };
+  timestamp?: string;
   status?: string;
 }
 
@@ -28,76 +85,144 @@ export interface AdminLogEntry {
   providedIn: 'root'
 })
 export class AdminControlsService {
+  private readonly http = inject(HttpClient);
   private readonly opportunityService = inject(OpportunityService);
+  private readonly adminApiUrl = 'http://localhost:5000/api/admin';
 
-  private readonly mockUsers: AdminManagedUser[] = [
-    {
-      id: 'mock-volunteer-1',
-      fullName: 'Volunteer Account',
-      email: 'volunteer@example.com',
-      role: 'Volunteer',
-      status: 'Active'
-    },
-    {
-      id: 'mock-ngo-1',
-      fullName: 'NGO Account',
-      email: 'ngo@example.com',
-      role: 'NGO',
-      status: 'Active'
-    }
-  ];
-
-  private readonly mockLogs: AdminLogEntry[] = [
-    {
-      id: 'mock-log-1',
-      timestamp: new Date().toISOString(),
-      actor: 'Admin',
-      action: 'Frontend ready',
-      target: 'Administrative controls',
-      description: 'User status and admin log APIs are pending backend implementation.',
-      status: 'Pending API'
-    }
-  ];
-
-  getUsers(): Observable<AdminManagedUser[]> {
-    // TODO: Replace mock data with Gaytri's user management API when the route is available.
-    return of(this.mockUsers.map((user) => ({ ...user })));
+  getUsers(query: AdminPaginationQuery): Observable<AdminPagedResult<AdminManagedUser>> {
+    return this.http
+      .get<AdminApiResponse<AdminUserApiModel[]>>(
+        `${this.adminApiUrl}/users`,
+        {
+          headers: this.headers(),
+          params: this.toParams(query)
+        }
+      )
+      .pipe(
+        map((response) => this.toPagedResult(
+          response,
+          response.data.map((user) => this.fromUserApi(user))
+        ))
+      );
   }
 
   suspendUser(userId: string): Observable<AdminManagedUser> {
-    // TODO: Integrate the real suspend-user endpoint when the backend exposes it.
-    return this.updateMockUserStatus(userId, 'Suspended');
+    return this.http
+      .patch<AdminApiResponse<AdminUserApiModel>>(
+        `${this.adminApiUrl}/users/${userId}/suspend`,
+        {},
+        { headers: this.headers() }
+      )
+      .pipe(map((response) => this.fromUserApi(response.data)));
   }
 
   activateUser(userId: string): Observable<AdminManagedUser> {
-    // TODO: Integrate the real activate-user endpoint when the backend exposes it.
-    return this.updateMockUserStatus(userId, 'Active');
+    return this.http
+      .patch<AdminApiResponse<AdminUserApiModel>>(
+        `${this.adminApiUrl}/users/${userId}/activate`,
+        {},
+        { headers: this.headers() }
+      )
+      .pipe(map((response) => this.fromUserApi(response.data)));
   }
 
-  getOpportunities(): Observable<Opportunity[]> {
-    return this.opportunityService.getAll();
+  getOpportunities(query: AdminOpportunityPaginationQuery): Observable<AdminPagedResult<Opportunity>> {
+    return this.opportunityService.getPaged(query);
   }
 
   removeOpportunity(opportunityId: string): Observable<void> {
     return this.opportunityService.delete(opportunityId);
   }
 
-  getLogs(): Observable<AdminLogEntry[]> {
-    // TODO: Replace mock data with Gaytri's admin logs API when the route is available.
-    return of(this.mockLogs.map((log) => ({ ...log })));
+  getLogs(query: AdminPaginationQuery): Observable<AdminPagedResult<AdminLogEntry>> {
+    return this.http
+      .get<AdminApiResponse<AdminLogApiModel[]>>(
+        `${this.adminApiUrl}/logs`,
+        {
+          headers: this.headers(),
+          params: this.toParams(query)
+        }
+      )
+      .pipe(
+        map((response) => this.toPagedResult(
+          response,
+          response.data.map((log) => this.fromLogApi(log))
+        ))
+      );
   }
 
-  private updateMockUserStatus(
-    userId: string,
-    status: AdminUserStatus
-  ): Observable<AdminManagedUser> {
-    const user = this.mockUsers.find((item) => item.id === userId);
+  private toParams(query: AdminPaginationQuery): HttpParams {
+    let params = new HttpParams()
+      .set('page', String(query.page))
+      .set('limit', String(query.limit));
 
-    if (!user) {
-      return throwError(() => new Error('User not found.'));
+    if (query.search?.trim()) {
+      params = params.set('search', query.search.trim());
     }
 
-    user.status = status;
-    return of({ ...user });
+    if (query.role) {
+      params = params.set('role', query.role);
+    }
+
+    if (query.status) {
+      params = params.set('status', query.status);
+    }
+
+    if (query.action) {
+      params = params.set('action', query.action);
+    }
+
+    return params;
+  }
+
+  private toPagedResult<T>(response: AdminApiResponse<unknown>, data: T[]): AdminPagedResult<T> {
+    const pagination = response.pagination;
+
+    return {
+      data,
+      total: pagination?.total ?? data.length,
+      page: pagination?.page ?? 1,
+      limit: pagination?.limit ?? data.length,
+      totalPages: pagination?.totalPages ?? 1
+    };
+  }
+
+  private fromUserApi(user: AdminUserApiModel): AdminManagedUser {
+    return {
+      id: user.id || user._id || '',
+      fullName: user.fullName || user.username || 'Unnamed user',
+      username: user.username,
+      email: user.email || '',
+      role: user.role || '',
+      status: user.status || 'Active'
+    };
+  }
+
+  private fromLogApi(log: AdminLogApiModel): AdminLogEntry {
+    return {
+      id: log.id || log._id || '',
+      userId: this.toId(log.userId),
+      adminId: this.toId(log.adminId),
+      timestamp: log.timestamp || '',
+      action: log.action || '',
+      status: log.status
+    };
+  }
+
+  private toId(value?: string | { _id?: string }): string | undefined {
+    return typeof value === 'string' ? value : value?._id;
+  }
+
+  private headers(): HttpHeaders {
+    const token =
+      typeof localStorage === 'undefined'
+        ? ''
+        : localStorage.getItem('token');
+
+    return new HttpHeaders(
+      token
+        ? { Authorization: `Bearer ${token}` }
+        : {}
+    );
   }
 }
