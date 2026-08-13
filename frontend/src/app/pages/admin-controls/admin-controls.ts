@@ -251,7 +251,7 @@ export class AdminControls implements OnInit {
   suspendUser(user: AdminManagedUser): void {
     this.confirm({
       title: 'Suspend User?',
-      message: 'This will prevent the user from accessing the platform.',
+      message: "This will suspend the user's account.",
       confirmLabel: 'Suspend User',
       confirmIcon: 'person_off',
       destructive: true
@@ -261,7 +261,7 @@ export class AdminControls implements OnInit {
   activateUser(user: AdminManagedUser): void {
     this.confirm({
       title: 'Activate User?',
-      message: "This will restore the user's access.",
+      message: "This will restore the user's account access.",
       confirmLabel: 'Activate User',
       confirmIcon: 'person_check'
     }, () => this.updateUserStatus(user, 'Active'));
@@ -320,6 +320,10 @@ export class AdminControls implements OnInit {
     ].filter(Boolean).join(' - ');
   }
 
+  isUpdatingUser(user: AdminManagedUser): boolean {
+    return this.updatingUserId === user.id;
+  }
+
   private updateUserStatus(user: AdminManagedUser, status: AdminUserStatus): void {
     if (this.updatingUserId) {
       return;
@@ -332,11 +336,18 @@ export class AdminControls implements OnInit {
 
     request.subscribe({
       next: (updatedUser) => {
+        const resolvedUser: AdminManagedUser = updatedUser?.id
+          ? updatedUser
+          : { ...user, status };
+
         this.users = this.users.map((item) =>
-          item.id === updatedUser.id ? updatedUser : item
+          item.id === user.id ? resolvedUser : item
         );
         this.updatingUserId = '';
-        this.snackBar.open(`User ${status.toLowerCase()} successfully.`, 'Close', { duration: 3500 });
+        const message = status === 'Suspended'
+          ? 'User suspended successfully.'
+          : 'User activated successfully.';
+        this.snackBar.open(message, 'Close', { duration: 3500 });
         if (this.logsLoaded) {
           this.loadLogs();
         }

@@ -1,7 +1,46 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
+
+@Component({
+  selector: 'app-suspended-account-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatDialogModule],
+  template: `
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+    <mat-dialog-content>
+      <p>{{ data.message }}</p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-flat-button mat-dialog-close>OK</button>
+    </mat-dialog-actions>
+  `,
+  styles: [`
+    :host {
+      display: block;
+      color: var(--wz-text-primary);
+    }
+
+    p {
+      margin: 0;
+      color: var(--wz-text-secondary);
+      line-height: 1.5;
+    }
+
+    button {
+      background: var(--wz-primary) !important;
+      color: var(--wz-text-on-primary) !important;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+  `]
+})
+export class SuspendedAccountDialog {
+  readonly data = inject<{ title: string; message: string }>(MAT_DIALOG_DATA);
+}
 
 @Component({
   selector: 'app-login',
@@ -13,6 +52,7 @@ export class LoginComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly loginForm = this.formBuilder.nonNullable.group({
     username: ['', [Validators.required]],
@@ -56,23 +96,44 @@ export class LoginComponent {
         password
       });
 
+      if (this.isSuspendedResponse(response.message) || response.user?.status === 'Suspended') {
+        this.showSuspendedAccountDialog();
+        return;
+      }
+
       this.authService.saveAuthSession(response);
 
-if (response.user) {
-  this.authService.saveUser(response.user);
-}
+      if (response.user) {
+        this.authService.saveUser(response.user);
+      }
 
-await this.router.navigate(['/dashboard']);
+      await this.router.navigate(['/dashboard']);
     } catch (error) {
       this.errorMessage =
         error instanceof Error ? error.message : 'Login failed';
 
-      alert(this.errorMessage);
+      if (this.isSuspendedResponse(this.errorMessage)) {
+        this.showSuspendedAccountDialog();
+      }
     } finally {
       this.isSubmitting = false;
     }
   }
 
-  
+  private isSuspendedResponse(message: string): boolean {
+    return message.toLowerCase().includes('suspended');
+  }
+
+  private showSuspendedAccountDialog(): void {
+    this.authService.clearSession();
+    this.errorMessage = 'Your account has been suspended by an administrator. Please contact the administrator for assistance.';
+    this.dialog.open(SuspendedAccountDialog, {
+      width: '420px',
+      data: {
+        title: 'Account Suspended',
+        message: this.errorMessage
+      }
+    });
+  }
 }
 
