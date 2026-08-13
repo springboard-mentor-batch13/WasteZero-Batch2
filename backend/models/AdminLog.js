@@ -14,12 +14,23 @@ const adminLogSchema = new mongoose.Schema(
       required: [true, 'User ID is required'],
     },
 
+    adminId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+
     timestamp: {
       type: Date,
       default: Date.now,
     },
+  },
+  {
+    collection: 'AdminLogs',
   }
 );
 
-module.exports = mongoose.model('AdminLog', adminLogSchema, 'AdminLogs');
-console.log('AdminLog model loaded:', mongoose.model('AdminLog'));
+adminLogSchema.index({ timestamp: -1 });
+adminLogSchema.index({ action: 1 });
+adminLogSchema.index({ userId: 1 });
+
+module.exports = mongoose.model('AdminLog', adminLogSchema);

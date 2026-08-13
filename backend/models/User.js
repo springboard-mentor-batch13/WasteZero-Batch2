@@ -40,7 +40,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['Active', 'Suspended'],
       default: 'Active',
-},
+    },
 
     // Existing profile location field
     // Kept for backward compatibility with Milestones 1 and 2
@@ -64,15 +64,20 @@ const userSchema = new mongoose.Schema(
     },
 
     // Service areas covered by NGO
-latitude: {
-  type: Number,
-  default: null,
-},
+    serviceAreas: {
+      type: [String],
+      default: [],
+    },
 
-longitude: {
-  type: Number,
-  default: null,
-},
+    latitude: {
+      type: Number,
+      default: null,
+    },
+
+    longitude: {
+      type: Number,
+      default: null,
+    },
 
     // Existing skills field
     skills: {
@@ -114,13 +119,14 @@ longitude: {
   }
 );
 
-// Milestone 3 - supports volunteer geographic matching
 // Milestone 3 - supports volunteer and pickup matching
 userSchema.index({
   role: 1,
+  status: 1,
   state: 1,
   city: 1,
   latitude: 1,
   longitude: 1,
 });
+
 module.exports = mongoose.model('User', userSchema, 'Users');

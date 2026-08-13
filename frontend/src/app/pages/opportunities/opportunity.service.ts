@@ -11,6 +11,12 @@ interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data: T;
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 interface OpportunityApiModel {
@@ -53,6 +59,21 @@ export interface AdminDashboardStats {
   totalOpportunities: number;
   adminOpportunities: number;
   ngoOpportunities: number;
+}
+
+export interface OpportunityPaginationQuery {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: OpportunityStatus | '';
+}
+
+export interface OpportunityPagedResult {
+  data: Opportunity[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 @Injectable({
@@ -124,6 +145,63 @@ export class OpportunityService {
             this.fromApi(opportunity)
           )
         )
+      );
+  }
+
+
+  /* =====================================================
+     GET PAGED OPPORTUNITIES
+  ===================================================== */
+
+  getPaged(
+    query: OpportunityPaginationQuery
+  ): Observable<OpportunityPagedResult> {
+
+    let params =
+      new HttpParams()
+        .set('page', String(query.page))
+        .set('limit', String(query.limit));
+
+    if (query.search?.trim()) {
+      params = params.set('search', query.search.trim());
+    }
+
+    if (query.status) {
+      params = params.set('status', query.status);
+    }
+
+    return this.http
+      .get<ApiResponse<OpportunityApiModel[]>>(
+        this.apiUrl,
+        {
+          headers: this.headers(),
+          params
+        }
+      )
+      .pipe(
+        map((response) => {
+
+          const data =
+            response.data.map((opportunity) =>
+              this.fromApi(opportunity)
+            );
+
+          return {
+            data,
+            total:
+              response.pagination?.total ??
+              data.length,
+            page:
+              response.pagination?.page ??
+              query.page,
+            limit:
+              response.pagination?.limit ??
+              query.limit,
+            totalPages:
+              response.pagination?.totalPages ??
+              1
+          };
+        })
       );
   }
 

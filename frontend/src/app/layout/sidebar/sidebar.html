@@ -24,12 +24,20 @@
             [routerLink]="item.route"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: item.exact || false }">
-            <i class="bi" [ngClass]="item.icon"></i>
+            @if (item.materialIcon) {
+              <mat-icon>{{ item.materialIcon }}</mat-icon>
+            } @else {
+              <i class="bi" [ngClass]="item.icon"></i>
+            }
             {{ item.label }}
           </li>
         } @else {
           <li class="menu-item-static">
-            <i class="bi" [ngClass]="item.icon"></i>
+            @if (item.materialIcon) {
+              <mat-icon>{{ item.materialIcon }}</mat-icon>
+            } @else {
+              <i class="bi" [ngClass]="item.icon"></i>
+            }
             {{ item.label }}
           </li>
         }
@@ -42,12 +50,20 @@
       @for (item of settingsMenu; track item.label) {
         @if (item.route) {
           <li [routerLink]="item.route" routerLinkActive="active">
-            <i class="bi" [ngClass]="item.icon"></i>
+            @if (item.materialIcon) {
+              <mat-icon>{{ item.materialIcon }}</mat-icon>
+            } @else {
+              <i class="bi" [ngClass]="item.icon"></i>
+            }
             {{ item.label }}
           </li>
         } @else {
           <li class="menu-item-static">
-            <i class="bi" [ngClass]="item.icon"></i>
+            @if (item.materialIcon) {
+              <mat-icon>{{ item.materialIcon }}</mat-icon>
+            } @else {
+              <i class="bi" [ngClass]="item.icon"></i>
+            }
             {{ item.label }}
           </li>
         }

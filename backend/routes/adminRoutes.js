@@ -4,6 +4,9 @@ const router = express.Router();
 
 const {
     getAdminDashboardStats,
+    getAdminUsers,
+    suspendUser,
+    activateUser,
     updateUserStatus,
     getAdminLogs,
     removeOpportunity
@@ -17,7 +20,6 @@ const {
     authorizeRoles
 } = require('../middleware/roleMiddleware');
 
-
 // Admin dashboard statistics
 router.get(
     '/dashboard/stats',
@@ -26,28 +28,46 @@ router.get(
     getAdminDashboardStats
 );
 
-// Suspend or activate user
-router.patch(
-  '/users/:id/status',
-  protect,
-  authorizeRoles('Admin'),
-  updateUserStatus
-);
-
-// Admin logs
 router.get(
-  '/logs',
-  protect,
-  authorizeRoles('Admin'),
-  getAdminLogs
+    '/users',
+    protect,
+    authorizeRoles('Admin'),
+    getAdminUsers
 );
 
-// Remove opportunity
 router.patch(
-  '/opportunities/:id/remove',
-  protect,
-  authorizeRoles('Admin'),
-  removeOpportunity
+    '/users/:id/suspend',
+    protect,
+    authorizeRoles('Admin'),
+    suspendUser
+);
+
+router.patch(
+    '/users/:id/activate',
+    protect,
+    authorizeRoles('Admin'),
+    activateUser
+);
+
+router.patch(
+    '/users/:id/status',
+    protect,
+    authorizeRoles('Admin'),
+    updateUserStatus
+);
+
+router.get(
+    '/logs',
+    protect,
+    authorizeRoles('Admin'),
+    getAdminLogs
+);
+
+router.patch(
+    '/opportunities/:id/remove',
+    protect,
+    authorizeRoles('Admin'),
+    removeOpportunity
 );
 
 module.exports = router;

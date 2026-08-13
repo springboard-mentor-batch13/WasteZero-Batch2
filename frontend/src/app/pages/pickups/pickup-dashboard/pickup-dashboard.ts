@@ -27,11 +27,7 @@ import { ProofUploadDialogComponent } from './proof-upload-dialog/proof-upload-d
     MatSnackBarModule,
     MatDialogModule,
     MatMenuModule,
-    MatDividerModule,
-    PickupActionDialogComponent,
-    PickupDetailDialogComponent,
-    ProofUploadDialogComponent,
-    PickupIssueDialogComponent
+    MatDividerModule
   ],
   templateUrl: './pickup-dashboard.html',
   styleUrl: './pickup-dashboard.css'

@@ -19,6 +19,7 @@ import { OpportunityDetail } from './pages/opportunities/opportunity-detail/oppo
 import { opportunityManagerGuard } from './core/guards/opportunity-manager-guard';
 import { ApplicationsComponent } from './pages/applications/admin-applications';
 import { adminGuard } from './core/guards/admin-guard';
+import { AdminControls } from './pages/admin-controls/admin-controls';
 
 import { Messages } from './pages/messages/messages';
 import { NgoPickupRequests } from './pages/pickups/ngo-pickup-requests/ngo-pickup-requests';
@@ -123,6 +124,12 @@ export const routes: Routes = [
     component: ApplicationsComponent,
     canActivate: [adminGuard],
     title: 'Applications | WasteZero'
+  },
+  {
+    path: 'admin/controls',
+    component: AdminControls,
+    canActivate: [adminGuard],
+    title: 'Administrative Controls | WasteZero'
   },
 
 {

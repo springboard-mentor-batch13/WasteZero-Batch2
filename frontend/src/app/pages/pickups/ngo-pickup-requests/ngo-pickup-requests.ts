@@ -202,7 +202,8 @@ export class NgoPickupRequests implements OnInit {
 
         const matchesWasteType =
           this.selectedWasteType === 'All' ||
-          request.wasteType === this.selectedWasteType;
+          this.normalizeWasteType(request.wasteType) ===
+            this.normalizeWasteType(this.selectedWasteType);
 
 
         const volunteerName =
@@ -497,6 +498,23 @@ export class NgoPickupRequests implements OnInit {
         duration: 3500
       }
     );
+  }
+
+
+  // ============================================================
+  // NORMALIZE WASTE TYPE FILTER VALUES
+  // ============================================================
+
+  private normalizeWasteType(
+    wasteType: string
+  ): string {
+
+    return wasteType
+      .toLowerCase()
+      .replace(/\bwaste\b/g, '')
+      .replace(/\brecyclables\b/g, '')
+      .replace(/[^a-z0-9]/g, '')
+      .trim();
   }
 
 }
