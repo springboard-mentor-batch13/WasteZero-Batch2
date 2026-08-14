@@ -211,7 +211,7 @@ const getAllOpportunities = async (req, res) => {
     if (hasPagination || search.trim() || status) {
       const [opportunities, total] = await Promise.all([
         Opportunity.find(filter)
-          .sort({ createdAt: -1 })
+          .sort({ createdAt: -1, _id: -1 })
           .skip(skip)
           .limit(limit)
           .lean(),

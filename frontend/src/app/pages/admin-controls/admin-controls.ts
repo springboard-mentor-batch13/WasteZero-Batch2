@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -14,6 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
+import { Subscription } from 'rxjs';
 
 import { Opportunity, OpportunityStatus } from '../opportunities/opportunity.model';
 import {
@@ -47,7 +48,7 @@ import { AdminConfirmDialog, AdminConfirmDialogData } from './admin-confirm-dial
   templateUrl: './admin-controls.html',
   styleUrl: './admin-controls.css'
 })
-export class AdminControls implements OnInit {
+export class AdminControls implements OnInit, OnDestroy {
   private readonly adminControlsService = inject(AdminControlsService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
@@ -76,6 +77,9 @@ export class AdminControls implements OnInit {
   updatingUserId = '';
   removingOpportunityId = '';
   private logsLoaded = false;
+  private usersRequest?: Subscription;
+  private opportunitiesRequest?: Subscription;
+  private logsRequest?: Subscription;
 
   userPageIndex = 0;
   userPageSize = 10;
@@ -98,6 +102,12 @@ export class AdminControls implements OnInit {
   ngOnInit(): void {
     this.loadUsers();
     this.loadOpportunities();
+  }
+
+  ngOnDestroy(): void {
+    this.usersRequest?.unsubscribe();
+    this.opportunitiesRequest?.unsubscribe();
+    this.logsRequest?.unsubscribe();
   }
 
   onTabIndexChange(index: number): void {
@@ -135,6 +145,18 @@ export class AdminControls implements OnInit {
     return [...new Set(this.logs.map((log) => log.action).filter(Boolean))].sort();
   }
 
+  trackByUserId(_index: number, user: AdminManagedUser): string {
+    return user.id;
+  }
+
+  trackByOpportunityId(_index: number, opportunity: Opportunity): string {
+    return opportunity.id;
+  }
+
+  trackByLogId(_index: number, log: AdminLogEntry): string {
+    return log.id;
+  }
+
   onUserFiltersChanged(): void {
     this.userPageIndex = 0;
     this.loadUsers();
@@ -169,10 +191,11 @@ export class AdminControls implements OnInit {
   }
 
   loadUsers(): void {
+    this.usersRequest?.unsubscribe();
     this.usersLoading = true;
     this.usersError = '';
 
-    this.adminControlsService.getUsers({
+    this.usersRequest = this.adminControlsService.getUsers({
       page: this.userPageIndex + 1,
       limit: this.userPageSize,
       search: this.userSearchText,
@@ -196,10 +219,11 @@ export class AdminControls implements OnInit {
   }
 
   loadOpportunities(): void {
+    this.opportunitiesRequest?.unsubscribe();
     this.opportunitiesLoading = true;
     this.opportunitiesError = '';
 
-    this.adminControlsService.getOpportunities({
+    this.opportunitiesRequest = this.adminControlsService.getOpportunities({
       page: this.opportunityPageIndex + 1,
       limit: this.opportunityPageSize,
       search: this.opportunitySearchText,
@@ -222,11 +246,12 @@ export class AdminControls implements OnInit {
   }
 
   loadLogs(): void {
+    this.logsRequest?.unsubscribe();
     this.logsLoading = true;
     this.logsError = '';
     this.logsLoaded = true;
 
-    this.adminControlsService.getLogs({
+    this.logsRequest = this.adminControlsService.getLogs({
       page: this.logPageIndex + 1,
       limit: this.logPageSize,
       search: this.logSearchText,

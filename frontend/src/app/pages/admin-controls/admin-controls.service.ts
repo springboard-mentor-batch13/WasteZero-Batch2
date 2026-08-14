@@ -101,7 +101,7 @@ export class AdminControlsService {
       .pipe(
         map((response) => this.toPagedResult(
           response,
-          (response.data || []).map((user) => this.fromUserApi(user))
+          this.uniqueById((response.data || []).map((user) => this.fromUserApi(user)))
         ))
       );
   }
@@ -127,7 +127,12 @@ export class AdminControlsService {
   }
 
   getOpportunities(query: AdminOpportunityPaginationQuery): Observable<AdminPagedResult<Opportunity>> {
-    return this.opportunityService.getPaged(query);
+    return this.opportunityService.getPaged(query).pipe(
+      map((result) => ({
+        ...result,
+        data: this.uniqueById(result.data)
+      }))
+    );
   }
 
   removeOpportunity(opportunityId: string): Observable<void> {
@@ -146,7 +151,7 @@ export class AdminControlsService {
       .pipe(
         map((response) => this.toPagedResult(
           response,
-          (response.data || []).map((log) => this.fromLogApi(log))
+          this.uniqueById((response.data || []).map((log) => this.fromLogApi(log)))
         ))
       );
   }
@@ -185,6 +190,23 @@ export class AdminControlsService {
       limit: pagination?.limit ?? data.length,
       totalPages: pagination?.totalPages ?? 1
     };
+  }
+
+  private uniqueById<T extends { id: string }>(items: T[]): T[] {
+    const seen = new Set<string>();
+
+    return items.filter((item) => {
+      if (!item.id) {
+        return true;
+      }
+
+      if (seen.has(item.id)) {
+        return false;
+      }
+
+      seen.add(item.id);
+      return true;
+    });
   }
 
   private fromUserApi(user: AdminUserApiModel): AdminManagedUser {
