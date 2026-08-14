@@ -64,7 +64,7 @@
         } @else {
           <mat-card class="table-card">
             <div class="table-wrap">
-              <table mat-table [dataSource]="filteredUsers">
+              <table mat-table [dataSource]="filteredUsers" [trackBy]="trackByUserId">
                 <ng-container matColumnDef="name">
                   <th mat-header-cell *matHeaderCellDef>User Name</th>
                   <td mat-cell *matCellDef="let user">{{ user.fullName }}</td>
@@ -171,7 +171,7 @@
         } @else {
           <mat-card class="table-card">
             <div class="table-wrap">
-              <table mat-table [dataSource]="filteredOpportunities">
+              <table mat-table [dataSource]="filteredOpportunities" [trackBy]="trackByOpportunityId">
                 <ng-container matColumnDef="title">
                   <th mat-header-cell *matHeaderCellDef>Opportunity Title</th>
                   <td mat-cell *matCellDef="let opportunity">{{ opportunity.title }}</td>
@@ -271,7 +271,7 @@
         } @else {
           <mat-card class="table-card">
             <div class="table-wrap">
-              <table mat-table [dataSource]="filteredLogs">
+              <table mat-table [dataSource]="filteredLogs" [trackBy]="trackByLogId">
                 <ng-container matColumnDef="timestamp">
                   <th mat-header-cell *matHeaderCellDef>Timestamp</th>
                   <td mat-cell *matCellDef="let log">{{ log.timestamp | date:'medium' }}</td>

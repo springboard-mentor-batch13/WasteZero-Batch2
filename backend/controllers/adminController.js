@@ -71,7 +71,7 @@ const getAdminUsers = async (req, res) => {
         const [users, total] = await Promise.all([
             User.find(filter)
                 .select('_id fullName username email role status createdAt updatedAt')
-                .sort({ createdAt: -1 })
+                .sort({ createdAt: -1, _id: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
@@ -175,7 +175,7 @@ const getAdminLogs = async (req, res) => {
         const [logs, total] = await Promise.all([
             AdminLog.find(filter)
                 .populate('userId', 'fullName username role')
-                .sort({ timestamp: -1 })
+                .sort({ timestamp: -1, _id: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
