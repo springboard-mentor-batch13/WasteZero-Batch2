@@ -51,6 +51,7 @@ export interface AuthResponse {
     username: string;
     email: string;
     role: string;
+    status?: string;
     location?: string;
     skills?: string[];
   };

@@ -163,9 +163,20 @@
 
             </div>
 
+            @if (errorMessage) {
+              <div
+                class="rounded-xl border border-red-300/50 bg-red-950/55 px-4 py-3 text-sm font-semibold text-red-100"
+                role="alert"
+                aria-live="polite"
+              >
+                {{ errorMessage }}
+              </div>
+            }
+
             <!-- Login Button -->
             <button
               type="submit"
+              [disabled]="isSubmitting"
               class="w-full rounded-xl
                      bg-emerald-500
                      py-3
@@ -173,9 +184,12 @@
                      font-semibold
                      text-white
                      transition
-                     hover:bg-emerald-600"
+                     hover:bg-emerald-600
+                     disabled:cursor-not-allowed
+                     disabled:bg-emerald-800
+                     disabled:text-white/70"
             >
-              Login
+              {{ isSubmitting ? 'Signing in...' : 'Login' }}
             </button>
 
           </form>

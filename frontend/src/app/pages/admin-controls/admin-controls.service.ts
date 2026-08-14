@@ -52,7 +52,7 @@ export interface AdminPagedResult<T> {
 interface AdminApiResponse<T> {
   success: boolean;
   message?: string;
-  data: T;
+  data?: T;
   pagination?: {
     total: number;
     page: number;
@@ -101,29 +101,29 @@ export class AdminControlsService {
       .pipe(
         map((response) => this.toPagedResult(
           response,
-          response.data.map((user) => this.fromUserApi(user))
+          (response.data || []).map((user) => this.fromUserApi(user))
         ))
       );
   }
 
-  suspendUser(userId: string): Observable<AdminManagedUser> {
+  suspendUser(userId: string): Observable<AdminManagedUser | null> {
     return this.http
       .patch<AdminApiResponse<AdminUserApiModel>>(
         `${this.adminApiUrl}/users/${userId}/suspend`,
         {},
         { headers: this.headers() }
       )
-      .pipe(map((response) => this.fromUserApi(response.data)));
+      .pipe(map((response) => response.data ? this.fromUserApi(response.data) : null));
   }
 
-  activateUser(userId: string): Observable<AdminManagedUser> {
+  activateUser(userId: string): Observable<AdminManagedUser | null> {
     return this.http
       .patch<AdminApiResponse<AdminUserApiModel>>(
         `${this.adminApiUrl}/users/${userId}/activate`,
         {},
         { headers: this.headers() }
       )
-      .pipe(map((response) => this.fromUserApi(response.data)));
+      .pipe(map((response) => response.data ? this.fromUserApi(response.data) : null));
   }
 
   getOpportunities(query: AdminOpportunityPaginationQuery): Observable<AdminPagedResult<Opportunity>> {
@@ -146,7 +146,7 @@ export class AdminControlsService {
       .pipe(
         map((response) => this.toPagedResult(
           response,
-          response.data.map((log) => this.fromLogApi(log))
+          (response.data || []).map((log) => this.fromLogApi(log))
         ))
       );
   }
