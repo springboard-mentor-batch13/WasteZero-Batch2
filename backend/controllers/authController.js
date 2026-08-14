@@ -311,6 +311,14 @@ const loginUser = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
+    // Check if user is suspended
+     if (user.status === 'Suspended') {
+        return res.status(403).json({
+        success: false,
+        message: 'You are suspended!'
+  });
+}
+
     const token = generateToken(user);
 
     res.status(200).json({

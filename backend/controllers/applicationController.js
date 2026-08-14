@@ -31,6 +31,14 @@ const applyForOpportunity = async (req, res) => {
         const fullName = req.user.fullName;
         const email = req.user.email;
 
+        // Check if user is suspended
+        if (req.user.status === 'Suspended') {
+            return res.status(403).json({
+                success: false,
+                message: 'You are suspended!'
+            });
+        }
+
         if (!opportunityId) {
             return res.status(400).json({
                 success: false,
