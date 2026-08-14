@@ -26,6 +26,13 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'User not found' });
     }
 
+    if (req.user.status === 'Suspended') {
+     return res.status(403).json({
+    success: false,
+    message: 'You are suspended'
+  });
+}
+
     next();
   } catch (error) {
     return res.status(401).json({ success: false, message: 'Not authorized, invalid token' });
