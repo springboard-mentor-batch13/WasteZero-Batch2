@@ -1,3 +1,4 @@
+import { Reports } from './reports/reports';
 import { Routes } from '@angular/router';
 
 import { LoginComponent } from './auth/login/login.component';
@@ -124,6 +125,11 @@ export const routes: Routes = [
     component: ApplicationsComponent,
     canActivate: [adminGuard],
     title: 'Applications | WasteZero'
+  },
+  {
+    path: 'admin/reports',
+    component: Reports,
+    title: 'Reports & Analytics | WasteZero'
   },
   {
     path: 'admin/controls',
