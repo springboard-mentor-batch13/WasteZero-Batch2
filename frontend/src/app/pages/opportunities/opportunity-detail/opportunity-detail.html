@@ -100,8 +100,18 @@
                   {{ joinButtonText(item.id) }}
                 </button>
               }
-            </div>
-          }
+              <!-- YOUR NEW FEATURE -->
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="messageCreator(item)">
+      <mat-icon>chat</mat-icon>
+      Message
+    </button>
+
+  </div>
+}
+            
         </mat-card-content>
       </mat-card>
     </div>

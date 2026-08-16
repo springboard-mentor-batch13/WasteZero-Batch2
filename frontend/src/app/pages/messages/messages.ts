@@ -1,9 +1,14 @@
-import { Component, OnInit, ChangeDetectorRef,  ViewChild,ElementRef} from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessagesService } from './messages.service';
 import { SocketService } from '../../services/socket.service';
-
 
 @Component({
   selector: 'app-messages',
@@ -15,10 +20,10 @@ import { SocketService } from '../../services/socket.service';
 export class Messages implements OnInit {
 
   constructor(
-  private messageService: MessagesService,
-  private socketService: SocketService,
-  private cdr: ChangeDetectorRef
-) {}
+    private messageService: MessagesService,
+    private socketService: SocketService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   roles: any[] = [];
 
@@ -32,7 +37,7 @@ export class Messages implements OnInit {
   currentUserRole = '';
 
   @ViewChild('messagesContainer')
- messagesContainer!: ElementRef;
+  messagesContainer!: ElementRef;
 
   ngOnInit(): void {
 
@@ -56,273 +61,498 @@ export class Messages implements OnInit {
       }
     }
 
-    // Load users
+    // Connect socket
     this.socketService.connect();
 
-     this.registerSocketEvents();
+    // Register socket events
+    this.registerSocketEvents();
 
-     this.loadUsers();
-
-     this.roles.forEach((role: any) => {
-     role.members.forEach((member: any) => {
-     console.log(
-      member.username,
-      member._id,
-      member.online
-    );
-  });
-});
+    // Load users
+    this.loadUsers();
   }
+
 
   updateUserStatus(userId: string, online: boolean): void {
 
-  this.roles.forEach(role => {
+    this.roles.forEach(role => {
 
-    role.members.forEach((member: any) => {
+      role.members.forEach((member: any) => {
 
-      if (member._id === userId) {
+        if (member._id === userId) {
 
-        console.log('MATCH FOUND');
-        member.online = online;
+          console.log('MATCH FOUND');
 
-        if (this.selectedMember?._id === userId) {
-          this.selectedMember.online = online;
+          member.online = online;
+
+          if (this.selectedMember?._id === userId) {
+            this.selectedMember.online = online;
+          }
+
+          console.log('Member online value:', member.online);
+          console.log('Selected online:', this.selectedMember?.online);
         }
 
-        console.log('Member online value:', member.online);
-        console.log('Selected online:', this.selectedMember?.online);
+      });
+
+    });
+
+  }
+
+
+  // =========================
+  // LOAD USERS
+  // =========================
+
+  loadUsers(): void {
+
+    this.messageService.getUsersByRole().subscribe({
+
+      next: (data: any[]) => {
+
+        console.log('API Response:', data);
+
+        // Volunteer can message only Admin and NGO
+        if (this.currentUserRole === 'Volunteer') {
+          data = data.filter(role =>
+            role.role === 'Admin' || role.role === 'NGO'
+          );
+        }
+
+        // Admin should not see Admin role
+        if (this.currentUserRole === 'Admin') {
+          data = data.filter(role =>
+            role.role !== 'Admin'
+          );
+        }
+
+        // NGO should not see NGO role
+        if (this.currentUserRole === 'NGO') {
+          data = data.filter(role =>
+            role.role !== 'NGO'
+          );
+        }
+
+        this.roles = data;
+
+        this.cdr.detectChanges();
+
+
+        // =====================================================
+        // OPEN CHAT REQUESTED FROM AN OPPORTUNITY
+        // =====================================================
+
+        const lastChatUserId = localStorage.getItem('lastChatUser');
+
+        if (lastChatUserId) {
+
+          let targetMember: any = null;
+
+          // Find the opportunity creator inside Admin/NGO users
+          for (const role of this.roles) {
+
+            const member = role.members?.find(
+              (m: any) =>
+                String(m._id) === String(lastChatUserId)
+            );
+
+            if (member) {
+              targetMember = member;
+              break;
+            }
+
+          }
+
+
+          if (targetMember) {
+
+            console.log(
+              'Opening requested chat:',
+              targetMember
+            );
+
+            // IMPORTANT:
+            // Use targetMember, not member
+            this.selectedMember = targetMember;
+
+            localStorage.setItem(
+              'lastChatUser',
+              targetMember._id
+            );
+
+            // Immediately update UI
+            this.cdr.detectChanges();
+
+
+            // Load the specific conversation
+            this.messageService
+              .getConversation(targetMember._id)
+              .subscribe({
+
+                next: (res: any) => {
+
+                  this.selectedMember.messages =
+                    res.data || [];
+
+                  console.log(
+                    'Automatically loaded conversation:',
+                    this.selectedMember.messages
+                  );
+
+                  // Refresh UI
+                  this.cdr.detectChanges();
+
+                  // Mark messages as read
+                  this.markMessagesAsRead();
+
+                  // Scroll to latest message
+                  this.scrollToBottom();
+
+                },
+
+                error: (err) => {
+
+                  console.error(
+                    'Failed to load requested conversation:',
+                    err
+                  );
+
+                }
+
+              });
+
+
+            // Remove the temporary navigation value
+            localStorage.removeItem('lastChatUser');
+
+          } else {
+
+            console.warn(
+              'Requested chat user was not found:',
+              lastChatUserId
+            );
+
+            localStorage.removeItem('lastChatUser');
+          }
+
+        }
+
+
+        // =====================================================
+        // LOAD CONVERSATIONS FOR ALL USERS
+        // =====================================================
+
+        this.roles.forEach((role: any) => {
+
+          role.members.forEach((member: any) => {
+
+            this.messageService
+              .getConversation(member._id)
+              .subscribe({
+
+                next: (res: any) => {
+
+                  console.log(
+                    member.username,
+                    res.data
+                  );
+
+                  member.messages =
+                    res.data || [];
+
+
+                  // Sort users by latest message
+                  role.members.sort(
+                    (a: any, b: any) => {
+
+                      const aTime =
+                        a.messages?.length
+                          ? new Date(
+                              a.messages[
+                                a.messages.length - 1
+                              ].createdAt
+                            ).getTime()
+                          : 0;
+
+                      const bTime =
+                        b.messages?.length
+                          ? new Date(
+                              b.messages[
+                                b.messages.length - 1
+                              ].createdAt
+                            ).getTime()
+                          : 0;
+
+                      return bTime - aTime;
+                    }
+                  );
+
+                },
+
+                error: () => {
+
+                  member.messages = [];
+
+                }
+
+              });
+
+          });
+
+        });
+
+
+        console.log(
+          'Users by role:',
+          this.roles
+        );
+
+      },
+
+      error: (err) => {
+
+        console.error(
+          'Error loading users:',
+          err
+        );
 
       }
 
     });
 
-  });
-
-}
-
-  // =========================
-  // LOAD USERS
-  // =========================
-  loadUsers(): void {
-
-  this.messageService.getUsersByRole().subscribe({
-    next: (data: any[]) => {
-
-       console.log('API Response:', data);
-
-      // Volunteer can message only Admin and NGO
-      if (this.currentUserRole === 'Volunteer') {
-        data = data.filter(role =>
-          role.role === 'Admin' || role.role === 'NGO'
-        );
-      }
-
-      // Admin should not see Admin role
-      if (this.currentUserRole === 'Admin') {
-        data = data.filter(role =>
-          role.role !== 'Admin'
-        );
-      }
-
-      if (this.currentUserRole === 'NGO') {
-    data = data.filter(role => role.role !== 'NGO');
   }
-
-      //console.log('After Filter:', data);
-
-      this.roles = data;
-       this.cdr.detectChanges();
-
-     //console.log('Users by role:', this.roles);
-
-     
-      this.roles.forEach((role: any) => {
-        role.members.forEach((member: any) => {
-
-          this.messageService.getConversation(member._id).subscribe({
-            next: (res: any) => {
-
-              console.log(member.username, res.data);
-           member.messages = res.data || [];
-
-       role.members.sort((a: any, b: any) => {
-
-          const aTime = a.messages?.length
-            ? new Date(a.messages[a.messages.length - 1].createdAt).getTime()
-            : 0;
-
-          const bTime = b.messages?.length
-            ? new Date(b.messages[b.messages.length - 1].createdAt).getTime()
-            : 0;
-
-          return bTime - aTime;
-        });
-
-      },
-          
-            error: () => {
-              member.messages = [];
-            }
-          });
-
-        });
-      });
-
-      console.log('Users by role:', this.roles);
-    },
-
-    error: (err) => {
-      console.error('Error loading users:', err);
-    }
-  });
-}
-
 
 
   // =========================
   // SELECT MEMBER
   // =========================
+
   selectMember(member: any): void {
-     console.log('Selected Member:', member);
+
+    console.log(
+      'Selected Member:',
+      member
+    );
 
     this.selectedMember = member;
-     localStorage.setItem('lastChatUser', member._id);
 
-    this.messageService.getConversation(member._id).subscribe({
-      next: (res: any) => {
+    localStorage.setItem(
+      'lastChatUser',
+      member._id
+    );
 
-        this.selectedMember.messages = res.data || [];
+    // Immediately update chat panel
+    this.cdr.detectChanges();
 
-         member.messages = res.data || [];
 
-        console.log(
-          'Conversation:',
-          this.selectedMember.messages
-        );
+    this.messageService
+      .getConversation(member._id)
+      .subscribe({
 
-        // When user opens chat,
-        // received messages should become read.
-        this.markMessagesAsRead();
-        this.scrollToBottom();
-      },
+        next: (res: any) => {
 
-      error: (err) => {
-        console.error('Error loading conversation:', err);
-      }
-    });
+          this.selectedMember.messages =
+            res.data || [];
+
+          member.messages =
+            res.data || [];
+
+          console.log(
+            'Conversation:',
+            this.selectedMember.messages
+          );
+
+          // Force UI update
+          this.cdr.detectChanges();
+
+          // Mark messages as read
+          this.markMessagesAsRead();
+
+          // Scroll to bottom
+          this.scrollToBottom();
+
+        },
+
+        error: (err) => {
+
+          console.error(
+            'Error loading conversation:',
+            err
+          );
+
+        }
+
+      });
+
   }
+
 
   // =========================
   // TOGGLE ROLE
   // =========================
+
   toggleRole(roleName: string): void {
 
     this.expandedRole =
       this.expandedRole === roleName
         ? ''
         : roleName;
+
   }
 
- getUnreadCount(member: any): number {
 
-  console.log(member.username, member.messages);
+  getUnreadCount(member: any): number {
 
-  if (!member.messages) {
-    return 0;
+    console.log(
+      member.username,
+      member.messages
+    );
+
+    if (!member.messages) {
+      return 0;
+    }
+
+    const count =
+      member.messages.filter(
+        (message: any) =>
+          !this.isMyMessage(message) &&
+          message.status !== 'read'
+      ).length;
+
+    console.log(
+      'Unread Count:',
+      member.username,
+      count
+    );
+
+    return count;
+
   }
 
-  const count = member.messages.filter((message: any) =>
-
-    !this.isMyMessage(message) &&
-    message.status !== 'read'
-
-  ).length;
-
-  console.log('Unread Count:', member.username, count);
-
-  return count;
-}
 
   scrollToBottom(): void {
 
-  setTimeout(() => {
+    setTimeout(() => {
 
-    if (this.messagesContainer) {
+      if (this.messagesContainer) {
 
-      const element = this.messagesContainer.nativeElement;
-      element.scrollTop = element.scrollHeight;
+        const element =
+          this.messagesContainer.nativeElement;
 
-    }
+        element.scrollTop =
+          element.scrollHeight;
 
-  }, 100);
+      }
 
-}
-sendMessage(): void {
+    }, 100);
 
-  if (!this.selectedMember || !this.newMessage.trim()) {
-    return;
   }
 
-  const text = this.newMessage.trim();
 
-  // Input immediately clear karo
-  this.newMessage = '';
+  // =========================
+  // SEND MESSAGE
+  // =========================
 
-  this.messageService.sendMessage(this.selectedMember._id, text).subscribe({
+  sendMessage(): void {
 
-    next: () => {
+    if (
+      !this.selectedMember ||
+      !this.newMessage.trim()
+    ) {
+      return;
+    }
 
-      this.messageService.getConversation(this.selectedMember._id).subscribe({
+    const text =
+      this.newMessage.trim();
 
-        next: (res: any) => {
+    // Clear input immediately
+    this.newMessage = '';
 
-          const messages = res.data || [];
+    this.messageService
+      .sendMessage(
+        this.selectedMember._id,
+        text
+      )
+      .subscribe({
 
-          // Selected chat update
-          this.selectedMember.messages = [...messages];
+        next: () => {
 
-          // Left side member list bhi update
-          this.roles.forEach(role => {
-            role.members.forEach((member: any) => {
+          this.messageService
+            .getConversation(
+              this.selectedMember._id
+            )
+            .subscribe({
 
-              if (member._id === this.selectedMember._id) {
-                member.messages = [...messages];
+              next: (res: any) => {
+
+                const messages =
+                  res.data || [];
+
+                // Selected chat update
+                this.selectedMember.messages =
+                  [...messages];
+
+
+                // Left side member list update
+                this.roles.forEach(role => {
+
+                  role.members.forEach(
+                    (member: any) => {
+
+                      if (
+                        member._id ===
+                        this.selectedMember._id
+                      ) {
+
+                        member.messages =
+                          [...messages];
+
+                      }
+
+                    }
+                  );
+
+                });
+
+
+                // UI refresh
+                this.cdr.detectChanges();
+
+                // Scroll latest message
+                this.scrollToBottom();
+
+              },
+
+              error: (err) => {
+
+                console.error(err);
+
               }
 
             });
-          });
-
-          // UI refresh
-          this.cdr.detectChanges();
-
-          // Scroll latest message
-          this.scrollToBottom();
 
         },
 
         error: (err) => {
+
           console.error(err);
+
         }
 
       });
 
-    },
-
-    error: (err) => {
-      console.error(err);
-    }
-
-  });
+  }
 
 
-}
   // =========================
   // SEARCH
   // =========================
+
   getFilteredRoles(): any[] {
 
     const search =
-      this.searchText.trim().toLowerCase();
+      this.searchText
+        .trim()
+        .toLowerCase();
 
     if (!search) {
       return this.roles;
@@ -335,33 +565,47 @@ sendMessage(): void {
         // Search by role
         if (
           role.role &&
-          role.role.toLowerCase().includes(search)
+          role.role
+            .toLowerCase()
+            .includes(search)
         ) {
+
           return role;
+
         }
 
-        // Search by member username
+
+        // Search by username
         return {
+
           ...role,
 
-          members: (role.members || []).filter(
-            (member: any) =>
-              (member.username || '')
-                .toLowerCase()
-                .includes(search)
-          )
+          members:
+            (role.members || [])
+              .filter(
+                (member: any) =>
+                  (member.username || '')
+                    .toLowerCase()
+                    .includes(search)
+              )
+
         };
+
       })
 
-      .filter(role =>
-        role.members &&
-        role.members.length > 0
+      .filter(
+        role =>
+          role.members &&
+          role.members.length > 0
       );
+
   }
+
 
   // =========================
   // GET LAST MESSAGE
   // =========================
+
   getLastMessage(member: any): any {
 
     if (
@@ -369,17 +613,22 @@ sendMessage(): void {
       !member.messages ||
       member.messages.length === 0
     ) {
+
       return null;
+
     }
 
     return member.messages[
       member.messages.length - 1
     ];
+
   }
+
 
   // =========================
   // GET LAST MESSAGE TEXT
   // =========================
+
   getLastMessageText(member: any): string {
 
     const message =
@@ -395,11 +644,14 @@ sendMessage(): void {
       message.text ||
       ''
     );
+
   }
+
 
   // =========================
   // GET LAST MESSAGE TIME
   // =========================
+
   getLastMessageTime(member: any): string {
 
     const message =
@@ -418,21 +670,28 @@ sendMessage(): void {
       return '';
     }
 
-    const date = new Date(value);
+    const date =
+      new Date(value);
 
     if (isNaN(date.getTime())) {
       return String(value);
     }
 
-    return date.toLocaleTimeString([], {
-      hour: 'numeric',
-      minute: '2-digit'
-    });
+    return date.toLocaleTimeString(
+      [],
+      {
+        hour: 'numeric',
+        minute: '2-digit'
+      }
+    );
+
   }
+
 
   // =========================
   // CHECK CURRENT USER MESSAGE
   // =========================
+
   isMyMessage(message: any): boolean {
 
     const senderId =
@@ -443,25 +702,35 @@ sendMessage(): void {
 
     return String(senderId) ===
       String(this.currentUserId);
+
   }
+
 
   // =========================
   // ONLINE STATUS
   // =========================
- isMemberOnline(member: any): boolean {
 
-  console.log('Checking member:', member.username, member.online);
+  isMemberOnline(member: any): boolean {
 
-  return (
-    member?.online === true ||
-    member?.isOnline === true ||
-    member?.status === 'online'
-  );
-}
+    console.log(
+      'Checking member:',
+      member.username,
+      member.online
+    );
+
+    return (
+      member?.online === true ||
+      member?.isOnline === true ||
+      member?.status === 'online'
+    );
+
+  }
+
 
   // =========================
   // USER STATUS TEXT
   // =========================
+
   getMemberStatus(member: any): string {
 
     if (this.isMemberOnline(member)) {
@@ -473,23 +742,27 @@ sendMessage(): void {
     }
 
     return 'Offline';
+
   }
+
 
   // =========================
   // MESSAGE TICK
   // =========================
+
   getMessageTick(message: any): string {
 
     if (!this.isMyMessage(message)) {
       return '';
     }
 
-    const status = String(
-      message?.status ||
-      message?.messageStatus ||
-      message?.deliveryStatus ||
-      'sent'
-    ).toLowerCase();
+    const status =
+      String(
+        message?.status ||
+        message?.messageStatus ||
+        message?.deliveryStatus ||
+        'sent'
+      ).toLowerCase();
 
     switch (status) {
 
@@ -504,165 +777,262 @@ sendMessage(): void {
 
       default:
         return '✓';
+
     }
+
   }
+
 
   // =========================
   // CHECK BLUE TICK
   // =========================
+
   isMessageRead(message: any): boolean {
 
-    const status = String(
-      message?.status ||
-      message?.messageStatus ||
-      message?.deliveryStatus ||
-      ''
-    ).toLowerCase();
+    const status =
+      String(
+        message?.status ||
+        message?.messageStatus ||
+        message?.deliveryStatus ||
+        ''
+      ).toLowerCase();
 
     return (
       status === 'read' ||
       message?.isRead === true ||
       message?.read === true
     );
+
   }
+
+
+  // =========================
+  // SOCKET EVENTS
+  // =========================
+
+  registerSocketEvents(): void {
+
+    this.socketService
+      .onReceiveMessage(
+        (message: any) => {
+
+          console.log(
+            'Receive Message:',
+            message
+          );
+
+
+          this.roles.forEach(role => {
+
+            role.members.forEach(
+              (member: any) => {
+
+                const senderId =
+                  message.senderId?._id ||
+                  message.senderId;
+
+                if (
+                  member._id === senderId
+                ) {
+
+                  if (!member.messages) {
+                    member.messages = [];
+                  }
+
+                  member.messages.push(
+                    message
+                  );
+
+                }
+
+              }
+            );
+
+          });
+
+
+          if (
+            this.selectedMember &&
+            this.selectedMember._id ===
+              (
+                message.senderId?._id ||
+                message.senderId
+              )
+          ) {
+
+            if (
+              !this.selectedMember.messages
+            ) {
+
+              this.selectedMember.messages = [];
+
+            }
+
+            this.selectedMember.messages = [
+              ...this.selectedMember.messages,
+              message
+            ];
+
+            this.cdr.detectChanges();
+
+            this.scrollToBottom();
+
+            this.markMessagesAsRead();
+
+          }
+
+        }
+      );
+
+
+    this.socketService
+      .onUserOnline(
+        (data: any) => {
+
+          console.log(
+            'ONLINE',
+            data
+          );
+
+          this.updateUserStatus(
+            data.userId,
+            true
+          );
+
+        }
+      );
+
+
+    this.socketService
+      .onUserOffline(
+        (data: any) => {
+
+          console.log(
+            'OFFLINE',
+            data
+          );
+
+          this.updateUserStatus(
+            data.userId,
+            false
+          );
+
+        }
+      );
+
+
+    this.socketService
+      .onMessageDelivered(
+        (data: any) => {
+
+          console.log(
+            'Delivered',
+            data
+          );
+
+          this.updateMessageStatus(
+            data.messageId,
+            data.status
+          );
+
+        }
+      );
+
+
+    this.socketService
+      .onMessageRead(
+        (data: any) => {
+
+          console.log(
+            'Read',
+            data
+          );
+
+          this.updateMessageStatus(
+            data.messageId,
+            data.status
+          );
+
+        }
+      );
+
+  }
+
 
   // =========================
   // MARK AS READ
   // =========================
 
-  registerSocketEvents(): void {
+  markMessagesAsRead(): void {
 
-  this.socketService.onReceiveMessage((message: any) => {
+    if (!this.selectedMember) {
+      return;
+    }
 
-    console.log('Receive Message:', message);
+    this.selectedMember.messages
+      .forEach((message: any) => {
 
-    this.roles.forEach(role => {
+        if (
+          !this.isMyMessage(message) &&
+          message.status !== 'read'
+        ) {
 
-      role.members.forEach((member: any) => {
-
-        const senderId =
-          message.senderId?._id ||
-          message.senderId;
-
-        if (member._id === senderId) {
-
-          if (!member.messages) {
-            member.messages = [];
-          }
-
-          member.messages.push(message);
+          this.socketService
+            .markAsRead(
+              message._id
+            );
 
         }
 
       });
 
-    });
-
-    if (
-      this.selectedMember &&
-      (
-        this.selectedMember._id ===
-        (message.senderId?._id || message.senderId)
-      )
-    ) {
-
-      if (!this.selectedMember.messages) {
-        this.selectedMember.messages = [];
-      }
-
-      this.selectedMember.messages = [
-  ...this.selectedMember.messages,
-  message
-];
-
-this.cdr.detectChanges();
-this.scrollToBottom();
-
-      this.markMessagesAsRead();
-
-    }
-
-  });
-
-  this.socketService.onUserOnline((data: any) => {
-
-    console.log('ONLINE', data);
-
-    this.updateUserStatus(data.userId, true);
-
-  });
-
-  this.socketService.onUserOffline((data: any) => {
-
-    console.log('OFFLINE', data);
-
-    this.updateUserStatus(data.userId, false);
-
-  });
-
-  this.socketService.onMessageDelivered((data: any) => {
-
-    console.log('Delivered', data);
-
-    this.updateMessageStatus(
-      data.messageId,
-      data.status
-    );
-
-  });
-
-  this.socketService.onMessageRead((data: any) => {
-
-    console.log('Read', data);
-
-    this.updateMessageStatus(
-      data.messageId,
-      data.status
-    );
-
-  });
-
-}
-  // =========================
-// MARK AS READ
-// =========================
-markMessagesAsRead(): void {
-
-  if (!this.selectedMember) {
-    return;
   }
 
-  this.selectedMember.messages.forEach((message: any) => {
 
-    if (
-      !this.isMyMessage(message) &&
-      message.status !== 'read'
-    ) {
+  updateMessageStatus(
+    messageId: string,
+    status: string
+  ): void {
 
-      this.socketService.markAsRead(message._id);
+    this.roles.forEach(role => {
 
+      role.members.forEach(
+        (member: any) => {
+
+          if (!member.messages) {
+            return;
+          }
+
+          member.messages.forEach(
+            (msg: any) => {
+
+              if (
+                msg._id === messageId
+              ) {
+
+                msg.status = status;
+
+              }
+
+            }
+          );
+
+        }
+      );
+
+    });
+
+
+    if (!this.selectedMember) {
+      return;
     }
 
-  });
+    this.selectedMember.messages
+      .forEach((msg: any) => {
 
-}
-
-updateMessageStatus(
-  messageId: string,
-  status: string
-): void {
-
-  this.roles.forEach(role => {
-
-    role.members.forEach((member: any) => {
-
-      if (!member.messages) {
-        return;
-      }
-
-      member.messages.forEach((msg: any) => {
-
-        if (msg._id === messageId) {
+        if (
+          msg._id === messageId
+        ) {
 
           msg.status = status;
 
@@ -670,25 +1040,6 @@ updateMessageStatus(
 
       });
 
-    });
-
-  });
-
-  if (!this.selectedMember) {
-    return;
   }
-
-  this.selectedMember.messages.forEach((msg: any) => {
-
-    if (msg._id === messageId) {
-
-      msg.status = status;
-
-    }
-
-  });
-
-}
-
 
 }

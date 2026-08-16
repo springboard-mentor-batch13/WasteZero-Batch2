@@ -162,6 +162,30 @@ appliedOpportunityIds = new Set<string>();
     return 'Role unavailable';
   }
 
+  messageCreator(opportunity: Opportunity): void {
+  const postedBy = opportunity.postedBy;
+
+  const creatorId =
+    typeof postedBy === 'string'
+      ? postedBy
+      : postedBy?._id;
+
+  if (!creatorId) {
+    this.snackBar.open(
+      'Unable to identify the opportunity creator.',
+      'Close',
+      { duration: 3500 }
+    );
+    return;
+  }
+
+  // Tell the existing Messages page which user to open
+  localStorage.setItem('lastChatUser', creatorId);
+
+  // Open the existing messaging page
+  this.router.navigate(['/messages']);
+}
+
   canManageOpportunities(): boolean { return this.authService.canManageOpportunities(); }
 
   canManageSelectedOpportunity(): boolean {
