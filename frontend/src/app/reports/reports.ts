@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
+import {
+  ChartConfiguration,
+  ChartData
+} from 'chart.js';
+
 import {
   DashboardReport,
   OpportunityReport,
@@ -11,7 +20,7 @@ import {
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BaseChartDirective],
   templateUrl: './reports.html',
   styleUrl: './reports.css'
 })
@@ -26,6 +35,87 @@ export class Reports implements OnInit {
 
   loading = true;
   errorMessage = '';
+
+  // -----------------------------
+  // User Analytics - Doughnut Chart
+  // -----------------------------
+  userChartType: 'doughnut' = 'doughnut';
+
+  userChartData: ChartData<'doughnut'> = {
+    labels: [],
+    datasets: [
+      {
+        data: []
+      }
+    ]
+  };
+
+  userChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    }
+  };
+
+  // -----------------------------
+  // Opportunity Analytics - Bar Chart
+  // -----------------------------
+  opportunityChartType: 'bar' = 'bar';
+
+  opportunityChartData: ChartData<'bar'> = {
+    labels: [],
+    datasets: [
+      {
+        label: 'Opportunities',
+        data: []
+      }
+    ]
+  };
+
+  opportunityChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      }
+    }
+  };
+
+  // -----------------------------
+  // Volunteer Responses - Doughnut Chart
+  // -----------------------------
+  volunteerChartType: 'doughnut' = 'doughnut';
+
+  volunteerChartData: ChartData<'doughnut'> = {
+    labels: [],
+    datasets: [
+      {
+        data: []
+      }
+    ]
+  };
+
+  volunteerChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    }
+  };
 
   ngOnInit(): void {
     this.loadReports();
@@ -50,6 +140,7 @@ export class Reports implements OnInit {
     this.reportsService.getUserReport().subscribe({
       next: (data) => {
         this.usersReport = data;
+        this.updateUserChart(data);
       },
       error: (error) => {
         console.error('Failed to load user report:', error);
@@ -59,6 +150,7 @@ export class Reports implements OnInit {
     this.reportsService.getOpportunityReport().subscribe({
       next: (data) => {
         this.opportunitiesReport = data;
+        this.updateOpportunityChart(data);
       },
       error: (error) => {
         console.error('Failed to load opportunity report:', error);
@@ -68,11 +160,66 @@ export class Reports implements OnInit {
     this.reportsService.getVolunteerResponseReport().subscribe({
       next: (data) => {
         this.volunteerResponses = data;
+        this.updateVolunteerChart(data);
       },
       error: (error) => {
         console.error('Failed to load volunteer response report:', error);
       }
     });
+  }
+
+  private updateUserChart(data: UserReport[]): void {
+    this.userChartData = {
+      labels: data.map(item => item._id),
+      datasets: [
+        {
+          data: data.map(item => item.totalUsers)
+        }
+      ]
+    };
+  }
+
+  private updateOpportunityChart(data: OpportunityReport[]): void {
+    if (!data.length) {
+      this.opportunityChartData = {
+        labels: [],
+        datasets: [
+          {
+            label: 'Opportunities',
+            data: []
+          }
+        ]
+      };
+      return;
+    }
+
+    const opportunity = data[0];
+
+    this.opportunityChartData = {
+      labels: ['Open', 'Closed', 'In Progress', 'Removed'],
+      datasets: [
+        {
+          label: 'Opportunities',
+          data: [
+            opportunity.open,
+            opportunity.closed,
+            opportunity.inProgress,
+            opportunity.removed
+          ]
+        }
+      ]
+    };
+  }
+
+  private updateVolunteerChart(data: VolunteerResponseReport[]): void {
+    this.volunteerChartData = {
+      labels: data.map(item => item._id),
+      datasets: [
+        {
+          data: data.map(item => item.totalApplications)
+        }
+      ]
+    };
   }
 
   downloadUsersReport(): void {
