@@ -76,7 +76,7 @@ export class ReportsService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'http://localhost:5001/api/admin';
+  private readonly apiUrl = 'http://localhost:5000/api/admin';
 
   private headers(): HttpHeaders {
     const token =
