@@ -97,7 +97,7 @@ export class Sidebar implements OnInit {
           materialIcon: 'admin_panel_settings',
           route: '/admin/controls'
         },
-        { label: 'Reports / Analytics', icon: 'bi-bar-chart' },
+        { label: 'Reports / Analytics', icon: 'bi-bar-chart', route: '/admin/reports' },
        { label: 'Messages', icon: 'bi-chat-left-text', route: '/messages' },
         { label: 'Admin Panel', icon: 'bi-shield-lock' },
       ],

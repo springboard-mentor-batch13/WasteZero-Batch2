@@ -1,0 +1,130 @@
+.reports-page {
+    padding: 24px;
+}
+
+.reports-header {
+    margin-bottom: 30px;
+}
+
+.reports-header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.reports-header p {
+    margin-top: 8px;
+    color: #666;
+}
+
+.section {
+    margin-bottom: 32px;
+}
+
+.section h2 {
+    margin-bottom: 16px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+}
+
+.stat-card,
+.response-card {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.stat-card span {
+    font-size: 24px;
+}
+
+.stat-card h3 {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.stat-card strong {
+    font-size: 28px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.section-header p {
+    color: #666;
+}
+
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+
+.table-container {
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    font-weight: 600;
+}
+
+.response-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.response-card h3 {
+    margin: 0 0 12px;
+}
+
+.response-card strong {
+    font-size: 28px;
+}
+
+.response-card p {
+    color: #666;
+}
+
+.loading,
+.error {
+    padding: 20px;
+}
+
+.error {
+    color: #c62828;
+}
+
+@media (max-width: 900px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .response-grid {
+        grid-template-columns: 1fr;
+    }
+}
