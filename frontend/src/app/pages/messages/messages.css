@@ -115,7 +115,7 @@
 
 .chat-header {
   height: 72px;
-  background: #fff;
+  background: var(--wz-surface);
   border-bottom: 1px solid var(--wz-border);
   display: flex;
   align-items: center;
@@ -352,4 +352,799 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+/* ============================================================
+   MESSAGE REQUEST UI
+   ============================================================ */
+
+.message-request-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--wz-surface);
+  border-bottom: 1px solid var(--wz-border);
+  color: var(--wz-text-primary);
+}
+
+.message-request-info > i {
+  font-size: 25px;
+  color: var(--wz-primary);
+  margin-top: 2px;
+}
+
+.message-request-info strong {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+.message-request-info p {
+  margin: 0 0 12px;
+  color: var(--wz-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.request-button,
+.accept-button,
+.block-button,
+.unblock-button {
+  border: none;
+  border-radius: var(--wz-radius-md);
+  padding: 9px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.request-button,
+.accept-button {
+  background: var(--wz-primary);
+  color: var(--wz-text-on-primary);
+}
+
+.request-button:hover,
+.accept-button:hover {
+  background: var(--wz-primary-hover);
+}
+
+.block-button {
+  background: #ef4444;
+  color: #fff;
+}
+
+.block-button:hover {
+  background: #dc2626;
+}
+
+.unblock-button {
+  background: var(--wz-primary);
+  color: var(--wz-text-on-primary);
+  margin-top: 4px;
+}
+
+.request-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.message-request-info.pending {
+  background: var(--wz-surface);
+}
+
+.message-request-info.pending-sender {
+  background: var(--wz-surface);
+}
+
+.message-request-info.blocked {
+  background: var(--wz-surface);
+}
+
+.message-request-info.blocked > i {
+  color: #ef4444;
+}
+
+.request-error {
+  padding: 10px 18px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-bottom: 1px solid #fecaca;
+  font-size: 13px;
+}
+/* ============================================================
+   CONVERSATION STATE UI
+   ============================================================ */
+/* ============================================================
+   CONVERSATION STATE
+   ============================================================ */
+
+.conversation-state {
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  box-sizing: border-box;
+  color: var(--wz-text-primary);
+}
+
+.request-card {
+  max-width: 520px;
+  margin: auto;
+}
+
+
+/* ============================================================
+   STATE ICON
+   ============================================================ */
+
+.state-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.state-icon i {
+  font-size: 30px;
+}
+
+.secure-icon {
+  background: var(--wz-primary-hover);
+  color: var(--wz-primary);
+}
+
+.pending-icon {
+  background: var(--wz-primary-hover);
+  color: var(--wz-primary);
+}
+
+.error-icon,
+.blocked-icon {
+  background: rgba(220, 53, 69, 0.12);
+  color: #dc3545;
+}
+
+.loading-icon {
+  background: var(--wz-primary-hover);
+  color: var(--wz-primary);
+}
+
+
+/* ============================================================
+   LABEL
+   ============================================================ */
+
+.state-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--wz-primary);
+  margin-bottom: 8px;
+}
+
+.pending-label {
+  color: var(--wz-primary);
+}
+
+.blocked-label {
+  color: #dc3545;
+}
+
+
+/* ============================================================
+   HEADING
+   ============================================================ */
+
+.conversation-state h3 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 650;
+  color: var(--wz-text-primary);
+}
+
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
+
+.state-description {
+  max-width: 430px;
+  margin: 0 auto 18px;
+  color: var(--wz-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.state-description strong {
+  color: var(--wz-text-primary);
+}
+
+
+/* ============================================================
+   ENCRYPTION NOTICE
+   ============================================================ */
+
+.encryption-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 9px 14px;
+  margin: 4px 0 20px;
+
+  border-radius: 8px;
+
+  background: var(--wz-surface);
+  border: 1px solid var(--wz-border);
+
+  color: var(--wz-text-muted);
+  font-size: 12px;
+}
+
+.encryption-note i {
+  color: var(--wz-primary);
+}
+
+
+/* ============================================================
+   REQUEST STATUS
+   ============================================================ */
+
+.request-status-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  width: min(390px, 90%);
+  padding: 12px 16px;
+  margin: 4px 0 8px;
+
+  border: 1px solid var(--wz-border);
+  border-radius: 10px;
+
+  background: var(--wz-surface);
+  color: var(--wz-text-muted);
+
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.request-status-box i {
+  color: var(--wz-primary);
+}
+
+.incoming-request {
+  background: var(--wz-primary-hover);
+  border-color: var(--wz-border);
+}
+
+
+/* ============================================================
+   PRIMARY BUTTON
+   ============================================================ */
+
+.conversation-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-width: 190px;
+  padding: 12px 22px;
+
+  border: none;
+  border-radius: var(--wz-radius-md);
+
+  background: var(--wz-primary);
+  color: var(--wz-text-on-primary);
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.conversation-primary-button:hover {
+  background: var(--wz-primary-hover);
+  transform: translateY(-1px);
+}
+
+.conversation-primary-button:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* ============================================================
+   ACCEPT / BLOCK
+   ============================================================ */
+
+.request-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.accept-button,
+.block-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-width: 120px;
+  padding: 11px 20px;
+
+  border-radius: var(--wz-radius-md);
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.accept-button {
+  border: none;
+  background: var(--wz-primary);
+  color: var(--wz-text-on-primary);
+}
+
+.accept-button:hover {
+  background: var(--wz-primary-hover);
+}
+
+.block-button {
+  background: var(--wz-surface);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, .4);
+}
+
+.block-button:hover {
+  background: rgba(220, 53, 69, .08);
+}
+
+
+/* ============================================================
+   BLOCKED MESSAGE
+   ============================================================ */
+
+.blocked-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  max-width: 420px;
+  padding: 13px 16px;
+  margin: 4px 0;
+
+  border-radius: 9px;
+
+  background: rgba(220, 53, 69, .08);
+  border: 1px solid rgba(220, 53, 69, .25);
+
+  color: var(--wz-text-muted);
+
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.blocked-info-box i {
+  color: #dc3545;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.unblock-button {
+  background: var(--wz-surface);
+  color: var(--wz-primary);
+  border: 1px solid var(--wz-primary);
+}
+
+.unblock-button:hover {
+  background: var(--wz-primary-hover);
+}
+
+
+/* ============================================================
+   BUTTON LOADING
+   ============================================================ */
+
+.button-spinner {
+  width: 13px;
+  height: 13px;
+
+  border: 2px solid rgba(255, 255, 255, .4);
+  border-top-color: #fff;
+
+  border-radius: 50%;
+
+  animation: buttonSpin .7s linear infinite;
+}
+
+@keyframes buttonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ============================================================
+   STATE CARD
+   ============================================================ */
+
+.request-card {
+  max-width: 520px;
+  margin: auto;
+}
+
+
+/* ============================================================
+   ICON
+   ============================================================ */
+
+.state-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.state-icon i {
+  font-size: 30px;
+}
+
+
+/* Secure */
+
+.secure-icon {
+  background: #e8f7ee;
+  color: #168a45;
+}
+
+
+/* Pending */
+
+.pending-icon {
+  background: #fff7df;
+  color: #d79b00;
+}
+
+
+/* Error */
+
+.error-icon {
+  background: #feecec;
+  color: #dc3545;
+}
+
+
+/* Blocked */
+
+.blocked-icon {
+  background: #feecec;
+  color: #dc3545;
+}
+
+
+/* Loading */
+
+.loading-icon {
+  background: #eef5f1;
+  color: var(--wz-primary);
+}
+
+
+/* ============================================================
+   LABEL
+   ============================================================ */
+
+.state-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--wz-primary);
+  margin-bottom: 8px;
+}
+
+.pending-label {
+  color: #b77900;
+}
+
+.request-label {
+  color: var(--wz-primary);
+}
+
+.blocked-label {
+  color: #dc3545;
+}
+
+
+/* ============================================================
+   HEADING
+   ============================================================ */
+
+.conversation-state h3 {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 650;
+  color: var(--wz-text-primary);
+}
+
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
+
+.state-description {
+  max-width: 430px;
+  margin: 0 auto 18px;
+  color: var(--wz-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.state-description strong {
+  color: var(--wz-text-primary);
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   ENCRYPTION NOTICE
+   ============================================================ */
+
+.encryption-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 14px;
+  margin: 4px 0 20px;
+  border-radius: 8px;
+  background: #f1f8f4;
+  color: #5c7567;
+  font-size: 12px;
+}
+
+.encryption-note i {
+  color: var(--wz-primary);
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   STATUS BOX
+   ============================================================ */
+
+.request-status-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: min(390px, 90%);
+  padding: 12px 16px;
+  margin: 4px 0 8px;
+  border: 1px solid var(--wz-border);
+  border-radius: 10px;
+  background: var(--wz-surface);
+  color: var(--wz-text-muted);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.request-status-box i {
+  color: #d79b00;
+}
+
+.incoming-request {
+  background: #f4faf6;
+  border-color: #d8eadf;
+}
+
+.incoming-request i {
+  color: var(--wz-primary);
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.conversation-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 190px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 9px;
+  background: var(--wz-primary);
+  color: var(--wz-text-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.conversation-primary-button:hover {
+  background: var(--wz-primary-hover);
+  transform: translateY(-1px);
+}
+
+.conversation-primary-button:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* ============================================================
+   REQUEST ACTIONS
+   ============================================================ */
+
+.request-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+
+.accept-button,
+.block-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 120px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+
+.accept-button {
+  background: var(--wz-primary);
+  color: #fff;
+}
+
+.accept-button:hover {
+  background: var(--wz-primary-hover);
+  transform: translateY(-1px);
+}
+
+
+.block-button {
+  background: var(--wz-surface);
+  color: #dc3545;
+  border: 1px solid #f0b7bc;
+}
+
+.block-button:hover {
+  background: var(--wz-page-bg);
+  transform: translateY(-1px);
+}
+
+
+.accept-button:disabled,
+.block-button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* ============================================================
+   BLOCKED INFORMATION
+   ============================================================ */
+
+.blocked-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 420px;
+  padding: 13px 16px;
+  margin: 4px 0 4px;
+  border-radius: 9px;
+  background: var(--wz-page-bg);
+  border: 1px solid var(--wz-border);
+  color: var(--wz-text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+}
+  
+
+.blocked-info-box i {
+  color: #dc3545;
+  font-size: 16px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+
+.unblock-button {
+  background: var(--wz-surface);
+  color: var(--wz-primary);
+  border: 1px solid var(--wz-primary);
+  margin-top: 4px;
+}
+
+.unblock-button:hover {
+  background: var(--wz-primary-hover);
+  color: var(--wz-text-on-primary);
+}
+
+
+/* ============================================================
+   BUTTON LOADING
+   ============================================================ */
+
+.button-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: buttonSpin .7s linear infinite;
+}
+
+@keyframes buttonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+  .conversation-state {
+    padding: 28px 16px;
+  }
+
+  .conversation-state h3 {
+    font-size: 19px;
+  }
+
+  .request-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .accept-button,
+  .block-button {
+    width: 100%;
+    max-width: 260px;
+  }
+
 }

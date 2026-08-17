@@ -9,6 +9,7 @@ import { map } from 'rxjs/operators';
 export class MessagesService {
 
   private apiUrl = 'http://localhost:5000/api/messages';
+  private requestApiUrl = 'http://localhost:5000/api/message-requests';
 
   constructor(private http: HttpClient) {}
 
@@ -17,14 +18,16 @@ export class MessagesService {
 
     return {
       headers: new HttpHeaders({
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
       })
     };
   }
 
-  // =========================
-  // GET USERS BY ROLE
-  // =========================
+  // ============================================================
+  // USERS
+  // ============================================================
+
   getUsersByRole(): Observable<any[]> {
     return this.http
       .get<any>(`${this.apiUrl}/users`, this.getHeaders())
@@ -36,8 +39,8 @@ export class MessagesService {
             members: (res.data.admins || []).map((user: any) => ({
               ...user,
               _id: user._id,
-            fullName: user.fullName,
-            username: user.username || user.fullName,
+              fullName: user.fullName,
+              username: user.username || user.fullName,
               role: user.role,
               messages: user.messages || [],
               online: user.online ?? user.isOnline ?? false,
@@ -50,8 +53,8 @@ export class MessagesService {
             members: (res.data.ngos || []).map((user: any) => ({
               ...user,
               _id: user._id,
-             fullName: user.fullName,
-             username: user.username || user.fullName,
+              fullName: user.fullName,
+              username: user.username || user.fullName,
               role: user.role,
               messages: user.messages || [],
               online: user.online ?? user.isOnline ?? false,
@@ -64,8 +67,8 @@ export class MessagesService {
             members: (res.data.volunteers || []).map((user: any) => ({
               ...user,
               _id: user._id,
-             fullName: user.fullName,
-             username: user.username || user.fullName,
+              fullName: user.fullName,
+              username: user.username || user.fullName,
               role: user.role,
               messages: user.messages || [],
               online: user.online ?? user.isOnline ?? false,
@@ -77,9 +80,10 @@ export class MessagesService {
       );
   }
 
-  // =========================
+  // ============================================================
   // GET CONVERSATION
-  // =========================
+  // ============================================================
+
   getConversation(userId: string): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/conversation/${userId}`,
@@ -87,9 +91,10 @@ export class MessagesService {
     );
   }
 
-  // =========================
+  // ============================================================
   // SEND MESSAGE
-  // =========================
+  // ============================================================
+
   sendMessage(
     receiverId: string,
     content: string
@@ -101,6 +106,99 @@ export class MessagesService {
         receiverId,
         content
       },
+      this.getHeaders()
+    );
+  }
+
+  // ============================================================
+  // MESSAGE REQUEST - CHECK STATUS
+  // ============================================================
+
+  getConversationStatus(userId: string): Observable<any> {
+
+    return this.http.get<any>(
+      `${this.requestApiUrl}/status/${userId}`,
+      this.getHeaders()
+    );
+  }
+
+  // ============================================================
+  // MESSAGE REQUEST - CREATE
+  // ============================================================
+
+  createMessageRequest(
+    receiverId: string,
+    opportunityId?: string
+  ): Observable<any> {
+
+    const body: any = {
+      receiverId
+    };
+
+    if (opportunityId) {
+      body.opportunityId = opportunityId;
+    }
+
+    return this.http.post<any>(
+      `${this.requestApiUrl}/request`,
+      body,
+      this.getHeaders()
+    );
+  }
+
+  // ============================================================
+  // MESSAGE REQUEST - PENDING REQUESTS
+  // ============================================================
+
+  getPendingRequests(): Observable<any> {
+
+    return this.http.get<any>(
+      `${this.requestApiUrl}/pending`,
+      this.getHeaders()
+    );
+  }
+
+  // ============================================================
+  // ACCEPT REQUEST
+  // ============================================================
+
+  acceptMessageRequest(
+    requestId: string
+  ): Observable<any> {
+
+    return this.http.patch<any>(
+      `${this.requestApiUrl}/accept/${requestId}`,
+      {},
+      this.getHeaders()
+    );
+  }
+
+  // ============================================================
+  // BLOCK USER
+  // ============================================================
+
+  blockUser(
+    requestId: string
+  ): Observable<any> {
+
+    return this.http.patch<any>(
+      `${this.requestApiUrl}/block/${requestId}`,
+      {},
+      this.getHeaders()
+    );
+  }
+
+  // ============================================================
+  // UNBLOCK USER
+  // ============================================================
+
+  unblockUser(
+    requestId: string
+  ): Observable<any> {
+
+    return this.http.patch<any>(
+      `${this.requestApiUrl}/unblock/${requestId}`,
+      {},
       this.getHeaders()
     );
   }

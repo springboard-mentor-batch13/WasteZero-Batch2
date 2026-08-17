@@ -5,18 +5,24 @@
 
 <div class="messages-container">
 
-  <!-- ================= LEFT SIDE ================= -->
+  <!-- ========================================================= -->
+  <!-- LEFT SIDE - CHAT LIST -->
+  <!-- ========================================================= -->
+
   <div class="chat-list">
 
     <!-- Search -->
     <div class="search-box">
+
       <i class="bi bi-search search-icon"></i>
 
       <input
         type="text"
         placeholder="Search Role or Member"
         [(ngModel)]="searchText">
+
     </div>
+
 
     <!-- Roles -->
     @for (role of getFilteredRoles(); track role.role) {
@@ -24,10 +30,13 @@
       <h3
         class="role-title"
         (click)="toggleRole(role.role)">
+
         {{ role.role }}
+
       </h3>
 
-       @if (expandedRole === role.role || searchText.trim()) {
+
+      @if (expandedRole === role.role || searchText.trim()) {
 
         @for (member of role.members; track member._id) {
 
@@ -36,36 +45,41 @@
             [class.active]="selectedMember?._id === member._id"
             (click)="selectMember(member)">
 
-            <!-- Profile + online -->
+            <!-- Profile -->
             <div class="member-avatar">
 
               <i class="bi bi-person-circle member-icon"></i>
 
               @if (isMemberOnline(member)) {
+
                 <span class="online-dot"></span>
+
               }
 
             </div>
+
 
             <!-- Member details -->
             <div class="member-details">
 
               <div class="member-top">
 
-             <span class="member-name">
-                      {{ member.username }}
-             </span>
-
+                <span class="member-name">
+                  {{ member.username }}
+                </span>
 
 
                 <!-- Last message time -->
                 @if (getLastMessage(member)) {
+
                   <span class="chat-time">
                     {{ getLastMessageTime(member) }}
                   </span>
+
                 }
 
               </div>
+
 
               <!-- Last message -->
               <div class="last-message-row">
@@ -74,13 +88,15 @@
 
                   @if (getLastMessage(member)) {
 
-                    <!-- Tick for own last message -->
+                    <!-- Own message tick -->
                     @if (isMyMessage(getLastMessage(member))) {
 
                       <span
                         class="message-tick small"
                         [class.blue]="isMessageRead(getLastMessage(member))">
+
                         {{ getMessageTick(getLastMessage(member)) }}
+
                       </span>
 
                     }
@@ -89,17 +105,23 @@
 
                   } @else {
 
-                    <span class="no-message">Start a conversation</span>
+                    <span class="no-message">
+                      Start a conversation
+                    </span>
 
                   }
 
                 </span>
 
+
+                <!-- Unread count -->
                 @if (getUnreadCount(member) > 0) {
-  <span class="unread-badge">
-    {{ getUnreadCount(member) }}
-  </span>
-}
+
+                  <span class="unread-badge">
+                    {{ getUnreadCount(member) }}
+                  </span>
+
+                }
 
               </div>
 
@@ -116,10 +138,17 @@
   </div>
 
 
-  <!-- ================= RIGHT SIDE ================= -->
+  <!-- ========================================================= -->
+  <!-- RIGHT SIDE - CHAT WINDOW -->
+  <!-- ========================================================= -->
+
   <div class="chat-window">
 
-    <!-- Chat Header -->
+
+    <!-- ======================================================= -->
+    <!-- CHAT HEADER -->
+    <!-- ======================================================= -->
+
     <div class="chat-header">
 
       @if (selectedMember) {
@@ -131,16 +160,20 @@
             <i class="bi bi-person-circle"></i>
 
             @if (isMemberOnline(selectedMember)) {
+
               <span class="header-online-dot"></span>
+
             }
 
           </div>
 
+
           <div class="user-info">
 
-          <h2>
+            <h2>
               {{ selectedMember.username }}
-          </h2>
+            </h2>
+
 
             <span class="user-status">
 
@@ -171,83 +204,403 @@
     </div>
 
 
-    <!-- ================= CHAT BODY ================= -->
-    <div class="chat-body" #messagesContainer>
+    <!-- ======================================================= -->
+    <!-- CHAT BODY -->
+    <!-- ======================================================= -->
+
+    <div
+      class="chat-body"
+      #messagesContainer>
+
 
       @if (selectedMember) {
 
-        @if ((selectedMember?.messages ?? []).length > 0) {
 
-          @for (
-            message of (selectedMember?.messages ?? []);
-            track message._id
-          ) {
+        <!-- =================================================== -->
+<!-- LOADING -->
+<!-- =================================================== -->
 
-            <div
-              class="message"
-              [ngClass]="{
-                'sent': isMyMessage(message),
-                'received': !isMyMessage(message)
-              }">
+@if (requestLoading) {
 
-          <strong class="message-name">
-                 {{
-                          isMyMessage(message)  ? 'You' : (
+  <div class="conversation-state loading-state">
+
+    <div class="state-icon loading-icon">
+      <i class="bi bi-hourglass-split"></i>
+    </div>
+
+    <h3>Loading conversation</h3>
+
+    <p>Please wait while we check your conversation.</p>
+
+  </div>
+
+}
+
+
+<!-- =================================================== -->
+<!-- ERROR -->
+<!-- =================================================== -->
+
+@else if (requestError) {
+
+  <div class="conversation-state error-state">
+
+    <div class="state-icon error-icon">
+      <i class="bi bi-exclamation-circle"></i>
+    </div>
+
+    <h3>Unable to load conversation</h3>
+
+    <p>{{ requestError }}</p>
+
+  </div>
+
+}
+
+
+<!-- =================================================== -->
+<!-- NO RELATIONSHIP -->
+<!-- =================================================== -->
+
+@else if (conversationStatus === 'NONE') {
+
+  <div class="conversation-state request-card">
+
+    <div class="state-icon secure-icon">
+      <i class="bi bi-shield-lock-fill"></i>
+    </div>
+
+    <span class="state-label">SECURE MESSAGING</span>
+
+    <h3>Start a conversation</h3>
+
+    <p class="state-description">
+      You haven't started a conversation with
+      <strong>{{ selectedMember.username }}</strong> yet.
+    </p>
+
+    <div class="encryption-note">
+      <i class="bi bi-lock-fill"></i>
+
+      <span>
+        Messages are end-to-end encrypted
+      </span>
+    </div>
+
+    <button
+      type="button"
+      class="conversation-primary-button"
+      (click)="askToStartConversation()">
+
+      <i class="bi bi-chat-dots-fill"></i>
+
+      Start Conversation
+
+    </button>
+
+  </div>
+
+}
+
+
+<!-- =================================================== -->
+<!-- PENDING -->
+<!-- =================================================== -->
+
+@else if (conversationStatus === 'PENDING') {
+
+  <div class="conversation-state request-card pending-card">
+
+    <div class="state-icon pending-icon">
+      <i class="bi bi-clock-history"></i>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- SENDER -->
+    <!-- ============================================== -->
+
+    @if (
+      conversationRequest?.senderId?._id === currentUserId ||
+      conversationRequest?.senderId === currentUserId
+    ) {
+
+      <span class="state-label pending-label">
+        REQUEST SENT
+      </span>
+
+      <h3>Message request sent</h3>
+
+      <p class="state-description">
+        Your request is waiting for
+        <strong>{{ selectedMember.username }}</strong>
+        to accept.
+      </p>
+
+      <div class="request-status-box">
+        <i class="bi bi-hourglass-split"></i>
+
+        <span>
+          Waiting for acceptance
+        </span>
+      </div>
+
+      <div class="encryption-note">
+        <i class="bi bi-lock-fill"></i>
+
+        <span>
+          Messages are end-to-end encrypted
+        </span>
+      </div>
+
+    }
+
+
+    <!-- ============================================== -->
+    <!-- RECEIVER -->
+    <!-- ============================================== -->
+
+    @else {
+
+      <span class="state-label request-label">
+        NEW REQUEST
+      </span>
+
+      <h3>New message request</h3>
+
+      <p class="state-description">
+        <strong>{{ selectedMember.username }}</strong>
+        wants to start a conversation with you.
+      </p>
+
+      <div class="request-status-box incoming-request">
+        <i class="bi bi-chat-left-text-fill"></i>
+
+        <span>
+          Accept the request to start chatting
+        </span>
+      </div>
+
+      <div class="encryption-note">
+        <i class="bi bi-lock-fill"></i>
+
+        <span>
+          Messages are end-to-end encrypted
+        </span>
+      </div>
+
+      <div class="request-actions">
+
+        <button
+          type="button"
+          class="accept-button"
+          (click)="acceptRequest()"
+          [disabled]="requestLoading">
+
+          @if (requestLoading) {
+
+            <span class="button-spinner"></span>
+            Processing...
+
+          } @else {
+
+            <i class="bi bi-check-circle-fill"></i>
+            Accept
+
+          }
+
+        </button>
+
+
+        <button
+          type="button"
+          class="block-button"
+          (click)="blockSelectedUser()"
+          [disabled]="requestLoading">
+
+          <i class="bi bi-slash-circle-fill"></i>
+
+          Block
+
+        </button>
+
+      </div>
+
+    }
+
+  </div>
+
+}
+
+
+<!-- =================================================== -->
+<!-- BLOCKED -->
+<!-- =================================================== -->
+
+@else if (conversationStatus === 'BLOCKED') {
+
+  <div class="conversation-state request-card blocked-card">
+
+    <div class="state-icon blocked-icon">
+      <i class="bi bi-person-slash"></i>
+    </div>
+
+    <span class="state-label blocked-label">
+      CONVERSATION BLOCKED
+    </span>
+
+    <h3>Conversation blocked</h3>
+
+    <p class="state-description">
+      Messages from this conversation are currently blocked.
+    </p>
+
+    <div class="blocked-info-box">
+      <i class="bi bi-shield-x"></i>
+
+      <span>
+        The other user will not receive message notifications
+        while this conversation is blocked.
+      </span>
+    </div>
+
+    <div class="encryption-note">
+      <i class="bi bi-lock-fill"></i>
+
+      <span>
+        Messages remain end-to-end encrypted
+      </span>
+    </div>
+
+    <button
+      type="button"
+      class="conversation-primary-button unblock-button"
+      (click)="unblockSelectedUser()"
+      [disabled]="requestLoading">
+
+      @if (requestLoading) {
+
+        <span class="button-spinner"></span>
+        Unblocking...
+
+      } @else {
+
+        <i class="bi bi-unlock-fill"></i>
+        Unblock
+
+      }
+
+    </button>
+
+  </div>
+
+}
+
+
+
+
+
+
+        <!-- =================================================== -->
+        <!-- ACCEPTED -->
+        <!-- =================================================== -->
+
+        @else if (conversationStatus === 'ACCEPTED') {
+
+          @if ((selectedMember?.messages ?? []).length > 0) {
+
+            @for (
+              message of (selectedMember?.messages ?? []);
+              track message._id
+            ) {
+
+              <div
+                class="message"
+                [ngClass]="{
+                  'sent': isMyMessage(message),
+                  'received': !isMyMessage(message)
+                }">
+
+
+                <strong class="message-name">
+
+                  {{
+                    isMyMessage(message)
+                      ? 'You'
+                      : (
                           message.senderId?._id === currentUserId
-                          ? message.receiverId?.username
-                          : message.senderId?.username
-                                )
+                            ? message.receiverId?.username
+                            : message.senderId?.username
+                        )
                   }}
-           </strong>
+
+                </strong>
 
 
-              <!-- Message + Time + Tick -->
-              <div class="message-row">
+                <div class="message-row">
 
-                <!-- Message text -->
-                <p class="message-text">
-                  {{ message.content }}
-                </p>
+                  <p class="message-text">
+                    {{ message.content }}
+                  </p>
 
-                <!-- Time -->
-                <span class="time">
-                  {{ message.createdAt | date:'shortTime' }}
-                </span>
 
-                <!-- Message tick -->
-                @if (isMyMessage(message)) {
-
-                  <span
-                    class="message-tick"
-                    [class.blue]="isMessageRead(message)">
-
-                    {{ getMessageTick(message) }}
-
+                  <span class="time">
+                    {{ message.createdAt | date:'shortTime' }}
                   </span>
 
-                }
+
+                  @if (isMyMessage(message)) {
+
+                    <span
+                      class="message-tick"
+                      [class.blue]="isMessageRead(message)">
+
+                      {{ getMessageTick(message) }}
+
+                    </span>
+
+                  }
+
+                </div>
 
               </div>
+
+            }
+
+          } @else {
+
+            <div class="empty-chat">
+
+              <i class="bi bi-chat-dots"></i>
+
+              <p>
+                No messages yet
+              </p>
+
+              <span>
+                Send a message to start the conversation.
+              </span>
 
             </div>
 
           }
 
-        } @else {
-
-          <div class="empty-chat">
-            <i class="bi bi-chat-dots"></i>
-            <p>No messages yet</p>
-            <span>Send a message to start the conversation.</span>
-          </div>
-
         }
 
       } @else {
 
+        <!-- =================================================== -->
+        <!-- NO MEMBER SELECTED -->
+        <!-- =================================================== -->
+
         <div class="empty-chat">
+
           <i class="bi bi-chat-dots"></i>
-          <p>Select a member to start chatting.</p>
+
+          <p>
+            Select a member to start chatting.
+          </p>
+
         </div>
 
       }
@@ -255,10 +608,17 @@
     </div>
 
 
-    <!-- ================= INPUT ================= -->
+    <!-- ======================================================= -->
+    <!-- INPUT -->
+    <!-- ======================================================= -->
+
     <div class="chat-input">
 
-      @if (selectedMember) {
+
+      @if (
+        selectedMember &&
+        conversationStatus === 'ACCEPTED'
+      ) {
 
         <input
           type="text"
@@ -266,12 +626,14 @@
           [(ngModel)]="newMessage"
           (keyup.enter)="sendMessage()">
 
+
         <button
           type="button"
           (click)="sendMessage()"
           [disabled]="!newMessage.trim()">
 
           <i class="bi bi-send"></i>
+
           Send
 
         </button>
@@ -280,13 +642,26 @@
 
         <input
           type="text"
-          placeholder="Select a member first"
+          [placeholder]="
+            !selectedMember
+              ? 'Select a member first'
+              : conversationStatus === 'PENDING'
+                ? 'Waiting for request acceptance'
+                : conversationStatus === 'BLOCKED'
+                  ? 'Conversation is blocked'
+                  : 'Start a conversation first'
+          "
           disabled>
+
 
         <button
           type="button"
           disabled>
+
+          <i class="bi bi-send"></i>
+
           Send
+
         </button>
 
       }
