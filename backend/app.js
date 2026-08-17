@@ -17,6 +17,7 @@ const pickupMatchingRoutes = require('./routes/pickupMatchingRoutes');
 const opportunityRoutes = require('./routes/opportunityRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const messageRequestRoutes = require('./routes/messageRequestRoutes');
 const matchingRoutes = require('./routes/matchingRoutes');
 
 
@@ -78,6 +79,8 @@ app.use('/api/application', applicationRoutes);
 app.use('/api/applications', applicationRoutes);
 
 app.use('/api/messages', messageRoutes);
+
+app.use('/api/message-requests', messageRequestRoutes);
 
 app.use('/api/matches', matchingRoutes);
 
