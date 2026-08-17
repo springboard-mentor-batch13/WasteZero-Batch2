@@ -68,6 +68,10 @@
                     Download CSV
                 </button>
             </div>
+            <div class="chart-container">
+                <canvas baseChart [data]="userChartData" [type]="userChartType" [options]="userChartOptions">
+                </canvas>
+            </div>
 
             <div class="table-container">
                 <table>
@@ -103,6 +107,11 @@
                 <button (click)="downloadOpportunitiesReport()">
                     Download CSV
                 </button>
+            </div>
+            <div class="chart-container">
+                <canvas baseChart [data]="opportunityChartData" [type]="opportunityChartType"
+                    [options]="opportunityChartOptions">
+                </canvas>
             </div>
 
             <div class="table-container">
@@ -145,6 +154,11 @@
                 <button (click)="downloadApplicationsReport()">
                     Download CSV
                 </button>
+            </div>
+            <div class="chart-container">
+                <canvas baseChart [data]="volunteerChartData" [type]="volunteerChartType"
+                    [options]="volunteerChartOptions">
+                </canvas>
             </div>
 
             <div class="response-grid">

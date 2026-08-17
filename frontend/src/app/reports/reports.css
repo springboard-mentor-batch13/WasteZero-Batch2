@@ -128,3 +128,19 @@ th {
         grid-template-columns: 1fr;
     }
 }
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    margin: 24px 0;
+    padding: 20px;
+    border-radius: 12px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
