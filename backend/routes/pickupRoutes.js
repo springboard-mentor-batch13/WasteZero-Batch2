@@ -15,6 +15,8 @@ const {
   deletePickup,
   matchPickup,
   submitPickupProof,
+  approvePickupProof,
+  rejectPickupProof,
   reportPickupIssue,
 } = require('../controllers/pickupController');
 
@@ -96,6 +98,16 @@ router.patch(
   '/:id/submit-proof',
   upload.single('proofImage'),
   submitPickupProof
+);
+
+router.patch(
+  '/:id/approve-proof',
+  approvePickupProof
+);
+
+router.patch(
+  '/:id/reject-proof',
+  rejectPickupProof
 );
 
 /**

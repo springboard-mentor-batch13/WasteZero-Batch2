@@ -338,11 +338,35 @@ button:first-child:hover {
 ========================================================== */
 
 .volunteer-actions {
+  display: grid;
   grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 26px;
 }
 
 .volunteer-actions button {
-  min-height: 44px;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 10px;
+}
+
+.apply-button {
+  min-height: 46px;
+}
+
+.message-button {
+  min-height: 46px;
+  border: 1px solid var(--wz-primary) !important;
+  color: var(--wz-primary) !important;
+  background: transparent !important;
+}
+
+.message-button:hover {
+  background: var(--wz-primary-soft) !important;
+}
+
+.message-button mat-icon {
+  margin-right: 6px;
 }
 
 

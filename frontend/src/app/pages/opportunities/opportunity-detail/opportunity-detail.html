@@ -1,3 +1,4 @@
+
 @if (loading) {
   <section class="detail-page">
     <a mat-button routerLink="/opportunities"><mat-icon>arrow_back</mat-icon>Back to Opportunities</a>
@@ -48,6 +49,7 @@
       <mat-card class="details-card">
         <mat-card-content>
           <h2>Opportunity Details</h2>
+
           <div class="details-list">
             <div><mat-icon>event</mat-icon><span><small>Date</small>{{ item.date | date:'mediumDate' }}</span></div>
             <div><mat-icon>category</mat-icon><span><small>Category</small>{{ item.category }}</span></div>
@@ -57,6 +59,7 @@
             <div><mat-icon>location_on</mat-icon><span><small>Location</small>{{ item.location }}</span></div>
             <div><mat-icon>groups</mat-icon><span><small>Volunteers Needed</small>{{ item.requiredVolunteers }}</span></div>
             <div><mat-icon>flag</mat-icon><span><small>Status</small>{{ item.status }}</span></div>
+
             <div>
               <mat-icon>person</mat-icon>
               <span>
@@ -64,48 +67,100 @@
                 <strong>{{ postedByRole(item.postedBy) }} - {{ postedByName(item.postedBy) }}</strong>
               </span>
             </div>
-            @if (item.createdAt) { <div><mat-icon>schedule</mat-icon><span><small>Created</small>{{ item.createdAt | date:'mediumDate' }}</span></div> }
+
+            @if (item.createdAt) {
+              <div>
+                <mat-icon>schedule</mat-icon>
+                <span>
+                  <small>Created</small>
+                  {{ item.createdAt | date:'mediumDate' }}
+                </span>
+              </div>
+            }
           </div>
 
           @if (canManageSelectedOpportunity()) {
             <div class="detail-actions">
-              <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']"><mat-icon>edit</mat-icon>Edit</button>
-              <button mat-flat-button class="delete-button" (click)="delete()"><mat-icon>delete</mat-icon>Delete</button>
+              <button mat-stroked-button [routerLink]="['/opportunities', item.id, 'edit']">
+                <mat-icon>edit</mat-icon>Edit
+              </button>
+
+              <button mat-flat-button class="delete-button" (click)="delete()">
+                <mat-icon>delete</mat-icon>Delete
+              </button>
             </div>
+
           } @else if (isVolunteer()) {
+
             <div class="detail-actions volunteer-actions">
+
               @if (applicationStatusLoading) {
-                <p class="application-status-message">Loading application status...</p>
+                <p class="application-status-message">
+                  Loading application status...
+                </p>
+
               } @else if (applicationStatusError) {
-                <p class="application-status-message application-status-error">{{ applicationStatusError }}</p>
+                <p class="application-status-message application-status-error">
+                  {{ applicationStatusError }}
+                </p>
+
               } @else if (applicationStatus) {
+
                 <div
                   class="application-status-badge"
                   [class.application-status-pending]="applicationStatus === 'Pending'"
                   [class.application-status-accepted]="applicationStatus === 'Accepted'"
                   [class.application-status-rejected]="applicationStatus === 'Rejected'">
+
                   Application Status: {{ applicationStatus }}
+
                 </div>
+
               } @else {
+
                 <button
                   mat-flat-button
                   color="primary"
+                  class="apply-button"
                   (click)="apply()"
                   [disabled]="sendingJoinRequest">
+
                   @if (sendingJoinRequest) {
                     <mat-spinner diameter="18"></mat-spinner>
                   } @else {
                     <mat-icon>volunteer_activism</mat-icon>
                   }
+
                   {{ joinButtonText(item.id) }}
+
                 </button>
               }
+
+              <button
+                mat-stroked-button
+                type="button"
+                class="message-button"
+                (click)="messageOpportunityCreator()">
+
+                <mat-icon>chat</mat-icon>
+                Message NGO
+
+              </button>
+
             </div>
           }
+
         </mat-card-content>
       </mat-card>
     </div>
   </section>
+
 } @else {
-  <section class="detail-page"><p class="muted">{{ errorMessage || 'Unable to load opportunity details.' }}</p></section>
+
+  <section class="detail-page">
+    <p class="muted">
+      {{ errorMessage || 'Unable to load opportunity details.' }}
+    </p>
+  </section>
+
 }

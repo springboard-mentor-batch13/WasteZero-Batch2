@@ -74,7 +74,7 @@ completedPickups = 0;
 
   }
 
-  openPickupAction(pickup: Pickup): void {
+   openPickupAction (pickup: Pickup): void {
 
     const dialogRef = this.dialog.open(
 
@@ -528,9 +528,34 @@ this.completedPickups = 0;
 
       }
 
+        });
+
+  }
+
+  
+
+
+  uploadNewProof(pickup: Pickup): void {
+
+    const proofDialog = this.dialog.open(
+      ProofUploadDialogComponent,
+      {
+        width: '700px',
+        maxWidth: '95vw',
+        data: pickup
+      }
+    );
+
+    proofDialog.afterClosed().subscribe(success => {
+
+      if (success) {
+        this.loadPickups();
+      }
+
     });
 
   }
+
     getStatusClass(status: string): string {
 
     switch (status?.toLowerCase()) {
@@ -552,6 +577,12 @@ case 'rescheduled':
 
 case 'rejected':
   return 'rejected';
+
+case 'proof rejected':
+  return 'proof-rejected';
+
+case 'unfinished pickup':
+  return 'unfinished';
 
       case 'pending':
         return 'pending';

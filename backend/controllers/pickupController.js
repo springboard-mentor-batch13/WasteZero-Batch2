@@ -567,42 +567,42 @@ const completePickup = async (req, res) => {
 // Submit Pickup Proof
 // ========================================
 const submitPickupProof = async (req, res) => {
-
   try {
-
     const pickup = await Pickup.findById(req.params.id);
 
     if (!pickup) {
-
       return res.status(404).json({
         success: false,
         message: 'Pickup not found.',
       });
-
     }
 
-    // Only volunteer who owns the pickup
-    if (pickup.user.toString() !== req.user._id.toString()) {
+    if (req.user.role !== 'Volunteer') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only volunteers can submit pickup proof.',
+      });
+    }
 
+    if (pickup.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized.',
       });
-
     }
 
-    if (pickup.status !== 'In Progress') {
+    if (
+  pickup.status !== 'In Progress' &&
+  pickup.status !== 'Proof Rejected'
+) {
+  return res.status(400).json({
+    success: false,
+    message:
+      'Pickup proof can only be submitted for an in-progress pickup or after proof rejection.',
+  });
+}
 
-      return res.status(400).json({
-        success: false,
-        message: 'Pickup is not currently in progress.',
-      });
-
-    }
-
-    pickup.status = 'Completed';
-
-    pickup.completedAt = new Date();
+    pickup.status = 'Waiting for NGO Approval';
 
     pickup.completionRemarks = req.body.remarks || '';
 
@@ -612,24 +612,166 @@ const submitPickupProof = async (req, res) => {
 
     await pickup.save();
 
+    if (pickup.ngo) {
+      await Notification.create({
+        recipientId: pickup.ngo,
+        recipientRole: 'NGO',
+        sourceRole: 'Volunteer',
+        title: 'Pickup Proof Submitted',
+        message: `${req.user.fullName || req.user.username || 'A volunteer'} submitted proof for a pickup. Please review and approve or reject it.`,
+        type: 'System',
+        redirectUrl: '/ngo/pickup-requests',
+      });
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Pickup proof submitted successfully.',
+      message: 'Pickup proof submitted and is waiting for NGO approval.',
       data: pickup,
     });
 
   } catch (error) {
-
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: 'Server Error',
     });
-
   }
 };
 
+const approvePickupProof = async (req, res) => {
+  try {
+    if (req.user.role !== 'NGO') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only NGOs can approve pickup proof.',
+      });
+    }
+
+    const pickup = await Pickup.findById(req.params.id);
+
+    if (!pickup) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pickup not found.',
+      });
+    }
+
+    if (!pickup.ngo || pickup.ngo.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to approve this pickup.',
+      });
+    }
+
+    if (pickup.status !== 'Waiting for NGO Approval') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only pickups waiting for NGO approval can be approved.',
+      });
+    }
+
+    pickup.status = 'Completed';
+    pickup.completedAt = new Date();
+
+    await pickup.save();
+
+    await Notification.create({
+      recipientId: pickup.user,
+      recipientRole: 'Volunteer',
+      sourceRole: 'NGO',
+      title: 'Pickup Approved',
+      message: 'Your pickup proof has been approved by the NGO. The pickup is now completed.',
+      type: 'System',
+      redirectUrl: '/pickups',
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Pickup proof approved successfully.',
+      data: pickup,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
+};
+
+const rejectPickupProof = async (req, res) => {
+  try {
+    if (req.user.role !== 'NGO') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only NGOs can reject pickup proof.',
+      });
+    }
+
+    const pickup = await Pickup.findById(req.params.id);
+
+    if (!pickup) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pickup not found.',
+      });
+    }
+
+    if (
+      !pickup.ngo ||
+      pickup.ngo.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to reject this pickup.',
+      });
+    }
+
+    if (pickup.status !== 'Waiting for NGO Approval') {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Only pickups waiting for NGO approval can be rejected.',
+      });
+    }
+
+    // Proof is rejected, but the pickup itself is not unfinished.
+    // Volunteer can upload a new valid proof.
+    pickup.status = 'Proof Rejected';
+
+    await pickup.save();
+
+    await Notification.create({
+      recipientId: pickup.user,
+      recipientRole: 'Volunteer',
+      sourceRole: 'NGO',
+      title: 'Pickup Proof Rejected',
+      message:
+        'Your pickup proof was not accepted by the NGO. Please upload a valid proof image and resubmit it for approval.',
+      type: 'System',
+      redirectUrl: '/pickups',
+    });
+
+    res.status(200).json({
+      success: true,
+      message:
+        'Pickup proof rejected. Please upload a valid proof and resubmit it.',
+      data: pickup,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+    });
+  }
+};
 
 /**
  * Withdraw Pickup
@@ -661,18 +803,12 @@ const withdrawPickup = async (req, res) => {
       });
     }
 
-    if (
-      ![
-        'Pending',
-        'Accepted',
-        'Rescheduled',
-      ].includes(pickup.status)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: 'Only pending, accepted or rescheduled pickups can be withdrawn.',
-      });
-    }
+    if (pickup.status !== 'Pending') {
+   return res.status(400).json({
+    success: false,
+    message: 'Only pending pickups can be withdrawn.',
+    });
+  }
 
     pickup.status = 'Withdrawn';
 
@@ -887,5 +1023,7 @@ module.exports = {
   deletePickup,
   matchPickup,
   submitPickupProof,
+  approvePickupProof,
+  rejectPickupProof,
   reportPickupIssue,
 };

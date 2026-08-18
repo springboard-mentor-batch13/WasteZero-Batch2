@@ -73,17 +73,21 @@ const pickupSchema = new mongoose.Schema(
     },
 
     // Pickup Status
-    status: {
+  status: {
   type: String,
-  enum: [
-    'Pending',
-    'Accepted',
-    'Rejected',
-    'In Progress',
-    'Completed',
-    'Cancelled',
-    'Rescheduled'
-  ],
+enum: [
+  'Pending',
+  'Accepted',
+  'Rejected',
+  'In Progress',
+  'Waiting for NGO Approval',
+  'Completed',
+  'Unfinished Pickup',
+  'Proof Rejected',
+  'Cancelled',
+  'Rescheduled',
+  'Withdrawn'
+],
   default: 'Pending',
 },
 

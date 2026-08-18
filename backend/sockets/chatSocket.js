@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Message = require('../models/Message');
-const { encrypt, decrypt } = require('../utils/encryption');
-const Notification = require('../models/Notification'); // 👈 Import Notification Model
+const { encrypt } = require('../utils/encryption');
+const Notification = require('../models/Notification');
+
 const onlineUsers = new Map();
 
 const registerChatSocket = (io) => {
@@ -12,149 +13,507 @@ const registerChatSocket = (io) => {
             const token = socket.handshake.auth.token;
 
             if (!token) {
-                return next(new Error('Authentication token missing'));
+                return next(
+                    new Error('Authentication token missing')
+                );
             }
 
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const decoded = jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            );
 
-            const user = await User.findById(decoded.id).select('-password');
+            const user = await User
+                .findById(decoded.id)
+                .select('-password');
 
             if (!user) {
-                return next(new Error('User not found'));
+                return next(
+                    new Error('User not found')
+                );
             }
 
             socket.user = user;
+
             next();
 
         } catch (error) {
-            next(new Error('Authentication failed'));
+            console.error(
+                'Socket authentication error:',
+                error
+            );
+
+            next(
+                new Error('Authentication failed')
+            );
         }
     });
 
+
     io.on('connection', (socket) => {
 
-        onlineUsers.set(socket.user._id.toString(), socket.id);
-        console.log("Online Users:", Array.from(onlineUsers.keys()));
+        const userId =
+            socket.user._id.toString();
 
-        socket.emit("onlineUsers", Array.from(onlineUsers.keys()));
-        console.log("Socket User:", {
-            id: socket.user._id.toString(),
-            username: socket.user.username,
-            fullName: socket.user.fullName
-        });
+        const userRoom =
+            `user:${userId}`;
 
-        console.log("Emitting userOnline:", {
-            userId: socket.user._id.toString(),
-            username: socket.user.username,
-            fullName: socket.user.fullName
-        });
 
-        io.emit('userOnline', {
-            userId: socket.user._id.toString(),
-            username: socket.user.username,
-            fullName: socket.user.fullName
-        });
+        socket.join(userRoom);
 
-        console.log(`${socket.user.fullName} connected`);
 
-        socket.on('sendMessage', async ({ receiverId, content }) => {
-            try {
-                const message = await Message.create({
-                    senderId: socket.user._id,
-                    receiverId,
-                    content: encrypt(content.trim()),
-                    status: 'sent'
-                });
-                const messageToSend = {
-                    ...message.toObject(),
-                    content: content.trim()
-                };
+        if (!onlineUsers.has(userId)) {
+            onlineUsers.set(userId, new Set());
+        }
 
-                // ----------------------------------------------------
-                // 🔔 TRIGGER NOTIFICATION FOR MESSAGE RECEIVER
-                // ----------------------------------------------------
-                const receiverUser = await User.findById(receiverId).select('role');
-                if (receiverUser) {
-                    const senderName = socket.user.fullName || socket.user.username || 'A user';
-                    await Notification.create({
-                        recipientId: receiverId,          // Receiver only
-                        recipientRole: receiverUser.role,  // Volunteer, NGO, or Admin
-                        sourceRole: socket.user.role,
-                        title: 'New Message',
-                        message: `You received a new message from ${senderName}.`,
-                        type: 'Message',
-                        redirectUrl: '/messages'
-                    });
+        onlineUsers
+            .get(userId)
+            .add(socket.id);
+
+
+        console.log(
+            `${socket.user.fullName} connected`
+        );
+
+        console.log(
+            'Socket ID:',
+            socket.id
+        );
+
+        console.log(
+            'User ID:',
+            userId
+        );
+
+        console.log(
+            'Online Users:',
+            Array.from(
+                onlineUsers.keys()
+            )
+        );
+
+
+        socket.emit(
+            'onlineUsers',
+            Array.from(
+                onlineUsers.keys()
+            )
+        );
+
+
+        io.emit(
+            'userOnline',
+            {
+                userId: userId,
+                username: socket.user.username,
+                fullName: socket.user.fullName
+            }
+        );
+
+
+        socket.on(
+            'sendMessage',
+            async ({
+                receiverId,
+                content
+            }) => {
+
+                try {
+
+                    if (
+                        !receiverId ||
+                        !content ||
+                        !content.trim()
+                    ) {
+
+                        socket.emit(
+                            'messageError',
+                            {
+                                message:
+                                    'Receiver and message are required'
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    const receiverIdStr =
+                        receiverId.toString();
+
+
+                    console.log(
+                        '-----------------------------'
+                    );
+
+                    console.log(
+                        'SEND MESSAGE'
+                    );
+
+                    console.log(
+                        'Sender:',
+                        userId
+                    );
+
+                    console.log(
+                        'Receiver:',
+                        receiverIdStr
+                    );
+
+                    console.log(
+                        'Content:',
+                        content
+                    );
+
+
+                    const message =
+                        await Message.create({
+                            senderId:
+                                socket.user._id,
+
+                            receiverId:
+                                receiverIdStr,
+
+                            content:
+                                encrypt(
+                                    content.trim()
+                                ),
+
+                            status:
+                                'sent'
+                        });
+
+
+                    const receiverUser =
+                        await User
+                            .findById(
+                                receiverIdStr
+                            )
+                            .select('role');
+
+
+                    if (receiverUser) {
+
+                        const senderName =
+                            socket.user.fullName ||
+                            socket.user.username ||
+                            'A user';
+
+
+                        await Notification.create({
+                            recipientId:
+                                receiverIdStr,
+
+                            recipientRole:
+                                receiverUser.role,
+
+                            sourceRole:
+                                socket.user.role,
+
+                            title:
+                                'New Message',
+
+                            message:
+                                `You received a new message from ${senderName}.`,
+
+                            type:
+                                'Message',
+
+                            redirectUrl:
+                                '/messages'
+                        });
+
+                    }
+
+
+                    const receiverRoom =
+                        `user:${receiverIdStr}`;
+
+
+                    const receiverOnline =
+                        onlineUsers.has(
+                            receiverIdStr
+                        );
+
+
+                    console.log(
+                        'Receiver Room:',
+                        receiverRoom
+                    );
+
+                    console.log(
+                        'Receiver Online:',
+                        receiverOnline
+                    );
+
+
+                    if (receiverOnline) {
+
+                        message.status =
+                            'delivered';
+
+                        await message.save();
+
+
+                        const messageToSend = {
+                            ...message.toObject(),
+
+                            _id:
+                                String(
+                                    message._id
+                                ),
+
+                            senderId:
+                                String(
+                                    message.senderId
+                                ),
+
+                            receiverId:
+                                String(
+                                    message.receiverId
+                                ),
+
+                            content:
+                                content.trim(),
+
+                            status:
+                                'delivered'
+                        };
+
+
+                        console.log(
+                            'Emitting receiveMessage to:',
+                            receiverRoom
+                        );
+
+
+                        io.to(
+                            receiverRoom
+                        ).emit(
+                            'receiveMessage',
+                            messageToSend
+                        );
+
+
+                        socket.emit(
+                            'messageDelivered',
+                            {
+                                messageId:
+                                    String(
+                                        message._id
+                                    ),
+
+                                status:
+                                    'delivered'
+                            }
+                        );
+
+
+                        socket.emit(
+                            'messageSent',
+                            messageToSend
+                        );
+
+
+                    } else {
+
+                        const messageToSend = {
+                            ...message.toObject(),
+
+                            _id:
+                                String(
+                                    message._id
+                                ),
+
+                            senderId:
+                                String(
+                                    message.senderId
+                                ),
+
+                            receiverId:
+                                String(
+                                    message.receiverId
+                                ),
+
+                            content:
+                                content.trim(),
+
+                            status:
+                                'sent'
+                        };
+
+
+                        console.log(
+                            'Receiver is offline.'
+                        );
+
+
+                        socket.emit(
+                            'messageSent',
+                            messageToSend
+                        );
+
+                    }
+
+
+                    console.log(
+                        '-----------------------------'
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Socket send message error:',
+                        error
+                    );
+
+
+                    socket.emit(
+                        'messageError',
+                        {
+                            message:
+                                error.message
+                        }
+                    );
+
                 }
 
-                const receiverIdStr = receiverId.toString();
+            }
+        );
 
-                console.log("Receiver ID:", receiverIdStr);
-                console.log("Online Users:", Array.from(onlineUsers.keys()));
 
-                const receiverSocketId = onlineUsers.get(receiverIdStr);
+        socket.on(
+            'markAsRead',
+            async ({
+                messageId
+            }) => {
 
-                console.log("Receiver Socket:", receiverSocketId);
+                try {
 
-                if (receiverSocketId) {
+                    const message =
+                        await Message.findById(
+                            messageId
+                        );
 
-                    message.status = 'delivered';
+
+                    if (!message) {
+                        return;
+                    }
+
+
+                    message.status =
+                        'read';
+
+
                     await message.save();
 
-                    io.to(receiverSocketId).emit('receiveMessage', messageToSend);
 
-                    socket.emit('messageDelivered', {
-                        messageId: message._id,
-                        status: 'delivered'
-                    });
+                    const senderId =
+                        message.senderId.toString();
+
+
+                    const senderRoom =
+                        `user:${senderId}`;
+
+
+                    io.to(
+                        senderRoom
+                    ).emit(
+                        'messageRead',
+                        {
+                            messageId:
+                                String(
+                                    message._id
+                                ),
+
+                            status:
+                                'read'
+                        }
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Mark message as read error:',
+                        error
+                    );
+
+
+                    socket.emit(
+                        'messageError',
+                        {
+                            message:
+                                error.message
+                        }
+                    );
+
                 }
 
-                socket.emit('messageSent', messageToSend);
-
-            } catch (error) {
-                socket.emit('messageError', {
-                    message: error.message
-                });
             }
-        });
+        );
 
-        socket.on('markAsRead', async ({ messageId }) => {
-            try {
-                const message = await Message.findById(messageId);
 
-                if (!message) return;
+        socket.on(
+            'disconnect',
+            () => {
 
-                message.status = 'read';
-                await message.save();
+                const userSockets =
+                    onlineUsers.get(
+                        userId
+                    );
 
-                const senderSocketId = onlineUsers.get(message.senderId.toString());
 
-                if (senderSocketId) {
-                    io.to(senderSocketId).emit('messageRead', {
-                        messageId: message._id,
-                        status: 'read'
-                    });
+                if (userSockets) {
+
+                    userSockets.delete(
+                        socket.id
+                    );
+
+
+                    if (
+                        userSockets.size === 0
+                    ) {
+
+                        onlineUsers.delete(
+                            userId
+                        );
+
+
+                        io.emit(
+                            'userOffline',
+                            {
+                                userId:
+                                    userId
+                            }
+                        );
+
+                    }
+
                 }
 
-            } catch (error) {
-                socket.emit('messageError', {
-                    message: error.message
-                });
+
+                console.log(
+                    `${socket.user.fullName} disconnected`
+                );
+
+
+                console.log(
+                    'Socket ID:',
+                    socket.id
+                );
+
+
+                console.log(
+                    'Online Users:',
+                    Array.from(
+                        onlineUsers.keys()
+                    )
+                );
+
             }
-        });
-
-        socket.on('disconnect', () => {
-
-            io.emit('userOffline', {
-                userId: socket.user._id.toString()
-            });
-
-            onlineUsers.delete(socket.user._id.toString());
-
-            console.log("Online Users:", Array.from(onlineUsers.keys()));
-
-            console.log(`${socket.user.fullName} disconnected`);
-        });
+        );
 
     });
 

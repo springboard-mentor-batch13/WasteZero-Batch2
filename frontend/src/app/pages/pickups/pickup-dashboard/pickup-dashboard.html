@@ -273,9 +273,13 @@
 
     <button mat-menu-item disabled>
 
-      <mat-icon>hourglass_empty</mat-icon>
+      <mat-icon>
+        hourglass_empty
+      </mat-icon>
 
-      <span>Waiting for NGO Approval</span>
+      <span>
+        Waiting for NGO Approval
+      </span>
 
     </button>
 
@@ -293,14 +297,14 @@
       [disabled]="!canStartPickup(pickup)"
       (click)="startPickup(pickup._id)">
 
-      <mat-icon>play_arrow</mat-icon>
+      <mat-icon>
+        play_arrow
+      </mat-icon>
 
       <span>
-
         {{ canStartPickup(pickup)
             ? 'Start Pickup'
             : 'Available on Pickup Date' }}
-
       </span>
 
     </button>
@@ -315,9 +319,33 @@
       mat-menu-item
       (click)="openPickupAction(pickup)">
 
-      <mat-icon>local_shipping</mat-icon>
+      <mat-icon>
+        local_shipping
+      </mat-icon>
 
-      <span>Pickup Action</span>
+      <span>
+        Pickup Action
+      </span>
+
+    </button>
+
+  }
+
+  <!-- Proof Rejected -->
+
+  @if (pickup.status === 'Proof Rejected') {
+
+    <button
+      mat-menu-item
+      (click)="uploadNewProof(pickup)">
+
+      <mat-icon>
+        upload
+      </mat-icon>
+
+      <span>
+        Upload New Proof
+      </span>
 
     </button>
 
@@ -329,9 +357,13 @@
 
     <button mat-menu-item disabled>
 
-      <mat-icon>check_circle</mat-icon>
+      <mat-icon>
+        check_circle
+      </mat-icon>
 
-      <span>Pickup Completed</span>
+      <span>
+        Pickup Completed
+      </span>
 
     </button>
 
@@ -341,18 +373,19 @@
 
   <!-- Withdraw -->
 
-  @if (
-    pickup.status === 'Pending' ||
-    pickup.status === 'Accepted'
-  ) {
+  @if (pickup.status === 'Pending') {
 
     <button
       mat-menu-item
       (click)="withdrawPickup(pickup._id)">
 
-      <mat-icon>undo</mat-icon>
+      <mat-icon>
+        undo
+      </mat-icon>
 
-      <span>Withdraw Request</span>
+      <span>
+        Withdraw Request
+      </span>
 
     </button>
 
@@ -366,9 +399,13 @@
       mat-menu-item
       (click)="deletePickup(pickup._id)">
 
-      <mat-icon>delete</mat-icon>
+      <mat-icon>
+        delete
+      </mat-icon>
 
-      <span>Delete Request</span>
+      <span>
+        Delete Request
+      </span>
 
     </button>
 

@@ -1,12 +1,4 @@
-<!-- =========================================================
-     NGO PICKUP REQUESTS
-========================================================= -->
-
 <div class="pickup-requests-page">
-
-  <!-- =======================================================
-       Page Header
-  ======================================================== -->
 
   <div class="page-header">
 
@@ -20,14 +12,7 @@
 
   </div>
 
-
-  <!-- =======================================================
-       Filters
-  ======================================================== -->
-
   <div class="filters-row">
-
-    <!-- Search -->
 
     <mat-form-field
       appearance="outline"
@@ -48,9 +33,6 @@
 
     </mat-form-field>
 
-
-    <!-- Status -->
-
     <mat-form-field
       appearance="outline"
       class="filter-field">
@@ -64,9 +46,7 @@
         @for (status of statuses; track status) {
 
           <mat-option [value]="status">
-
             {{ status }}
-
           </mat-option>
 
         }
@@ -74,9 +54,6 @@
       </mat-select>
 
     </mat-form-field>
-
-
-    <!-- Waste Type -->
 
     <mat-form-field
       appearance="outline"
@@ -91,9 +68,7 @@
         @for (wasteType of wasteTypes; track wasteType) {
 
           <mat-option [value]="wasteType">
-
             {{ wasteType }}
-
           </mat-option>
 
         }
@@ -103,11 +78,6 @@
     </mat-form-field>
 
   </div>
-
-
-  <!-- =======================================================
-       Error Message
-  ======================================================== -->
 
   @if (errorMessage) {
 
@@ -129,11 +99,6 @@
 
   }
 
-
-  <!-- =======================================================
-       Loading
-  ======================================================== -->
-
   @if (loading && filteredRequests.length === 0) {
 
     <div class="loading-container">
@@ -143,11 +108,6 @@
     </div>
 
   }
-
-
-  <!-- =======================================================
-       Empty State
-  ======================================================== -->
 
   @else if (!loading && filteredRequests.length === 0) {
 
@@ -173,11 +133,6 @@
 
   }
 
-
-  <!-- =======================================================
-       Pickup Requests
-  ======================================================== -->
-
   @else {
 
     <div class="pickup-grid">
@@ -188,10 +143,6 @@
       ) {
 
         <mat-card class="pickup-card">
-
-          <!-- =================================================
-               Card Header
-          ================================================== -->
 
           <mat-card-header>
 
@@ -220,14 +171,7 @@
 
           </mat-card-header>
 
-
-          <!-- =================================================
-               Card Content
-          ================================================== -->
-
           <mat-card-content>
-
-            <!-- Current Status -->
 
             <div class="status-row">
 
@@ -244,12 +188,7 @@
 
             </div>
 
-
-            <!-- Information -->
-
             <div class="info-grid">
-
-              <!-- Volunteer Contact -->
 
               <div>
 
@@ -263,9 +202,6 @@
 
               </div>
 
-
-              <!-- Waste Type -->
-
               <div>
 
                 <span>
@@ -277,9 +213,6 @@
                 </strong>
 
               </div>
-
-
-              <!-- Pickup Date -->
 
               <div>
 
@@ -293,9 +226,6 @@
 
               </div>
 
-
-              <!-- Pickup Time -->
-
               <div>
 
                 <span>
@@ -308,9 +238,6 @@
 
               </div>
 
-
-              <!-- Area -->
-
               <div>
 
                 <span>
@@ -322,9 +249,6 @@
                 </strong>
 
               </div>
-
-
-              <!-- Created Date -->
 
               <div>
 
@@ -340,16 +264,163 @@
 
             </div>
 
+            @if (request.status === 'Waiting for NGO Approval') {
+
+              <div class="proof-review-section">
+
+                <div class="proof-review-header">
+
+                  <div>
+
+                    <h3>
+                      Pickup Proof Submitted
+                    </h3>
+
+                    <p>
+                      The volunteer has submitted proof for this pickup.
+                      Please review it before approving.
+                    </p>
+
+                  </div>
+
+                  <mat-icon>
+                    fact_check
+                  </mat-icon>
+
+                </div>
+
+                @if (request.proofImage) {
+
+                  <img
+                    class="pickup-proof-image"
+                    [src]="request.proofImage"
+                    alt="Pickup proof"
+                    (error)="$any($event.target).style.display='none'"
+                  >
+
+                }
+
+                @if (request.completionRemarks) {
+
+                  <div class="proof-remarks">
+
+                    <span>
+                      Volunteer Remarks
+                    </span>
+
+                    <p>
+                      {{ request.completionRemarks }}
+                    </p>
+
+                  </div>
+
+                }
+
+                <div class="proof-review-actions">
+
+                  <button
+                    mat-stroked-button
+                    class="proof-view-button"
+                    type="button"
+                    [disabled]="isUpdating(request)"
+                    (click)="viewDetails(request)">
+
+                    <mat-icon>
+                      visibility
+                    </mat-icon>
+
+                    View Proof
+
+                  </button>
+
+                  <button
+                    mat-stroked-button
+                    class="proof-reject-button"
+                    type="button"
+                    [disabled]="isUpdating(request)"
+                    (click)="rejectProof(request)">
+
+                    <mat-icon>
+                      close
+                    </mat-icon>
+
+                    Reject Proof
+
+                  </button>
+
+                  <button
+                    mat-flat-button
+                    class="proof-approve-button"
+                    type="button"
+                    [disabled]="isUpdating(request)"
+                    (click)="approveProof(request)">
+
+                    <mat-icon>
+                      check_circle
+                    </mat-icon>
+
+                    Approve Proof
+
+                  </button>
+
+                </div>
+
+              </div>
+
+            }
+
+            @if (request.status === 'Proof Rejected') {
+
+              <div class="proof-rejected-message">
+
+                <mat-icon>
+                  warning
+                </mat-icon>
+
+                <div>
+
+                  <strong>
+                    Proof Rejected
+                  </strong>
+
+                  <p>
+                    The submitted proof was rejected.
+                    The volunteer needs to upload a new valid proof.
+                  </p>
+
+                </div>
+
+              </div>
+
+            }
+
+            @if (request.status === 'Unfinished Pickup') {
+
+              <div class="unfinished-message">
+
+                <mat-icon>
+                  warning
+                </mat-icon>
+
+                <div>
+
+                  <strong>
+                    Unfinished Pickup
+                  </strong>
+
+                  <p>
+                    The pickup could not be completed.
+                  </p>
+
+                </div>
+
+              </div>
+
+            }
+
           </mat-card-content>
 
-
-          <!-- =================================================
-               Card Actions
-          ================================================== -->
-
           <mat-card-actions align="end">
-
-            <!-- View Details -->
 
             <button
               mat-flat-button
@@ -365,20 +436,10 @@
 
             </button>
 
-
-            <!-- =================================================
-                 ACCEPT + REJECT
-
-                 IMPORTANT:
-                 Pending OR Rescheduled
-            ================================================== -->
-
             @if (
               request.status === 'Pending' ||
               request.status === 'Rescheduled'
             ) {
-
-              <!-- Accept -->
 
               <button
                 mat-flat-button
@@ -394,9 +455,6 @@
                 Accept
 
               </button>
-
-
-              <!-- Reject -->
 
               <button
                 mat-stroked-button
@@ -415,11 +473,6 @@
 
             }
 
-
-            <!-- =================================================
-                 Updating Indicator
-            ================================================== -->
-
             @if (isUpdating(request)) {
 
               <mat-spinner
@@ -437,7 +490,5 @@
     </div>
 
   }
-
-  
 
 </div>

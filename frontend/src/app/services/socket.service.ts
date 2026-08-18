@@ -14,21 +14,66 @@ export class SocketService {
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token =
+      localStorage.getItem('token');
 
-    this.socket = io('http://localhost:5000', {
-      auth: {
-        token
+    this.socket = io(
+      'http://localhost:5000',
+      {
+        auth: {
+          token
+        }
       }
-    });
+    );
 
-    this.socket.on('connect', () => {
-      console.log('Socket Connected:', this.socket.id);
-    });
+    this.socket.on(
+      'connect',
+      () => {
 
-    this.socket.on('disconnect', () => {
-      console.log('Socket Disconnected');
-    });
+        console.log(
+          'Socket Connected:',
+          this.socket.id
+        );
+
+      }
+    );
+
+    this.socket.on(
+      'connect_error',
+      (error) => {
+
+        console.error(
+          'Socket Connection Error:',
+          error
+        );
+
+      }
+    );
+
+    this.socket.on(
+      'disconnect',
+      (reason) => {
+
+        console.log(
+          'Socket Disconnected:',
+          reason
+        );
+
+      }
+    );
+
+    this.socket.on(
+      'messageError',
+      (error) => {
+
+        console.error(
+          'Message Error:',
+          error
+        );
+
+      }
+    );
+
   }
 
   disconnect(): void {
@@ -39,70 +84,129 @@ export class SocketService {
 
   }
 
-  // ===========================
-  // EMIT EVENTS
-  // ===========================
+  sendMessage(
+    receiverId: string,
+    content: string
+  ): void {
 
-  sendMessage(receiverId: string, content: string): void {
+    if (!this.socket?.connected) {
 
-    this.socket.emit('sendMessage', {
-      receiverId,
-      content
-    });
+      console.error(
+        'Socket is not connected'
+      );
 
-  }
+      return;
+    }
 
-  markAsRead(messageId: string): void {
+    console.log(
+      'Sending socket message:',
+      {
+        receiverId,
+        content
+      }
+    );
 
-    this.socket.emit('markAsRead', {
-      messageId
-    });
-
-  }
-
-  // ===========================
-  // LISTEN EVENTS
-  // ===========================
-
-  onReceiveMessage(callback: (message: any) => void): void {
-
-    this.socket.on('receiveMessage', callback);
-
-  }
-
-  onMessageSent(callback: (message: any) => void): void {
-
-    this.socket.on('messageSent', callback);
+    this.socket.emit(
+      'sendMessage',
+      {
+        receiverId,
+        content
+      }
+    );
 
   }
 
-  onUserOnline(callback: (data: any) => void): void {
+  markAsRead(
+    messageId: string
+  ): void {
 
-    this.socket.on('userOnline', callback);
+    if (!this.socket?.connected) {
+      return;
+    }
 
-  }
-
-  onUserOffline(callback: (data: any) => void): void {
-
-    this.socket.on('userOffline', callback);
-
-  }
-
-  onOnlineUsers(callback: (users: string[]) => void): void {
-
-    this.socket.on('onlineUsers', callback);
-
-  }
-
-  onMessageDelivered(callback: (data: any) => void): void {
-
-    this.socket.on('messageDelivered', callback);
+    this.socket.emit(
+      'markAsRead',
+      {
+        messageId
+      }
+    );
 
   }
 
-  onMessageRead(callback: (data: any) => void): void {
+  onReceiveMessage(
+    callback: (message: any) => void
+  ): void {
 
-    this.socket.on('messageRead', callback);
+    this.socket.on(
+      'receiveMessage',
+      callback
+    );
+
+  }
+
+  onMessageSent(
+    callback: (message: any) => void
+  ): void {
+
+    this.socket.on(
+      'messageSent',
+      callback
+    );
+
+  }
+
+  onUserOnline(
+    callback: (data: any) => void
+  ): void {
+
+    this.socket.on(
+      'userOnline',
+      callback
+    );
+
+  }
+
+  onUserOffline(
+    callback: (data: any) => void
+  ): void {
+
+    this.socket.on(
+      'userOffline',
+      callback
+    );
+
+  }
+
+  onOnlineUsers(
+    callback: (users: string[]) => void
+  ): void {
+
+    this.socket.on(
+      'onlineUsers',
+      callback
+    );
+
+  }
+
+  onMessageDelivered(
+    callback: (data: any) => void
+  ): void {
+
+    this.socket.on(
+      'messageDelivered',
+      callback
+    );
+
+  }
+
+  onMessageRead(
+    callback: (data: any) => void
+  ): void {
+
+    this.socket.on(
+      'messageRead',
+      callback
+    );
 
   }
 
