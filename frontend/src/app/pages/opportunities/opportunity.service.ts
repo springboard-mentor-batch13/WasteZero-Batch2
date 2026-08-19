@@ -84,7 +84,7 @@ export class OpportunityService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'http://localhost:5000/api/opportunities';
+    'https://wastezeroproject.onrender.com/api/opportunities';
 
   private dashboardStatsCache$?: Observable<DashboardStats>;
   private dashboardStatsCache?: DashboardStats;

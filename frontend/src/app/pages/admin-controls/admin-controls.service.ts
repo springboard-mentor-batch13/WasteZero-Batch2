@@ -87,7 +87,7 @@ interface AdminLogApiModel {
 export class AdminControlsService {
   private readonly http = inject(HttpClient);
   private readonly opportunityService = inject(OpportunityService);
-  private readonly adminApiUrl = 'http://localhost:5000/api/admin';
+  private readonly adminApiUrl = 'https://wastezeroproject.onrender.com/api/admin';
 
   getUsers(query: AdminPaginationQuery): Observable<AdminPagedResult<AdminManagedUser>> {
     return this.http

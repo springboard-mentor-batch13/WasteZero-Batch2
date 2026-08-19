@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 })
 export class MessagesService {
 
-  private apiUrl = 'http://localhost:5000/api/messages';
+  private apiUrl = 'https://wastezeroproject.onrender.com/api/messages';
 
   constructor(private http: HttpClient) {}
 
