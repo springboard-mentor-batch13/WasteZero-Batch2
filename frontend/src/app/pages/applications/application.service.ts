@@ -56,6 +56,41 @@ export class ApplicationService {
     ).pipe(map((response) => response.data.map((application) => this.fromApi(application))));
   }
 
+  // NGO: Get applications for opportunities owned by the logged-in NGO
+  getNgoApplications(): Observable<VolunteerApplication[]> {
+    return this.http.get<ApiResponse<ApplicationApiModel[]>>(
+      `${this.applicationsUrl}/ngo`,
+      { headers: this.headers() }
+    ).pipe(
+      map((response) =>
+        response.data.map((application) => this.fromApi(application))
+      )
+    );
+  }
+
+  // NGO: Accept an application
+  acceptNgoApplication(id: string): Observable<VolunteerApplication> {
+    return this.http.put<ApiResponse<ApplicationApiModel>>(
+      `${this.applicationsUrl}/ngo/${id}/accept`,
+      {},
+      { headers: this.headers() }
+    ).pipe(
+      map((response) => this.fromApi(response.data))
+    );
+  }
+
+  // NGO: Reject an application
+  rejectNgoApplication(id: string): Observable<VolunteerApplication> {
+    return this.http.put<ApiResponse<ApplicationApiModel>>(
+      `${this.applicationsUrl}/ngo/${id}/reject`,
+      {},
+      { headers: this.headers() }
+    ).pipe(
+      map((response) => this.fromApi(response.data))
+    );
+  }
+
+
   getMyApplications(): Observable<VolunteerApplication[]> {
   return this.http.get<ApiResponse<ApplicationApiModel[]>>(
     `${this.applicationsUrl}/my`,
