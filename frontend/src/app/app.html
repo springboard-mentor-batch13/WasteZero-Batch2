@@ -1,23 +1,35 @@
+
 @if (isAuthPage) {
-
   <router-outlet></router-outlet>
-
 } @else {
+  <div class="app-layout" [class.mobile-menu-open]="isMobileMenuOpen">
 
-<div class="app-layout">
+    <button
+      type="button"
+      class="mobile-menu-toggle"
+      (click)="toggleMobileMenu()"
+      [attr.aria-expanded]="isMobileMenuOpen"
+      aria-label="Toggle navigation menu">
+      <i class="bi" [class.bi-list]="!isMobileMenuOpen"
+         [class.bi-x-lg]="isMobileMenuOpen"></i>
+    </button>
 
-  <app-sidebar></app-sidebar>
+    @if (isMobileMenuOpen) {
+      <div
+        class="sidebar-backdrop"
+        (click)="closeMobileMenu()">
+      </div>
+    }
 
-  <div class="main-content">
+    <app-sidebar (click)="closeMobileMenu()"></app-sidebar>
 
-    <app-navbar></app-navbar>
+    <div class="main-content">
+      <app-navbar></app-navbar>
 
-    <div class="page-content">
-      <router-outlet></router-outlet>
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
     </div>
 
   </div>
-
-</div>
-
 }

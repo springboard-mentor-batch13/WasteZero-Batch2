@@ -1,21 +1,15 @@
-.cards{
-
-    display:flex;
-
-    gap:20px;
-
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.card{
-
-    width:250px;
-
-    background:white;
-
-    padding:25px;
-
-    border-radius:12px;
-
-    box-shadow:0 3px 10px rgba(0,0,0,.08);
-
+.card {
+  flex: 1 1 250px;
+  max-width: 100%;
+  min-width: 0;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }

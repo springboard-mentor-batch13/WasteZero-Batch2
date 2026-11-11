@@ -379,6 +379,162 @@ const getMyApplications = async (req, res) => {
     }
 };
 
+// =====================================================
+// NGO APPLICATION FUNCTIONS
+// =====================================================
+
+// NGO views applications submitted to its own opportunities
+const getNgoApplications = async (req, res) => {
+    try {
+        await backfillOpportunityTitles();
+
+        const opportunities = await Opportunity.find({
+            ngoId: req.user._id
+        }).select('_id');
+
+        const opportunityIds = opportunities.map(opportunity => opportunity._id);
+
+        const applications = await Application.find({
+            opportunityId: { $in: opportunityIds }
+        })
+            .populate('volunteerId', 'fullName email')
+            .populate('opportunityId', 'title')
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            count: applications.length,
+            data: applications
+        });
+    } catch (error) {
+        console.error('Get NGO applications error:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to load NGO applications'
+        });
+    }
+};
+
+// NGO accepts an application only for its own opportunity
+const acceptNgoApplication = async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid application ID'
+            });
+        }
+
+        const application = await Application.findById(req.params.id);
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: 'Application not found'
+            });
+        }
+
+        const opportunity = await Opportunity.findOne({
+            _id: application.opportunityId,
+            ngoId: req.user._id
+        });
+
+        if (!opportunity) {
+            return res.status(403).json({
+                success: false,
+                message: 'You cannot manage applications for this opportunity'
+            });
+        }
+
+        application.status = 'Accepted';
+        await application.save();
+
+        await Notification.create({
+            recipientId: application.volunteerId,
+            recipientRole: 'Volunteer',
+            sourceRole: 'NGO',
+            title: 'Application Accepted',
+            message: `Your application for "${application.opportunityTitle}" has been accepted!`,
+            type: 'Opportunity',
+            redirectUrl: '/opportunities'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Application accepted',
+            data: application
+        });
+    } catch (error) {
+        console.error('NGO accept application error:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Server Error'
+        });
+    }
+};
+
+// NGO rejects an application only for its own opportunity
+const rejectNgoApplication = async (req, res) => {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid application ID'
+            });
+        }
+
+        const application = await Application.findById(req.params.id);
+
+        if (!application) {
+            return res.status(404).json({
+                success: false,
+                message: 'Application not found'
+            });
+        }
+
+        const opportunity = await Opportunity.findOne({
+            _id: application.opportunityId,
+            ngoId: req.user._id
+        });
+
+        if (!opportunity) {
+            return res.status(403).json({
+                success: false,
+                message: 'You cannot manage applications for this opportunity'
+            });
+        }
+
+        application.status = 'Rejected';
+        await application.save();
+
+        await Notification.create({
+            recipientId: application.volunteerId,
+            recipientRole: 'Volunteer',
+            sourceRole: 'NGO',
+            title: 'Application Rejected',
+            message: `Your application for "${application.opportunityTitle}" was not selected this time.`,
+            type: 'Opportunity',
+            redirectUrl: '/opportunities'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Application rejected',
+            data: application
+        });
+    } catch (error) {
+        console.error('NGO reject application error:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Server Error'
+        });
+    }
+};
+
+
 module.exports = {
     applyForOpportunity,
     getAllApplications,
@@ -387,4 +543,7 @@ module.exports = {
     getVolunteerDashboardStats,
     acceptApplication,
     rejectApplication,
+    getNgoApplications,
+    acceptNgoApplication,
+    rejectNgoApplication
 };

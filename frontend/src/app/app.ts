@@ -21,9 +21,19 @@ export class App {
   private readonly notificationService = inject(NotificationService);
   private readonly notificationToastService = inject(NotificationToastService);
 
+  isMobileMenuOpen = false;
+
   constructor(public router: Router) {
     void this.notificationService;
     void this.notificationToastService;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
   }
 
   get isAuthPage(): boolean {
@@ -36,5 +46,7 @@ export class App {
       '/reset-password'
     ].includes(this.router.url);
   }
-
+  
 }
+
+
