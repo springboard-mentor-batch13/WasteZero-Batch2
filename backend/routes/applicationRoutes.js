@@ -9,6 +9,9 @@ const {
     getVolunteerDashboardStats,
     acceptApplication,
     rejectApplication,
+    getNgoApplications,
+    acceptNgoApplication,
+    rejectNgoApplication
 } = require('../controllers/applicationController');
 
 
@@ -70,6 +73,33 @@ router.get(
     protect,
     authorizeRoles('Volunteer'),
     getMyApplications
+);
+// =====================================================
+// NGO ROUTES
+// =====================================================
+
+// NGO views applications for its own opportunities
+router.get(
+    '/ngo',
+    protect,
+    authorizeRoles('NGO'),
+    getNgoApplications
+);
+
+// NGO accepts an application
+router.put(
+    '/ngo/:id/accept',
+    protect,
+    authorizeRoles('NGO'),
+    acceptNgoApplication
+);
+
+// NGO rejects an application
+router.put(
+    '/ngo/:id/reject',
+    protect,
+    authorizeRoles('NGO'),
+    rejectNgoApplication
 );
 // =====================================================
 // ADMIN ROUTES

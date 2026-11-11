@@ -78,10 +78,10 @@ export class MatchingService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'http://localhost:5000/api/matches';
+    'https://wastezeroproject.onrender.com/api/matches';
 
   private readonly profileApiUrl =
-    'http://localhost:5000/api/profile';
+    'https://wastezeroproject.onrender.com/api/profile';
 
   getMatches(): Observable<MatchedOpportunity[]> {
 

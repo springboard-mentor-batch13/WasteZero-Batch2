@@ -992,11 +992,11 @@ export class NgoPickupDetailsDialog {
 
     if (imagePath.startsWith('/')) {
 
-      return `http://localhost:5000${imagePath}`;
+      return `https://wastezeroproject.onrender.com${imagePath}`;
 
     }
 
-    return `http://localhost:5000/${imagePath}`;
+    return `https://wastezeroproject.onrender.com/${imagePath}`;
 
   }
 

@@ -62,7 +62,7 @@ export interface AuthResponse {
 })
 export class AuthService {
 
-  private readonly apiUrl = 'http://localhost:5000/api/auth';
+  private readonly apiUrl = 'https://wastezeroproject.onrender.com/api/auth';
   private readonly tokenKey = 'token';
   private readonly roleKey = 'role';
   private readonly userKey = 'user';

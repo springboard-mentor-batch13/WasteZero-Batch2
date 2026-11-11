@@ -24,7 +24,7 @@ export interface Pickup {
 })
 export class PickupService {
 
-  private apiUrl = 'http://localhost:5000/api/pickups';
+  private apiUrl = 'https://wastezeroproject.onrender.com/api/pickups';
 
   constructor(private http: HttpClient) { }
 

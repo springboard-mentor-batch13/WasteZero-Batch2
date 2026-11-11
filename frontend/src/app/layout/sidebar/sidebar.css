@@ -11,6 +11,7 @@
 .sidebar {
   width: 270px;
   height: 100vh;
+  z-index: 100;
 
   background: var(--wz-surface);
   border-right: 1px solid var(--wz-border);
@@ -329,4 +330,17 @@
 
 .logout-section button i {
   color: #ffffff;
+}
+/* Mobile sidebar */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 270px;
+    height: 100dvh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+:host-context(.mobile-menu-open) .sidebar {    transform: translateX(0);
+  }
 }

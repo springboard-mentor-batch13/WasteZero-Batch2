@@ -1,85 +1,87 @@
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-
-
-/* ===========================================================
-   AUTHENTICATED APPLICATION LAYOUT
-
-   This entire layout exists only after login because app.html
-   renders it inside the @else block.
-=========================================================== */
 
 .app-layout {
-    display: flex;
-
-    width: 100%;
-    min-height: 100vh;
-
-    background-color: var(--wz-page-bg);
-    color: var(--wz-text-primary);
-
-    transition:
-        background-color 0.25s ease,
-        color 0.25s ease;
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--wz-page-bg);
+  color: var(--wz-text-primary);
 }
-
-
-/* ===========================================================
-   MAIN CONTENT
-=========================================================== */
 
 .main-content {
-    margin-left: 270px;
-
-    width: calc(100% - 270px);
-    min-height: 100vh;
-
-    background-color: var(--wz-page-bg);
-    color: var(--wz-text-primary);
-
-    transition:
-        background-color 0.25s ease,
-        color 0.25s ease;
+  margin-left: 270px;
+  width: calc(100% - 270px);
+  min-width: 0;
+  min-height: 100vh;
+  background-color: var(--wz-page-bg);
+  color: var(--wz-text-primary);
+  transition: width 0.25s ease;
 }
-
-
-/* ===========================================================
-   PAGE CONTENT
-=========================================================== */
 
 .page-content {
-    min-height: calc(100vh - 72px);
-
-    padding: 25px 40px;
-
-    background-color: var(--wz-page-bg);
-    color: var(--wz-text-primary);
-
-    transition:
-        background-color 0.25s ease,
-        color 0.25s ease;
+  width: 100%;
+  min-height: calc(100vh - 72px);
+  padding: 25px 40px;
+  overflow-x: hidden;
+  background-color: var(--wz-page-bg);
+  color: var(--wz-text-primary);
 }
 
+/* Mobile menu button */
+.mobile-menu-toggle {
+  display: none;
+}
 
-/* ===========================================================
-   RESPONSIVE
-=========================================================== */
+.sidebar-backdrop {
+  display: none;
+}
 
+/* Tablet */
 @media (max-width: 900px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
 
-    .app-layout {
-        flex-direction: column;
-    }
+  .page-content {
+    padding: 20px 16px;
+  }
+}
 
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-    }
+/* Mobile */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: flex;
+    position: fixed;
+    top: 12px;
+    left: 14px;
+    z-index: 1100;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: var(--wz-primary);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+  }
 
-    .page-content {
-        padding: 20px 16px;
-    }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .page-content {
+    padding: 16px 12px;
+  }
 }

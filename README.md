@@ -229,7 +229,7 @@ npm start
 
 Backend:
 
-http://localhost:5000
+https://wastezeroproject.onrender.com
 
 Configure the backend .env with the required MongoDB URI and JWT secret.
 

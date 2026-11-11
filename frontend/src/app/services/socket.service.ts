@@ -18,7 +18,7 @@ export class SocketService {
       localStorage.getItem('token');
 
     this.socket = io(
-      'http://localhost:5000',
+      'https://wastezeroproject.onrender.com',
       {
         auth: {
           token

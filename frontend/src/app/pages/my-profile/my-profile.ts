@@ -64,7 +64,7 @@ export class MyProfile implements OnInit {
   loadProfile() {
 
     this.http.get(
-      'http://localhost:5000/api/profile',
+      'https://wastezeroproject.onrender.com/api/profile',
       { headers: this.getHeaders() }
     ).subscribe({
 
@@ -119,7 +119,7 @@ export class MyProfile implements OnInit {
 
 
     this.http.put(
-      'http://localhost:5000/api/profile',
+      'https://wastezeroproject.onrender.com/api/profile',
       body,
       { headers: this.getHeaders() }
     ).subscribe({
@@ -177,7 +177,7 @@ export class MyProfile implements OnInit {
 
 
     this.http.put(
-      'http://localhost:5000/api/profile/change-password',
+      'https://wastezeroproject.onrender.com/api/profile/change-password',
       this.password,
       { headers: this.getHeaders() }
     ).subscribe({
